@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/fonts.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/elevation.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/styles.css">
+  <script src="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/_ds_bundle.js"></script>
+  <style>
+    :root{--container-max:1600px;--container-pad:40px}
+    @media (max-width:1024px){:root{--container-pad:24px}}
+    @media (max-width:640px){:root{--container-pad:16px}}
+    html{font-size:17px}
+    body{margin:0;background:var(--surface-page);color:var(--text-body);font-family:var(--font-sans);-webkit-font-smoothing:antialiased}
+    *{box-sizing:border-box}
+    a{color:var(--color-primary);text-decoration:none}
+    a:hover{color:var(--color-primary-hover)}
+    ::selection{background:var(--iris-200)}
+    @keyframes shimmer{to{background-position:-200% 0}}
+    .flt-row{transition:color var(--dur-fast) var(--ease-out),background var(--dur-fast) var(--ease-out)}
+    .flt-row:hover{background:var(--iris-50);color:var(--color-primary)}
+    .brand-row{transition:color var(--dur-fast) var(--ease-out)}
+    .brand-row:hover{color:var(--color-primary)}
+    .qv-cell{position:relative}
+    .qv-eye-wrap{position:absolute;top:0;left:0;width:100%;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:6}
+    .qv-eye{pointer-events:auto;width:48px;height:48px;border-radius:var(--radius-full);border:none;cursor:pointer;background:var(--color-primary);box-shadow:var(--shadow-primary);display:grid;place-items:center;opacity:0;transform:scale(.8);transition:opacity var(--dur-med) var(--ease-out),transform var(--dur-med) var(--ease-out),background var(--dur-fast)}
+    .qv-cell:hover .qv-eye{opacity:1;transform:scale(1)}
+    .qv-eye:hover{background:var(--color-primary-hover);transform:scale(1.08)}
+    .flt-scroll::-webkit-scrollbar{width:6px}
+    .flt-scroll::-webkit-scrollbar-thumb{background:var(--border-default);border-radius:var(--radius-full)}
+  
+    /* sundry-responsive */
+    .flt-scroll{overflow-x:hidden!important}
+    @media (max-width:1200px){
+      [style*="margin-left: auto"][style*="color: var(--color-accent-strong)"]{display:none!important}
+      nav [style*="height: 56px"]{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap!important}
+      nav [style*="height: 56px"] > *{flex-shrink:0}
+      nav [style*="height: 56px"] [style*="flex-wrap: wrap"]{flex-wrap:nowrap!important}
+      nav [style*="height: 56px"] button,nav [style*="height: 56px"] a{white-space:nowrap}
+      button,a[style*="height: 52px"],a[style*="height: 50px"],a[style*="height: 44px"],span[style*="border-radius: var(--radius-full)"]{white-space:nowrap}
+    }
+    @media (max-width:1100px){
+      [style*="repeat(5, minmax(0px, 1fr))"]{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+      [style*="repeat(4, minmax(0px, 1fr))"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+      [style*="width: 560px"][style*="padding: 28px 32px"]{width:420px!important;gap:22px 24px!important}
+      [style*="minmax(260px, 1fr) minmax(0px, 2fr)"]{grid-template-columns:1fr!important}
+    }
+    @media (max-width:900px){
+      [style*="max-width: 320px"][style*="flex: 1 1 280px"],[style*="max-width: 380px"][style*="flex: 1 1 300px"],[style*="max-width: 280px"][style*="flex: 1 1 240px"]{max-width:none!important;flex-basis:100%!important;position:static!important}
+      [style*="position: sticky"][style*="top: 92px"]{position:static!important}
+      [style*="height: calc(100vh - 68px)"]{width:64px!important}
+      [style*="min-width: 216px"]{display:none!important}
+      header [style*="border-right: 1px solid var(--border-subtle)"][style*="height: 100%"]{width:64px!important;padding:0px 14px!important}
+      header [style*="border-right: 1px solid var(--border-subtle)"][style*="height: 100%"] > span:not(:first-child){display:none!important}
+      [style*="min-height: 560px"][style*="overflow: hidden"]{flex-direction:column!important}
+      [style*="width: 300px"][style*="border-right: 1px solid"]{width:100%!important;border-right:none!important;border-bottom:1px solid var(--border-subtle)}
+    }
+    @media (max-width:720px){
+      [style*="repeat(5, minmax(0px, 1fr))"],[style*="repeat(4, minmax(0px, 1fr))"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+      [style*="grid-template-columns: 1fr 1fr"]{grid-template-columns:1fr!important}
+      [style*="grid-template-columns: 1fr 1fr"] > [style*="grid-column: 1 / -1"]{grid-column:auto!important}
+      [style*="grid-template-columns: 2.4fr 1fr 1.2fr 1fr"]{grid-template-columns:1fr 1fr!important}
+      [style*="grid-template-columns: 2.4fr 1fr 1.2fr 1fr"] > :first-child{grid-column:1/-1}
+      [style*="minmax(300px, 1fr)"],[style*="minmax(280px, 1fr)"],[style*="minmax(360px, 1fr)"]{grid-template-columns:1fr!important}
+      [style*="flex: 3 1 640px"],[style*="flex: 3 1 620px"],[style*="flex: 3 1 420px"],[style*="flex: 2 1 420px"],[style*="flex: 1 1 340px"],[style*="flex: 2 1 480px"]{min-width:0!important;flex-basis:100%!important}
+      [style*="width: 560px"][style*="padding: 28px 32px"]{display:none!important}
+      [style*="width: 280px"][style*="border-right: 1px solid var(--border-subtle)"][style*="padding: 8px"]{width:min(280px,calc(100vw - 32px))!important;border-right:none!important}
+      header nav[style*="font-size: 13px"]{display:none!important}
+      button[aria-label="Fullscreen"],a[aria-label="View storefront"]{display:none!important}
+      main{padding-left:16px!important;padding-right:16px!important}
+      h1[style*="font-size: 30px"],h1[style*="font-size: 34px"],h1[style*="font-size: 38px"]{font-size:26px!important}
+    }
+    @media (max-width:720px){
+      [style*="height: 40px"][style*="justify-content: space-between"] > span:first-child{display:none!important}
+      [style*="height: 40px"][style*="justify-content: space-between"]{justify-content:center!important}
+      [style*="height: 40px"][style*="justify-content: space-between"] > div{gap:16px!important;font-size:12px}
+      [style*="height: 48px"][style*="border-radius: var(--radius-full)"] > [style*="position: relative"] > button{font-size:0!important;padding:0 8px!important;gap:0!important}
+      [style*="height: 48px"][style*="border-radius: var(--radius-full)"] > [style*="position: relative"] > button::before{content:"All";font-size:13px}
+      [style*="height: 48px"][style*="border-radius: var(--radius-full)"] > button:last-child{font-size:0!important;padding:0 12px!important;gap:0!important}
+      aside[style*="max-width: 280px"][style*="flex: 1 1 240px"]{display:none!important}
+    }
+    @media (max-width:720px){
+      [style*="grid-template-columns: 2.4fr 1fr 1.2fr 1fr"][style*="text-transform: uppercase"],[style*="grid-template-columns: 2.4fr 1fr 1.2fr 1fr"][style*="background: var(--surface-sunken)"]{display:none!important}
+    }
+    @media (max-width:480px){
+      [style*="repeat(4, minmax(0px, 1fr))"]:not(:has(> .qv-cell)):not(:has(> [style*="text-align: center"])){grid-template-columns:1fr!important}
+      [style*="padding: 24px 28px"]{padding:18px!important}
+    }
+  
+    /* header layer (from Home) */
+    .sd-m{display:none!important}
+    @keyframes sdIn{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+    @keyframes sdFade{from{opacity:0}to{opacity:1}}
+    @keyframes sheetUp{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
+    @media (max-width:1200px){
+      .r-heroimg{position:relative!important;inset:auto!important;width:auto!important;min-width:0!important;height:clamp(180px,32vw,260px);margin:clamp(20px,4vw,32px) clamp(20px,4vw,32px) 0}
+      .r-herotext{height:auto!important;max-width:none!important}
+      [style*="margin-left: auto"][style*="color: var(--color-accent-strong)"]{display:none!important}
+    }
+    .r-mobcat{display:none}
+    .r-mobcatback{display:none}
+    @media (hover: none){
+      .qv-eye-wrap{align-items:flex-end;justify-content:flex-start;padding:10px}
+      .qv-eye{opacity:1!important;transform:none!important;width:40px!important;height:40px!important}
+      .qv-cell [aria-label="Add to cart"]{opacity:1!important;transform:none!important;pointer-events:auto!important}
+    }
+    .r-cartback{display:none}
+    @media (hover: none){ .r-cartback{display:block;position:fixed;inset:0;z-index:55;background:transparent} }
+    html.rz *,html.rz *::before,html.rz *::after{transition:none!important;animation:none!important}
+    @media (max-width:1024px){
+      .sd-m{display:grid!important}
+      .sd-d,.r-herocats,.r-searchcat,.r-navlinks,.r-mega{display:none!important}
+      .r-mobcat{display:block}
+      .r-latest{max-height:none!important;overflow:visible!important;padding-right:0!important}
+      .r-mobcatback{display:block;position:fixed;inset:0;z-index:57;background:rgba(26,26,35,.35);animation:sdFade var(--dur-med) var(--ease-out)}
+      .r-cartback{display:block;position:fixed;inset:0;z-index:55;background:transparent}
+      .r-cartcard{max-height:calc(100vh - 90px);overflow-y:auto!important}
+      .r-nav > div:first-child{height:auto!important;padding-top:8px!important;padding-bottom:8px!important}
+      .r-navcat{width:100%}
+      .r-navcat > button{width:100%;justify-content:center;height:42px!important}
+      .sd-search:not(.is-open){display:none!important}
+      .sd-search.is-open{order:10;flex-basis:100%!important}
+      .sd-icons{margin-left:auto}
+      .sd-label{display:none!important}
+      .sd-head > div:first-child{padding-top:10px!important;padding-bottom:10px!important;gap:12px!important}
+      .sd-icons > button{padding:4px 8px!important}
+    }
+    @media (max-width:640px){
+      .r-logo{display:none!important}
+      .r-qvback{align-items:flex-end!important;padding:0!important}
+      .r-qvcard{width:100%!important;max-height:92vh!important;border-radius:var(--radius-xl) var(--radius-xl) 0 0!important;animation:sheetUp var(--dur-med) var(--ease-out)}
+      .r-toast{left:16px!important;right:16px!important;bottom:calc(16px + env(safe-area-inset-bottom))!important;justify-content:flex-start}
+      .r-cartback{background:rgba(26,26,35,.35)}
+      .r-cartpop{position:fixed!important;top:62px!important;left:8px!important;right:8px!important;padding-top:0!important}
+      .r-cartcard{width:auto!important;max-width:none!important}
+      .sd-carttext{display:none!important}
+      .sd-cartbtn{padding:8px 10px!important}
+      [style*="height: 40px"][style*="justify-content: space-between"] > span:first-child{display:none!important}
+      [style*="height: 40px"][style*="justify-content: space-between"]{justify-content:center!important}
+      .r-footbrand{grid-column:1/-1}
+    }
+</style>
+</helmet>
+
+<div>
+
+  <!-- Utility bar -->
+  <div style="background:var(--surface-inverse);color:var(--neutral-300);font-size:13px">
+    <div style="max-width:var(--container-max);margin:0 auto;padding:0 var(--container-pad);height:40px;display:flex;align-items:center;justify-content:space-between">
+      <span style="display:flex;align-items:center;gap:8px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7 12.8 12.8 0 0 0 .7 2.8 2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5 12.8 12.8 0 0 0 2.8.7 2 2 0 0 1 1.7 2z"/></svg>
+        +1 (800) 555-0142
+      </span>
+      <div style="display:flex;align-items:center;gap:22px">
+        <a href="usertrackorder.dc.html" style="color:var(--neutral-300)">Track order</a>
+        <a href="supportticket.dc.html" style="color:var(--neutral-300)">Help Center</a>
+        <a href="Register Page.dc.html" style="color:var(--saffron-300);font-weight:600;display:flex;align-items:center;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M4 9h16"/></svg>
+          Become a Seller
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="sd-head" style="background:var(--surface-card);box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:40">
+    <div style="max-width:var(--container-max);margin:0 auto;padding:14px var(--container-pad);display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <button class="sd-m" onClick="{{ openDrawer }}" aria-label="Open menu" style="width:42px;height:42px;flex-shrink:0;place-items:center;border-radius:var(--radius-md);border:1px solid var(--border-subtle);background:var(--surface-card);cursor:pointer;color:var(--text-strong)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <a href="Sundry Home.dc.html" class="r-logo" style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+        <span style="width:38px;height:38px;background:var(--color-primary);box-shadow:var(--shadow-primary);border-radius:11px;display:grid;place-items:center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
+        </span>
+        <span style="font-family:var(--font-display);font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong)">Sundry</span>
+      </a>
+      <div class="sd-search {{ searchCls }}" style="flex:1 1 300px;min-width:0;display:flex;align-items:center;height:48px;padding:0 8px;border-radius:var(--radius-full);background:var(--surface-sunken);border:1px solid var(--border-subtle)">
+        <div class="r-searchcat" style="position:relative;display:flex;align-items:center" onMouseEnter="{{ openSearchCat }}" onMouseLeave="{{ closeSearchCat }}">
+        <button style="display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;font-size:14px;font-weight:600;color:var(--text-body);background:none;border:none;border-right:1px solid var(--border-default);cursor:pointer;white-space:nowrap">All Categories
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <sc-if value="{{ searchCatOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:100%;left:0;z-index:60;padding-top:12px" onMouseLeave="{{ clearMenuCat }}">
+            <div style="display:flex;background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);border:1px solid var(--border-subtle);overflow:hidden;min-height:420px">
+              <div style="width:280px;flex-shrink:0;padding:8px;border-right:1px solid var(--border-subtle)">
+                <sc-for list="{{ menuCats }}" as="c" hint-placeholder-count="8">
+                  <a href="Category Page.dc.html" onMouseEnter="{{ c.onHover }}" class="flt-row" style="{{ c.rowStyle }}">
+                    <span style="width:32px;height:32px;flex-shrink:0;border-radius:var(--radius-sm);display:grid;place-items:center;background:{{ c.tint }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ c.icon }}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{ c.glyph }}"/></svg></span>
+                    <span style="flex:1">{{ c.name }}</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{ c.chev }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                  </a>
+                </sc-for>
+              </div>
+              <div style="width:560px;padding:28px 32px;display:grid;grid-template-columns:1fr 1fr;gap:28px 40px;align-content:start">
+                <sc-for list="{{ menuGroups }}" as="g" hint-placeholder-count="4">
+                  <div>
+                    <h4 style="font-family:var(--font-display);font-size:16px;font-weight:800;letter-spacing:-0.01em;color:var(--text-strong);margin:0 0 14px">{{ g.title }}</h4>
+                    <div style="display:flex;flex-direction:column;gap:11px">
+                      <sc-for list="{{ g.items }}" as="sub" hint-placeholder-count="5">
+                        <a href="Category Page.dc.html" class="brand-row" style="font-size:14px;color:var(--text-body)">{{ sub }}</a>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+        </div>
+        <input placeholder="Search products, brands and categories…" style="flex:1;min-width:0;background:transparent;border:none;outline:none;padding:0 12px;font-size:14px;color:var(--text-strong);font-family:var(--font-sans)">
+        <button style="height:36px;padding:0 16px;display:flex;align-items:center;gap:6px;background:var(--color-primary);color:#fff;border:none;border-radius:var(--radius-full);font-weight:600;font-size:13px;cursor:pointer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          Search
+        </button>
+      </div>
+      <div class="sd-icons" style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <button class="sd-m" onClick="{{ toggleSearch }}" aria-label="Search" style="width:40px;height:40px;place-items:center;border-radius:var(--radius-md);border:none;background:none;cursor:pointer;color:var(--text-body)"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ searchIcon }}"/></svg></button>
+        <button style="position:relative;display:flex;flex-direction:column;align-items:center;padding:4px 12px;border-radius:var(--radius-md);background:none;border:none;cursor:pointer">
+          <span style="position:relative"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-body)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l9 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg>
+          <span style="position:absolute;top:-6px;right:-8px;font-size:10px;font-weight:700;color:#fff;background:var(--error-500);border-radius:50%;width:16px;height:16px;display:grid;place-items:center">5</span></span>
+          <span class="sd-label" style="font-size:11px;margin-top:2px;font-weight:500;color:var(--text-muted)">Wishlist</span>
+        </button>
+        <div class="sd-d" style="position:relative" onMouseEnter="{{ openAcct }}" onMouseLeave="{{ closeAcct }}">
+        <button onClick="{{ tapAcct }}" aria-haspopup="menu" style="display:flex;align-items:center;gap:10px;padding:4px 10px;border-radius:var(--radius-md);background:none;border:none;cursor:pointer">
+          <span style="width:38px;height:38px;flex-shrink:0;border-radius:50%;background:var(--iris-50);display:grid;place-items:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a6 6 0 0 0-12 0M12 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg></span>
+          <span style="display:flex;flex-direction:column;line-height:1.2;text-align:left">
+            <span style="font-size:12px;font-weight:500;color:var(--text-muted)">Hello, test</span>
+            <span style="display:flex;align-items:center;gap:4px;font-size:14px;font-weight:700;color:var(--text-strong)">Dashboard <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+          </span>
+        </button>
+          <sc-if value="{{ acctOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:100%;right:0;padding-top:12px;z-index:60">
+              <div role="menu" style="width:280px;background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);border:1px solid var(--border-subtle);overflow:hidden">
+                <a href="user.dashboard.dc.html" style="display:flex;align-items:center;gap:12px;padding:16px;background:linear-gradient(120deg,var(--iris-50),var(--surface-card));border-bottom:1px solid var(--border-subtle)">
+                  <span style="width:44px;height:44px;flex-shrink:0;border-radius:50%;background:var(--color-primary);display:grid;place-items:center;color:#fff;font-weight:700">T</span>
+                  <span style="flex:1;min-width:0"><span style="display:block;font-size:12px;color:var(--text-muted)">Hello, Test</span><span style="display:block;font-size:15px;font-weight:700;color:var(--text-strong)">My Dashboard</span><span style="display:block;font-size:12px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">test@gmail.com</span></span>
+                </a>
+                <div style="padding:6px">
+                  <a href="user.dashboard.dc.html" role="menuitem" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;color:var(--text-body);transition:all var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a6 6 0 0 0-12 0M12 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>Profile Info</a>
+                  <a href="userOrder.dc.html" role="menuitem" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;color:var(--text-body);transition:all var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>My Orders</a>
+                  <a href="userwishlist.dc.html" role="menuitem" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;color:var(--text-body);transition:all var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l9 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg>Wish List</a>
+                  <a href="usertrackorder.dc.html" role="menuitem" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;color:var(--text-body);transition:all var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7M5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>Track Order</a>
+                  <a href="userchat.dc.html" role="menuitem" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;color:var(--text-body);transition:all var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Inbox</a>
+                  <a href="supportticket.dc.html" role="menuitem" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;color:var(--text-body);transition:all var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9a2 2 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a2 2 0 0 0 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1z"/></svg>Support Ticket</a>
+                </div>
+                <div style="padding:6px;border-top:1px solid var(--border-subtle)">
+                  <a href="Login Page.dc.html" role="menuitem" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;color:var(--error-600);transition:all var(--dur-fast) var(--ease-out)" style-hover="background:var(--error-50);color:var(--error-600)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Log Out</a>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+        <div style="position:relative" onMouseEnter="{{ openCart }}" onMouseLeave="{{ closeCart }}">
+        <button onClick="{{ tapCart }}" aria-label="Cart" style="display:flex;align-items:center;gap:10px;padding:8px 16px 8px 12px;margin-left:4px;border-radius:var(--radius-full);background:var(--color-primary-subtle);border:none;cursor:pointer">
+          <span style="position:relative"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+          <span style="position:absolute;top:-8px;right:-8px;font-size:10px;font-weight:700;color:#fff;background:var(--color-primary);border-radius:50%;width:16px;height:16px;display:grid;place-items:center">3</span></span>
+          <span class="sd-carttext" style="display:flex;flex-direction:column;line-height:1.15;text-align:left">
+            <span style="font-size:10px;font-weight:500;color:var(--text-muted)">Cart total</span>
+            <span style="font-size:14px;font-weight:700;color:var(--text-strong);font-variant-numeric:tabular-nums">{{ cartTotalStr }}</span>
+          </span>
+        </button>
+        <sc-if value="{{ cartOpen }}" hint-placeholder-val="{{ false }}">
+          <div class="r-cartback" onClick="{{ closeCart }}"></div>
+          <div class="r-cartpop" style="position:absolute;top:100%;right:0;padding-top:12px;z-index:60">
+          <div class="r-cartcard" style="width:404px;max-width:92vw;background:var(--surface-card);border-radius:var(--radius-xl);box-shadow:var(--shadow-xl);border:1px solid var(--border-subtle);overflow:hidden">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:linear-gradient(120deg,var(--iris-50),var(--surface-card))">
+              <span style="display:flex;align-items:center;gap:10px"><span style="width:34px;height:34px;border-radius:var(--radius-md);background:var(--color-primary);display:grid;place-items:center;box-shadow:var(--shadow-primary)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L23 6H6M9 8h11"/></svg></span><span style="font-family:var(--font-display);font-size:18px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong)">Shopping Cart</span><span style="font-size:12px;font-weight:700;color:var(--color-primary);background:var(--iris-50);border-radius:var(--radius-full);padding:2px 9px">{{ cartCountStr }}</span></span>
+              <button onClick="{{ closeCart }}" aria-label="Close" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:var(--radius-full);background:var(--surface-card);border:1px solid var(--border-subtle);cursor:pointer;color:var(--text-muted);transition:all var(--dur-fast) var(--ease-out)" style-hover="background:var(--error-50);color:var(--error-500);border-color:var(--error-50)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+            </div>
+            <div style="padding:20px">
+              <div style="max-height:280px;overflow-y:auto;margin:-4px -8px 12px;padding:4px 8px 0">
+              <sc-for list="{{ cartItems }}" as="it" hint-placeholder-count="2">
+                <div style="display:flex;align-items:center;gap:14px;padding:12px;margin-bottom:16px;border-radius:var(--radius-lg);background:var(--surface-sunken)">
+                  <span style="width:64px;height:64px;flex-shrink:0;border-radius:var(--radius-md);display:grid;place-items:center;background:{{ it.tint }}"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="{{ it.iconColor }}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="{{ it.glyph }}"/></svg></span>
+                  <div style="min-width:0;flex:1"><h4 style="font-size:14px;font-weight:600;color:var(--text-strong);margin:0 0 2px;text-wrap:pretty">{{ it.title }}</h4><span style="display:block;font-size:11px;font-weight:600;color:var(--color-primary);margin-bottom:4px">{{ it.seller }}</span><span style="font-size:15px;font-weight:800;color:var(--text-strong);font-variant-numeric:tabular-nums">{{ it.priceStr }}</span></div>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:4px">
+                    <button onClick="{{ it.decOrRemove }}" style="background:none;border:none;cursor:pointer;color:var(--error-500);display:grid;place-items:center;padding:3px;border-radius:6px;transition:background var(--dur-fast)" style-hover="background:var(--error-50)"><sc-if value="{{ it.isLast }}" hint-placeholder-val="{{ true }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></sc-if><sc-if value="{{ it.notLast }}" hint-placeholder-val="{{ false }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg></sc-if></button>
+                    <span style="font-size:13px;font-weight:700;color:var(--text-strong);font-variant-numeric:tabular-nums;padding:2px 0">{{ it.qty }}</span>
+                    <button onClick="{{ it.inc }}" style="background:none;border:none;cursor:pointer;color:var(--color-primary);display:grid;place-items:center;padding:3px;border-radius:6px;transition:background var(--dur-fast)" style-hover="background:var(--iris-50)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>
+                  </div>
+                </div>
+              </sc-for>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><span style="font-size:15px;color:var(--text-body)">Subtotal</span><b style="color:var(--color-primary);font-size:19px;font-weight:800;font-variant-numeric:tabular-nums">{{ cartTotalStr }}</b></div>
+              <div style="display:flex;gap:10px;align-items:stretch">
+                <button style="display:flex;align-items:center;gap:4px;background:none;border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:0 16px;font-size:13px;font-weight:600;color:var(--text-body);cursor:pointer;font-family:var(--font-sans);white-space:nowrap;transition:all var(--dur-fast)" style-hover="border-color:var(--color-primary);color:var(--color-primary)">Expand cart <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+                <div style="flex:1"><x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="primary" size="lg" block="{{ true }}" hint-size="100%,52px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>Proceed To Checkout</x-import></div>
+              </div>
+            </div>
+          </div>
+          </div>
+        </sc-if>
+        </div>
+      </div>
+    </div>
+    <nav class="r-nav" style="position:relative;border-top:1px solid var(--border-subtle)">
+      <div style="max-width:var(--container-max);margin:0 auto;padding:0 var(--container-pad);height:56px;display:flex;align-items:center;gap:8px">
+        <div class="r-navcat" style="position:relative;height:100%;display:flex;align-items:center" onMouseEnter="{{ openCatMenu }}" onMouseLeave="{{ closeCatMenu }}">
+        <button onClick="{{ toggleMobCat }}" style="display:flex;align-items:center;gap:8px;height:44px;padding:0 18px;background:var(--color-primary);color:#fff;border:none;border-radius:var(--radius-md);font-weight:600;font-size:14px;cursor:pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          All Categories
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <sc-if value="{{ catMenuOpen }}" hint-placeholder-val="{{ false }}">
+          <div class="r-mega" style="position:absolute;top:100%;left:0;z-index:60;padding-top:8px" onMouseLeave="{{ clearMenuCat }}">
+            <div style="display:flex;background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);border:1px solid var(--border-subtle);overflow:hidden;min-height:420px">
+              <div style="width:280px;flex-shrink:0;padding:8px;border-right:1px solid var(--border-subtle)">
+                <sc-for list="{{ menuCats }}" as="c" hint-placeholder-count="8">
+                  <a href="Category Page.dc.html" onMouseEnter="{{ c.onHover }}" class="flt-row" style="{{ c.rowStyle }}">
+                    <span style="width:32px;height:32px;flex-shrink:0;border-radius:var(--radius-sm);display:grid;place-items:center;background:{{ c.tint }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ c.icon }}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{ c.glyph }}"/></svg></span>
+                    <span style="flex:1">{{ c.name }}</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{ c.chev }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                  </a>
+                </sc-for>
+              </div>
+              <div style="width:560px;padding:28px 32px;display:grid;grid-template-columns:1fr 1fr;gap:28px 40px;align-content:start">
+                <sc-for list="{{ menuGroups }}" as="g" hint-placeholder-count="4">
+                  <div>
+                    <h4 style="font-family:var(--font-display);font-size:16px;font-weight:800;letter-spacing:-0.01em;color:var(--text-strong);margin:0 0 14px">{{ g.title }}</h4>
+                    <div style="display:flex;flex-direction:column;gap:11px">
+                      <sc-for list="{{ g.items }}" as="sub" hint-placeholder-count="5">
+                        <a href="Category Page.dc.html" class="brand-row" style="font-size:14px;color:var(--text-body)">{{ sub }}</a>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+        </div>
+        <div class="r-navlinks" style="display:flex;align-items:center;gap:2px;margin-left:12px;flex-wrap:wrap">
+          <a href="Sundry Home.dc.html" style="font-weight:600;font-size:14px;color:var(--text-body);padding:8px 12px">Home</a>
+          <a href="Category Page.dc.html" style="font-weight:600;font-size:14px;color:var(--text-body);padding:8px 12px">Brands</a>
+          <a href="Category Page.dc.html" style="font-weight:600;font-size:14px;color:var(--text-body);padding:8px 12px">Offers</a>
+          <a href="All Vendor Page.dc.html" style="font-weight:600;font-size:14px;color:var(--color-primary);padding:8px 12px">All Vendors</a>
+          <a href="vendordashboard.dc.html" style="font-weight:600;font-size:14px;color:var(--text-body);padding:8px 12px">Vendor Zone</a>
+        </div>
+        <span style="margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--color-accent-strong)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11 3 5V3h2l6 6M9 3h12v12M13 21l-4-4 8-8"/></svg>
+          Free shipping on orders over $75
+        </span>
+      </div>
+      <sc-if value="{{ mobCatOpen }}" hint-placeholder-val="{{ false }}">
+        <div class="r-mobcatback" onClick="{{ toggleMobCat }}"></div>
+        <div class="r-mobcat" style="position:absolute;left:0;right:0;top:100%;z-index:58;max-width:var(--container-max);margin:0 auto;padding:8px var(--container-pad) 0">
+          <div style="background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);padding:8px;max-height:min(70vh,560px);overflow-y:auto;overscroll-behavior:contain">
+            <sc-for list="{{ drawerCats }}" as="c" hint-placeholder-count="8">
+              <div>
+                <button onClick="{{ c.onToggle }}" style="{{ c.rowStyle }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ c.glyph }}"/></svg><span style="flex:1;text-align:left">{{ c.name }}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="{{ c.chevStyle }}"><path d="m6 9 6 6 6-6"/></svg></button>
+                <sc-if value="{{ c.open }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin:2px 8px 8px 48px;padding:6px 0 6px 12px;border-left:2px solid var(--iris-100);display:flex;flex-direction:column;gap:12px">
+                    <sc-for list="{{ c.groups }}" as="g" hint-placeholder-count="2">
+                      <div><div style="font-size:13px;font-weight:700;color:var(--text-strong);margin-bottom:6px">{{ g.title }}</div><div style="display:flex;flex-direction:column;gap:7px"><sc-for list="{{ g.items }}" as="sub" hint-placeholder-count="3"><a href="Category Page.dc.html" style="font-size:14px;color:var(--text-muted)">{{ sub }}</a></sc-for></div></div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+    </nav>
+  </header>
+
+  <!-- Mobile drawer -->
+  <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDrawer }}" style="position:fixed;inset:0;z-index:100;background:rgba(26,26,35,.5);backdrop-filter:blur(2px);animation:sdFade var(--dur-med) var(--ease-out)"></div>
+    <aside role="dialog" aria-modal="true" aria-label="Menu" style="overscroll-behavior:contain;position:fixed;top:0;left:0;bottom:0;z-index:101;width:min(340px,88vw);background:var(--surface-card);box-shadow:var(--shadow-xl);display:flex;flex-direction:column;animation:sdIn var(--dur-med) var(--ease-out)">
+      <div style="display:flex;align-items:center;gap:10px;padding:16px 16px 14px;border-bottom:1px solid var(--border-subtle)">
+        <span style="width:34px;height:34px;background:var(--color-primary);border-radius:10px;display:grid;place-items:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg></span>
+        <span style="font-family:var(--font-display);font-size:22px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong)">Sundry</span>
+        <button onClick="{{ closeDrawer }}" aria-label="Close menu" style="margin-left:auto;width:38px;height:38px;border-radius:var(--radius-full);border:1px solid var(--border-subtle);background:var(--surface-card);cursor:pointer;color:var(--text-muted);display:grid;place-items:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:12px 10px 20px">
+        <a href="user.dashboard.dc.html" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:var(--radius-lg);background:var(--iris-50);margin:0 4px 6px">
+          <span style="width:42px;height:42px;border-radius:50%;background:var(--color-primary);display:grid;place-items:center;color:#fff;font-weight:700">T</span>
+          <span style="flex:1;min-width:0"><span style="display:block;font-size:12px;color:var(--text-muted)">Hello, Test</span><span style="display:block;font-size:15px;font-weight:700;color:var(--text-strong)">My Dashboard</span></span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </a>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-subtle);margin:18px 14px 6px">Shop</div>
+        <a href="Sundry Home.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home</a>
+        <a href="Category Page.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8zM7 7h.01"/></svg>Brands</a>
+        <a href="Category Page.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11 3 5V3h2l6 6M9 3h12v12M13 21l-4-4 8-8"/></svg>Offers</a>
+        <a href="All Vendor Page.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M15 9h.01M10 21v-4h4v4"/></svg>All Vendors</a>
+        <a href="vendordashboard.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M4 9h16"/></svg>Vendor Zone</a>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-subtle);margin:18px 14px 6px">My Account</div>
+        <a href="userOrder.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>My Orders</a>
+        <a href="userwishlist.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l9 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg>Wish List</a>
+        <a href="usertrackorder.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7M5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>Track Order</a>
+        <a href="userchat.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Inbox</a>
+        <a href="supportticket.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9a2 2 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a2 2 0 0 0 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1z"/></svg>Support Ticket</a>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-subtle);margin:18px 14px 6px">More</div>
+        <a href="supportticket.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>Help Center</a>
+        <a href="Register Page.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M4 9h16"/></svg>Become a Seller</a>
+      </div>
+      <div style="padding:14px 16px;border-top:1px solid var(--border-subtle);background:var(--saffron-50);display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--saffron-700)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8zM7 7h.01"/></svg>15% off your first order — code SUNDRY15</div>
+    </aside>
+  </sc-if>
+
+  <!-- Dashboard body -->
+  <div style="max-width:var(--container-max);margin:0 auto;padding:24px var(--container-pad) 0;display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+
+    <aside style="flex:1 1 280px;min-width:0;max-width:320px;display:flex;flex-direction:column;gap:20px">
+      <div style="background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:22px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px">
+        <span style="width:76px;height:76px;border-radius:50%;background:var(--iris-50);display:grid;place-items:center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a6 6 0 0 0-12 0M12 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg></span>
+        <div><div style="font-family:var(--font-display);font-size:18px;font-weight:800;letter-spacing:-0.01em;color:var(--text-strong)">Test Khan</div><div style="font-size:13px;color:var(--text-muted);margin-top:2px">test@gmail.com</div><div style="font-size:12px;color:var(--text-subtle);margin-top:2px">Member since Jan 2026</div></div>
+      </div>
+      <nav style="background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:12px">
+        <sc-for list="{{ accountNav }}" as="n" hint-placeholder-count="12">
+          <a href="{{ n.href }}" onClick="{{ n.onClick }}" style="{{ n.style }}">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ n.glyph }}"/></svg>
+            <span style="flex:1">{{ n.label }}</span>
+          </a>
+        </sc-for>
+      </nav>
+    </aside>
+
+    <div style="flex:3 1 640px;min-width:0;background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:clamp(20px,3vw,32px)">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h1 style="font-family:var(--font-display);font-size:24px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong);margin:0">Order #100197</h1><span style="display:inline-flex;align-items:center;font-size:12px;font-weight:700;padding:3px 10px;border-radius:var(--radius-full);background:var(--info-50);color:var(--info-600)">Pending</span></div>
+          <div style="font-size:13px;color:var(--text-subtle);margin-top:6px">09 Jul, 2026 11:39 PM</div>
+        </div>
+        <button aria-label="Download invoice" style="width:44px;height:44px;display:grid;place-items:center;border-radius:var(--radius-md);background:var(--color-primary);color:#fff;border:none;cursor:pointer;box-shadow:var(--shadow-xs)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M9 15l2 2 4-4"/></svg></button>
+      </div>
+
+      <div style="display:flex;gap:24px;flex-wrap:wrap;border-bottom:1px solid var(--border-subtle);margin:20px 0 24px">
+        <sc-for list="{{ orderTabs }}" as="t" hint-placeholder-count="5"><button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</button></sc-for>
+      </div>
+
+      <sc-if value="{{ isSummary }}" hint-placeholder-val="{{ true }}">
+      <!-- Order info + verification -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-bottom:20px">
+        <div style="background:var(--surface-sunken);border-radius:var(--radius-lg);padding:22px;display:flex;justify-content:space-between;gap:16px">
+          <span style="font-size:15px;font-weight:700;color:var(--text-strong)">Order Info</span>
+          <div style="display:flex;flex-direction:column;gap:10px;text-align:right;font-size:13px">
+            <span style="color:var(--text-muted)">Order Type : <b style="color:var(--color-primary)">Default Type</b></span>
+            <span style="color:var(--text-muted)">Payment Status : <b style="color:var(--error-500)">Unpaid</b></span>
+            <span style="color:var(--text-muted)">Payment Method : <b style="color:var(--text-strong)">Card (Stripe)</b></span>
+          </div>
+        </div>
+        <div style="background:var(--surface-sunken);border-radius:var(--radius-lg);padding:22px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+          <span style="font-size:15px;font-weight:700;color:var(--text-strong)">Order verification code</span>
+          <span style="font-family:var(--font-display);font-size:26px;font-weight:800;color:var(--text-strong);font-variant-numeric:tabular-nums">826117</span>
+        </div>
+      </div>
+
+      <!-- Addresses -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-bottom:24px">
+        <div style="border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:22px">
+          <h3 style="font-size:15px;font-weight:700;color:var(--text-strong);margin:0 0 14px">Shipping Address</h3>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 14px;font-size:13px;color:var(--text-body)">
+            <span style="color:var(--text-muted)">Name</span><span>Test Khan</span>
+            <span style="color:var(--text-muted)">Phone</span><span>+1 555 555 5555</span>
+            <span style="color:var(--text-muted)">City / Zip</span><span>Kingston, 12401</span>
+            <span style="color:var(--text-muted)">Address</span><span>142 Market St, New York</span>
+          </div>
+        </div>
+        <div style="border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:22px;display:grid;place-items:center;min-height:120px">
+          <div style="text-align:center"><h3 style="font-size:15px;font-weight:700;color:var(--text-strong);margin:0 0 8px">Billing Address</h3><span style="font-size:14px;color:var(--text-muted)">Same as shipping address</span></div>
+        </div>
+      </div>
+
+      <!-- Seller-grouped items (marketplace rule) -->
+      <div style="border:1px solid var(--border-subtle);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:24px">
+        <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;background:var(--iris-50);border-bottom:1px solid var(--border-subtle)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M15 9h.01M10 21v-4h4v4"/></svg>
+          <span style="font-size:13px;font-weight:700;color:var(--text-strong)">Sold by</span>
+          <a href="Vendor Details Page.dc.html" style="font-size:14px;font-weight:700;color:var(--color-primary)">AutoWorks Depot</a>
+          <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--success-600);margin-left:4px"><svg width="13" height="13" viewBox="0 0 24 24" fill="var(--success-500)"><circle cx="12" cy="12" r="10"/><path d="m8 12 2.5 2.5L16 9" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Verified Seller</span>
+        </div>
+        <div style="overflow-x:auto">
+          <div style="min-width:640px">
+            <div style="display:grid;grid-template-columns:40px 2.4fr 0.8fr 1fr 1fr 1fr 0.8fr;gap:12px;padding:14px 18px;background:var(--surface-sunken);font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted)">
+              <span>Sl</span><span>Item List</span><span style="text-align:center">Qty</span><span style="text-align:center">Price</span><span style="text-align:center">Discount</span><span style="text-align:center">Total</span><span style="text-align:center">Action</span>
+            </div>
+            <div style="display:grid;grid-template-columns:40px 2.4fr 0.8fr 1fr 1fr 1fr 0.8fr;gap:12px;padding:16px 18px;align-items:center;font-variant-numeric:tabular-nums">
+              <span style="font-size:14px;color:var(--text-body)">1</span>
+              <div style="display:flex;align-items:center;gap:12px;min-width:0"><span style="width:52px;height:52px;flex-shrink:0;border-radius:var(--radius-md);background:var(--neutral-100);display:grid;place-items:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--neutral-500)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/></svg></span><div style="min-width:0"><div style="font-size:14px;font-weight:600;color:var(--text-strong)">Storage Large Tool Box</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Unit Price : $60.00</div></div></div>
+              <span style="font-size:14px;color:var(--text-body);text-align:center">14</span>
+              <span style="font-size:14px;color:var(--text-body);text-align:center">$840.00</span>
+              <span style="font-size:14px;color:var(--text-body);text-align:center">$0.00</span>
+              <span style="text-align:center;font-weight:700;color:var(--text-strong)">$840.00</span>
+              <span style="text-align:center;color:var(--text-subtle)">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Totals -->
+      <div style="display:flex;justify-content:flex-end">
+        <div style="width:100%;max-width:380px;background:var(--surface-sunken);border-radius:var(--radius-lg);padding:22px">
+          <div style="display:flex;flex-direction:column;gap:12px;font-size:14px;font-variant-numeric:tabular-nums">
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Total Item</span><b style="color:var(--text-strong)">14</b></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Item price</span><b style="color:var(--text-strong)">$840.00</b></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Item discount</span><b style="color:var(--text-strong)">$0.00</b></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Subtotal</span><b style="color:var(--text-strong)">$840.00</b></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Coupon discount</span><b style="color:var(--success-600)">− $0.00</b></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Tax fee</span><b style="color:var(--text-strong)">$126.80</b></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Shipping Fee</span><b style="color:var(--text-strong)">$10.00</b></div>
+            <div style="height:1px;background:var(--border-default);margin:4px 0"></div>
+            <div style="display:flex;justify-content:space-between;font-size:17px"><span style="font-weight:700;color:var(--color-primary)">Total</span><b style="color:var(--color-primary)">$976.80</b></div>
+          </div>
+          <button style="width:100%;margin-top:18px;height:48px;background:var(--error-50);color:var(--error-600);border:none;border-radius:var(--radius-md);font-weight:700;font-size:14px;font-family:var(--font-sans);cursor:pointer;transition:background var(--dur-fast)" style-hover="background:var(--error-100)">Cancel Order</button>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isVendor }}" hint-placeholder-val="{{ false }}">
+        <div style="border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:24px;display:flex;flex-wrap:wrap;align-items:center;gap:20px">
+          <span style="width:72px;height:72px;flex-shrink:0;border-radius:50%;background:var(--iris-50);display:grid;place-items:center"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M15 9h.01M10 21v-4h4v4"/></svg></span>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="font-family:var(--font-display);font-size:20px;font-weight:800;letter-spacing:-0.01em;color:var(--text-strong);margin:0">AutoWorks Depot</h3><span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--success-600)"><svg width="13" height="13" viewBox="0 0 24 24" fill="var(--success-500)"><circle cx="12" cy="12" r="10"/><path d="m8 12 2.5 2.5L16 9" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Verified Seller</span></div>
+            <div style="display:flex;align-items:center;gap:16px;margin-top:8px;font-size:13px;color:var(--text-muted);flex-wrap:wrap">
+              <span style="display:flex;align-items:center;gap:5px"><svg width="15" height="15" viewBox="0 0 24 24" fill="var(--color-rating)" stroke="var(--color-rating)" stroke-width="1"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.2l1-5.8L3.5 9.2l5.9-.9z"/></svg><b style="color:var(--text-strong)">4.7</b> (312 reviews)</span>
+              <span>·</span><span><b style="color:var(--text-strong)">128</b> Products</span>
+              <span>·</span><span>Ships from Kingston, NY</span>
+            </div>
+          </div>
+          <a href="Vendor Details Page.dc.html" style="display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 20px;border-radius:var(--radius-md);background:var(--color-primary);color:#fff;font-size:14px;font-weight:600;box-shadow:var(--shadow-xs)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M4 9h16"/></svg>Visit Store</a>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isDelivery }}" hint-placeholder-val="{{ false }}">
+        <div style="border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:24px;display:flex;flex-wrap:wrap;align-items:center;gap:20px">
+          <span style="width:72px;height:72px;flex-shrink:0;border-radius:50%;background:var(--saffron-50);display:grid;place-items:center"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--saffron-600)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7M5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg></span>
+          <div style="flex:1;min-width:0">
+            <h3 style="font-family:var(--font-display);font-size:20px;font-weight:800;letter-spacing:-0.01em;color:var(--text-strong);margin:0">Marcus Reed</h3>
+            <div style="font-size:13px;color:var(--text-muted);margin-top:6px">Delivery partner · Van #DV-2214</div>
+            <div style="font-size:13px;color:var(--text-muted);margin-top:2px">Assigned once your order ships — you'll be able to track them live.</div>
+          </div>
+          <div style="display:flex;gap:10px">
+            <a href="#" style="display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 18px;border-radius:var(--radius-md);border:1px solid var(--border-subtle);background:var(--surface-card);font-size:14px;font-weight:600;color:var(--text-body)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7 12.8 12.8 0 0 0 .7 2.8 2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5 12.8 12.8 0 0 0 2.8.7 2 2 0 0 1 1.7 2z"/></svg>Call</a>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isReviews }}" hint-placeholder-val="{{ false }}">
+        <div style="border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:40px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px">
+          <span style="width:72px;height:72px;border-radius:var(--radius-full);background:var(--iris-50);display:grid;place-items:center"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--iris-400)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.2l1-5.8L3.5 9.2l5.9-.9z"/></svg></span>
+          <h3 style="font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--text-strong);margin:0">Rate your purchase</h3>
+          <p style="font-size:14px;color:var(--text-muted);margin:0;max-width:380px">Once your order is delivered you can leave a review for each item and help other shoppers.</p>
+          <div style="display:flex;gap:6px">
+            <sc-for list="{{ starRow }}" as="st" hint-placeholder-count="5"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--neutral-300)" stroke-width="1.6"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.2l1-5.8L3.5 9.2l5.9-.9z"/></svg></sc-for>
+          </div>
+          <div style="margin-top:4px"><x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="primary" size="md" hint-size="auto,44px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Write a review</x-import></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isTrack }}" hint-placeholder-val="{{ false }}">
+        <div style="border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:28px 24px">
+          <div style="display:flex;flex-direction:column;gap:0">
+            <sc-for list="{{ trackSteps }}" as="s" hint-placeholder-count="5">
+              <div style="display:flex;gap:16px">
+                <div style="display:flex;flex-direction:column;align-items:center">
+                  <span style="{{ s.dot }}"><sc-if value="{{ s.done }}" hint-placeholder-val="{{ true }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></sc-if></span>
+                  <sc-if value="{{ s.line }}" hint-placeholder-val="{{ true }}"><span style="{{ s.lineStyle }}"></span></sc-if>
+                </div>
+                <div style="padding-bottom:22px">
+                  <div style="font-size:15px;font-weight:700;color:{{ s.titleColor }}">{{ s.title }}</div>
+                  <div style="font-size:13px;color:var(--text-muted);margin-top:3px">{{ s.time }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <!-- Help quad -->
+  <section style="max-width:var(--container-max);margin:0 auto;padding:56px var(--container-pad) 0">
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px">
+      <sc-for list="{{ helpCards }}" as="h" hint-placeholder-count="4">
+        <a href="supportticket.dc.html" style="background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:32px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;transition:box-shadow var(--dur-med) var(--ease-out),transform var(--dur-med) var(--ease-out)" style-hover="box-shadow:var(--shadow-lg);transform:translateY(-4px)">
+          <span style="width:56px;height:56px;border-radius:var(--radius-full);background:var(--iris-50);display:grid;place-items:center;margin-bottom:4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{ h.glyph }}"/></svg></span>
+          <span style="font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--text-strong)">{{ h.title }}</span>
+          <span style="font-size:13px;color:var(--text-muted)">{{ h.sub }}</span>
+        </a>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="margin-top:56px;background:var(--surface-inverse);color:var(--neutral-300)">
+    <div style="max-width:var(--container-max);margin:0 auto;padding:56px var(--container-pad);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:32px">
+      <div style="min-width:0">
+        <a href="Sundry Home.dc.html" style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <span style="width:34px;height:34px;background:var(--color-primary);border-radius:10px;display:grid;place-items:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg></span>
+          <span style="font-family:var(--font-display);font-size:20px;font-weight:800;color:#fff">Sundry</span>
+        </a>
+        <p style="font-size:14px;line-height:1.6;color:var(--neutral-400);margin:0 0 16px">One marketplace for thousands of independent sellers. Curated, verified, delivered.</p>
+        <div style="display:flex;gap:8px">
+          <a href="#" style="width:36px;height:36px;border-radius:var(--radius-md);display:grid;place-items:center;background:rgba(255,255,255,.08);color:var(--neutral-300)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+          <a href="#" style="width:36px;height:36px;border-radius:var(--radius-md);display:grid;place-items:center;background:rgba(255,255,255,.08);color:var(--neutral-300)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+          <a href="#" style="width:36px;height:36px;border-radius:var(--radius-md);display:grid;place-items:center;background:rgba(255,255,255,.08);color:var(--neutral-300)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l16 16M20 4 4 20"/></svg></a>
+        </div>
+      </div>
+      <div><h4 style="color:#fff;font-weight:700;font-size:14px;margin:0 0 16px">Quick Links</h4><div style="display:flex;flex-direction:column;gap:10px;font-size:14px"><a href="user.dashboard.dc.html" style="color:var(--neutral-400)">Profile Info</a><a href="Category Page.dc.html" style="color:var(--neutral-400)">Flash Deals</a><a href="Category Page.dc.html" style="color:var(--neutral-400)">Featured Products</a><a href="Category Page.dc.html" style="color:var(--neutral-400)">Best Selling</a><a href="Category Page.dc.html" style="color:var(--neutral-400)">Latest Products</a><a href="usertrackorder.dc.html" style="color:var(--neutral-400)">Track Order</a></div></div>
+      <div><h4 style="color:#fff;font-weight:700;font-size:14px;margin:0 0 16px">Other</h4><div style="display:flex;flex-direction:column;gap:10px;font-size:14px"><a href="#" style="color:var(--neutral-400)">About Us</a><a href="#" style="color:var(--neutral-400)">Terms &amp; Conditions</a><a href="#" style="color:var(--neutral-400)">Privacy Policy</a><a href="supportticket.dc.html" style="color:var(--neutral-400)">Refund Policy</a><a href="supportticket.dc.html" style="color:var(--neutral-400)">Return Policy</a><a href="supportticket.dc.html" style="color:var(--neutral-400)">Cancellation Policy</a></div></div>
+      <div style="min-width:0">
+        <h4 style="color:#fff;font-weight:700;font-size:14px;margin:0 0 16px">Newsletter</h4>
+        <p style="font-size:14px;color:var(--neutral-400);margin:0 0 12px">Subscribe to get the latest updates and deals.</p>
+        <div style="display:flex;border-radius:var(--radius-full);overflow:hidden;background:rgba(255,255,255,.08)">
+          <input placeholder="Your email address" style="flex:1;min-width:0;background:transparent;border:none;outline:none;padding:0 16px;font-size:14px;color:#fff;font-family:var(--font-sans)">
+          <button style="padding:12px 18px;background:var(--color-primary);color:#fff;border:none;font-weight:600;font-size:13px;cursor:pointer">Subscribe</button>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,.08)">
+      <div style="max-width:var(--container-max);margin:0 auto;padding:20px var(--container-pad);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;font-size:12px;color:var(--neutral-500)">
+        <span>© 2026 Sundry Marketplace. All rights reserved.</span>
+        <span style="display:flex;align-items:center;gap:8px">Kingston, New York 12401, United States</span>
+      </div>
+    </div>
+  <!-- Quick View modal -->
+  <sc-if value="{{ quickOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeQuick }}" style="position:fixed;inset:0;z-index:90;background:rgba(26,26,35,.55);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:24px">
+      <div onClick="{{ stop }}" style="position:relative;width:min(920px,100%);max-height:90vh;overflow:auto;background:var(--surface-card);border-radius:var(--radius-xl);box-shadow:var(--shadow-xl);display:flex;flex-wrap:wrap">
+        <button onClick="{{ closeQuick }}" aria-label="Close" style="position:absolute;top:16px;right:16px;z-index:2;width:36px;height:36px;border-radius:var(--radius-full);border:1px solid var(--border-subtle);background:var(--surface-card);cursor:pointer;color:var(--text-muted);display:grid;place-items:center;transition:all var(--dur-fast)" style-hover="background:var(--error-50);color:var(--error-500);border-color:var(--error-50)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        <div style="flex:1 1 360px;min-width:0;padding:28px">
+          <div style="position:relative;aspect-ratio:1/1;border-radius:var(--radius-lg);display:grid;place-items:center;background:{{ quickTint }};overflow:hidden">
+            <svg width="45%" height="45%" viewBox="0 0 24 24" fill="none" stroke="{{ quickIconColor }}" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><path d="{{ quickGlyph }}"/></svg>
+          </div>
+        </div>
+        <div style="flex:1 1 360px;min-width:0;padding:40px 32px 32px;display:flex;flex-direction:column">
+          <a href="Vendor Details Page.dc.html" style="font-size:14px;font-weight:600;color:var(--color-primary)">{{ quickSeller }}</a>
+          <h2 style="font-family:var(--font-display);font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong);margin:8px 0 12px;text-wrap:pretty">{{ quickTitle }}</h2>
+          <div style="display:flex;align-items:center;gap:14px;font-size:14px;color:var(--text-muted);padding-bottom:16px;border-bottom:1px solid var(--border-subtle)">
+            <span><b style="color:var(--text-strong)">0</b> Orders</span><span style="width:1px;height:14px;background:var(--border-default)"></span><span><b style="color:var(--text-strong)">0</b> Wish Listed</span>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:12px;margin:18px 0;font-variant-numeric:tabular-nums">
+            <span style="font-family:var(--font-display);font-size:32px;font-weight:800;color:var(--color-primary)">{{ quickPriceStr }}</span>
+            <sc-if value="{{ quickHasCompare }}" hint-placeholder-val="{{ false }}"><span style="font-size:18px;text-decoration:line-through;color:var(--text-compare)">{{ quickCompareStr }}</span></sc-if>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+            <span style="font-size:14px;font-weight:600;color:var(--text-body)">Qty</span>
+            <div style="display:inline-flex;align-items:center;border:1.5px solid var(--border-subtle);border-radius:var(--radius-md);overflow:hidden">
+              <button onClick="{{ qDec }}" aria-label="Decrease" style="width:42px;height:42px;background:var(--surface-card);border:none;cursor:pointer;display:grid;place-items:center;color:var(--text-body)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+              <span style="min-width:44px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text-strong)">{{ quickQty }}</span>
+              <button onClick="{{ qInc }}" aria-label="Increase" style="width:42px;height:42px;background:var(--surface-card);border:none;cursor:pointer;display:grid;place-items:center;color:var(--text-body)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+            </div>
+          </div>
+          <div style="font-size:16px;color:var(--text-body);margin-bottom:24px">Total Price : <b style="color:var(--color-primary);font-size:19px;font-variant-numeric:tabular-nums">{{ quickTotalStr }}</b></div>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:auto">
+            <x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="accent" size="lg" hint-size="auto,52px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>Buy now</x-import>
+            <x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="primary" size="lg" onClick="{{ quickAdd }}" hint-size="auto,52px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>Add to cart</x-import>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toastOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;bottom:24px;right:24px;z-index:95;display:flex;align-items:center;gap:12px;background:var(--surface-inverse);color:#fff;padding:14px 18px;border-radius:var(--radius-lg);box-shadow:var(--shadow-xl)">
+      <span style="width:28px;height:28px;flex-shrink:0;border-radius:var(--radius-full);background:var(--success-500);display:grid;place-items:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      <span style="font-size:14px;font-weight:600">{{ toast }}</span>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:1500}}">
+class Component extends DCLogic {
+  canHover(){ return !!(window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches); }
+  componentDidMount(){ this.__hdrMount && this.__hdrMount(); let rzT; this._onRz=()=>{ document.documentElement.classList.add('rz'); clearTimeout(rzT); rzT=setTimeout(()=>{ document.documentElement.classList.remove('rz'); if(window.innerWidth>1024 && (this.state.mobCatOpen||this.state.drawerOpen)){ this.setState({mobCatOpen:false,drawerOpen:false}); document.body.style.overflow=''; } },180); }; window.addEventListener('resize', this._onRz); this._onKey=(e)=>{ if(e.key==='Escape'){ this.setState({drawerOpen:false,cartOpen:false,mobCatOpen:false,acctOpen:false,searchOpen:false}); document.body.style.overflow=''; } }; window.addEventListener('keydown', this._onKey); }
+  componentWillUnmount(){ this.__hdrUnmount && this.__hdrUnmount(); if(this._onRz) window.removeEventListener('resize', this._onRz); if(this._onKey) window.removeEventListener('keydown', this._onKey); document.body.style.overflow=''; }
+
+  state = { cartOpen:false, page:1, toast:null, cartPulse:0, cart:[
+    { id:'watch', title:'T900 Smart Watch', seller:'Tech Connect', qty:1, price:28.5, tint:'var(--iris-50)', iconColor:'var(--iris-400)', glyph:'M12 8v4l2.5 2.5M8 3h8M8 21h8M6 8a6 6 0 0 1 12 0v8a6 6 0 0 1-12 0z' },
+    { id:'shoes', title:'Popcorn Running Shoes', seller:'Cool Sneakers', qty:1, price:170, tint:'#EAF5F2', iconColor:'#4FA394', glyph:'M2 17h11l4-2 4 1v3H2zM2 17v-3l5-2 2-3 3 3 3 1' },
+  ] };
+  fireToast(msg){ if(this._tt) clearTimeout(this._tt); this.setState({ toast:msg, cartPulse:Date.now() }); this._tt=setTimeout(()=>this.setState({toast:null}),3000); }
+  __hdrUnmount(){ if(this._tt) clearTimeout(this._tt); }
+  openQuick(p){ this.setState({ quick:p, quickQty:1 }); }
+  closeQuick(){ this.setState({ quick:null }); }
+  qInc(){ this.setState(s=>({ quickQty:(s.quickQty||1)+1 })); }
+  qDec(){ this.setState(s=>({ quickQty:Math.max(1,(s.quickQty||1)-1) })); }
+  openSearchCat(){ this.setState({searchCatOpen:true}); }
+  closeSearchCat(){ this.setState({searchCatOpen:false, menuCat:null}); }
+  clearMenuCat(){ this.setState({searchCatOpen:false, menuCat:null}); }
+  openCatMenu(){ this.setState({catMenuOpen:true}); }
+  closeCatMenu(){ this.setState({catMenuOpen:false}); }
+  openCart(){ this.setState({cartOpen:true}); }
+  closeCart(){ this.setState({cartOpen:false}); }
+  incItem(id){ this.setState(s=>({ cart:s.cart.map(i=> i.id===id?{...i,qty:i.qty+1}:i) })); }
+  decItem(id){ this.setState(s=>({ cart:s.cart.map(i=> i.id===id?{...i,qty:Math.max(1,i.qty-1)}:i) })); }
+  removeItem(id){ this.setState(s=>({ cart:s.cart.filter(i=> i.id!==id) })); }
+  money(n){ return '$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  renderVals(){
+    const cs = this.state.stateTab ?? this.props.contentState ?? 'loaded';
+    const products = [
+      { title:'T900 Smart Watch', seller:'Tech Connect', price:28.5, compare:30, rating:4, reviews:1, cat:'tech' },
+      { title:'Short Sleeve Shirt', seller:'North Loop Apparel', price:25, compare:0, rating:0, reviews:0, cat:'men' },
+      { title:'Shiny Loafers for Men', seller:'Stride Athletics', price:110, compare:0, rating:0, reviews:0, cat:'men' },
+      { title:"Men's Leather Belts", seller:'North Loop Apparel', price:19, compare:0, rating:0, reviews:0, cat:'men' },
+      { title:'Smart Watch Bluetooth', seller:'Global Tech', price:150, compare:0, rating:0, reviews:0, cat:'tech' },
+      { title:'Popcorn Running Shoes', seller:'Cool Sneakers', price:170, compare:200, rating:0, reviews:0, cat:'sport' },
+    ];
+    const TINT = { tech:['var(--iris-50)','var(--iris-400)'], men:['#EEF1F6','#7086A8'], sport:['#EAF5F2','#4FA394'] };
+    const ICON = { tech:'watch', men:'cart', sport:'cart' };
+    const GLYPH = { tech:'M6 6h12v12H6zM9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2M10 10h4v4h-4z', men:'M16 4a2 2 0 0 1-4 0 2 2 0 0 1-4 0L3.5 6.5 6 11v9h12v-9l2.5-4.5z', sport:'M2 17h11l4-2 4 1v3H2zM2 17v-3l5-2 2-3 3 3 3 1' };
+    const decorated = products.map(p=>{ const [t,ic]=TINT[p.cat]||TINT.tech; const g=GLYPH[p.cat]||GLYPH.tech; return { ...p, tint:t, iconColor:ic, iconName:ICON[p.cat]||'cart', glyph:g, onEye:()=>this.openQuick({ ...p, tint:t, iconColor:ic, glyph:g }) }; });
+
+    const categories = [
+      { name:"Men's Fashion", glyph:'M16 4a2 2 0 0 1-4 0 2 2 0 0 1-4 0L3.5 6.5 6 11v9h12v-9l2.5-4.5z', tint:'#EEF1F6', icon:'#7086A8', active:true },
+      { name:"Women's Fashion", glyph:'M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0', tint:'#FCEEF3', icon:'#D976A0' },
+      { name:"Kid's Fashion", glyph:'M9 12h.01M15 12h.01M10 16a3.5 3.5 0 0 0 4 0M12 3a9 9 0 0 0-9 9 9 9 0 0 0 18 0 9 9 0 0 0-9-9z', tint:'#FEF6E7', icon:'#E0A93F' },
+      { name:'Health & Beauty', glyph:'M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5z', tint:'#FDEFF4', icon:'#DB7BA6' },
+      { name:'Pet Supplies', glyph:'M12 10a4 4 0 0 1 4 4c0 2-2 4-4 4s-4-2-4-4a4 4 0 0 1 4-4zM5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM19 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z', tint:'#EEF4F0', icon:'#5FA37E' },
+      { name:'Home & Kitchen', glyph:'M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M2 13a2 2 0 0 1 4 0v3h12v-3a2 2 0 0 1 4 0v5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1zM6 16h12', tint:'#EEF4F0', icon:'#5FA37E' },
+      { name:'Baby & Toddler', glyph:'M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 0 0 5 0M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z', tint:'#FEF0F4', icon:'#DB7BA6' },
+    ].map(c=>({ ...c, color: c.active ? 'var(--color-primary)' : 'var(--text-body)' }));
+
+    const menuDefs = [
+      { name:"Women's Fashion", tint:'#FCEEF3', icon:'#D976A0', glyph:'M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0', groups:[
+        { title:'Clothing', items:['Dresses','Tops & Blouses','Knitwear','Jeans','Skirts','Activewear'] },
+        { title:'Footwear', items:['Heels','Flats','Sneakers','Boots','Sandals'] },
+        { title:'Bags', items:['Totes','Crossbody','Clutches','Backpacks'] },
+        { title:'Jewelry', items:['Necklaces','Earrings','Rings','Bracelets'] },
+      ] },
+      { name:"Men's Fashion", tint:'#EEF1F6', icon:'#7086A8', glyph:'M16 4a2 2 0 0 1-4 0 2 2 0 0 1-4 0L3.5 6.5 6 11v9h12v-9l2.5-4.5z', groups:[
+        { title:'Clothing', items:['Shirts','T-Shirts','Hoodies','Jeans','Pants','Sweaters'] },
+        { title:'Footwear', items:['Sneakers','Loafers','Boots','Sandals'] },
+        { title:'Accessories', items:['Belts','Wallets','Sunglasses','Watches'] },
+        { title:'Bags', items:['Backpacks','Business Bags','Duffels'] },
+      ] },
+      { name:'Phones & Gadgets', tint:'#EDF1FE', icon:'#6B86E8', glyph:'M7 2h10a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM11 18h2', groups:[
+        { title:'Smartphones', items:['iPhone','Samsung Galaxy','Google Pixel','OnePlus'] },
+        { title:'Wearables', items:['Smart Watches','Fitness Bands','VR Headsets'] },
+        { title:'Accessories', items:['Cases','Chargers','Power Banks','Screen Protectors'] },
+        { title:'Audio', items:['Earbuds','Headphones','Speakers'] },
+      ] },
+      { name:'Electronics', tint:'var(--iris-50)', icon:'var(--iris-400)', glyph:'M6 6h12v12H6zM9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2M10 10h4v4h-4z', groups:[
+        { title:'Computers', items:['Laptops','Desktops','Monitors','Keyboards'] },
+        { title:'TV & Video', items:['Smart TVs','Streaming','Projectors','Soundbars'] },
+        { title:'Cameras', items:['DSLR','Mirrorless','Action Cameras','Drones'] },
+        { title:'Gaming', items:['Consoles','Controllers','Games','Headsets'] },
+      ] },
+      { name:'Health & Beauty', tint:'#FDEFF4', icon:'#DB7BA6', glyph:'M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5z', groups:[
+        { title:'Skincare', items:['Moisturizers','Cleansers','Serums','Sunscreen'] },
+        { title:'Makeup', items:['Lipstick','Foundation','Mascara','Eyeshadow'] },
+        { title:'Hair Care', items:['Shampoo','Conditioner','Styling','Treatments'] },
+        { title:'Fragrance', items:['Perfume','Body Mist','Cologne'] },
+      ] },
+      { name:'Home & Kitchen', tint:'#EEF4F0', icon:'#5FA37E', glyph:'M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M2 13a2 2 0 0 1 4 0v3h12v-3a2 2 0 0 1 4 0v5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1zM6 16h12', groups:[
+        { title:'Furniture', items:['Sofas','Beds','Tables','Chairs'] },
+        { title:'Kitchen', items:['Cookware','Bakeware','Dinnerware','Appliances'] },
+        { title:'Décor', items:['Lighting','Rugs','Wall Art','Mirrors'] },
+        { title:'Bed & Bath', items:['Bed Sheets','Towels','Curtains'] },
+      ] },
+      { name:"Kid's Fashion", tint:'#FEF6E7', icon:'#E0A93F', glyph:'M9 12h.01M15 12h.01M10 16a3.5 3.5 0 0 0 4 0M12 3a9 9 0 0 0-9 9 9 9 0 0 0 18 0 9 9 0 0 0-9-9z', groups:[
+        { title:'Boys', items:['T-Shirts','Shorts','Jeans','Shoes'] },
+        { title:'Girls', items:['Dresses','Tops','Skirts','Shoes'] },
+        { title:'Baby', items:['Bodysuits','Rompers','Sleepwear'] },
+        { title:'Accessories', items:['Hats','Socks','Backpacks'] },
+      ] },
+      { name:'Sports & Outdoor', tint:'#EAF5F2', icon:'#4FA394', glyph:'M6.5 6.5 17.5 17.5M3 8l1-1 2 2-1 1zM8 3l-1 1 2 2 1-1zM21 16l-1 1-2-2 1-1zM16 21l1-1-2-2-1 1z', groups:[
+        { title:'Fitness', items:['Dumbbells','Yoga Mats','Resistance Bands','Treadmills'] },
+        { title:'Outdoor', items:['Camping','Hiking','Cycling','Fishing'] },
+        { title:'Team Sports', items:['Football','Basketball','Tennis','Cricket'] },
+        { title:'Activewear', items:['Running Shoes','Tops','Leggings','Jackets'] },
+      ] },
+    ];
+    const mActive = this.state.menuCat ?? 0;
+    const menuCats = menuDefs.map((c,i)=>({
+      name:c.name, tint:c.tint, icon:c.icon, glyph:c.glyph,
+      onHover:()=>this.setState({menuCat:i}),
+      rowStyle:'display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--radius-md);font-size:14px;font-weight:'+(i===mActive?'700':'500')+';color:'+(i===mActive?'var(--color-primary)':'var(--text-body)')+';background:'+(i===mActive?'var(--iris-50)':'transparent')+';',
+      chev: i===mActive ? 'var(--color-primary)' : 'var(--text-subtle)',
+    }));
+    const menuGroups = menuDefs[mActive].groups;
+
+    const brands = [
+      { name:'Keithston', count:31 }, { name:'Electrical Charge', count:20 }, { name:'Electronic Store', count:27 },
+      { name:'Global Tech', count:25 }, { name:'UrbanEdge', count:30 }, { name:'Cool Sneakers', count:17 },
+      { name:'Tech Connect', count:23 }, { name:'OTO Speedios', count:23 }, { name:'Power Energy', count:21 },
+      { name:'ElectricVehicle', count:20 }, { name:'North Loop Apparel', count:18 }, { name:'Stride Athletics', count:26 },
+    ];
+
+    const helpCards = [
+      { title:'About us', sub:'Know more about our company', glyph:'M3 21h18M6 21V8l6-4 6 4v13M10 21v-5h4v5M9 11h.01M15 11h.01' },
+      { title:'Contact Us', sub:"We're here to help", glyph:'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z' },
+      { title:'FAQ', sub:'Get all answers', glyph:'M12 17h.01M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20z' },
+      { title:'Blog', sub:'Check latest blogs', glyph:'M4 4h16v16H4zM8 8h8M8 12h8M8 16h5' },
+    ];
+
+    const NAVICON = {
+      profile:'M18 20a6 6 0 0 0-12 0M12 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+      order:'M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0',
+      restock:'M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5',
+      wish:'M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l9 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8z',
+      wallet:'M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM16 12h.01M3 9h18',
+      loyalty:'M12 15a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM8.5 13 7 22l5-3 5 3-1.5-9',
+      inbox:'M22 12h-6l-2 3h-4l-2-3H2M5 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z',
+      address:'M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0zM12 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
+      support:'M12 2a10 10 0 0 0-10 10v5a2 2 0 0 0 2 2h2v-7H4a8 8 0 0 1 16 0h-4v7h2a2 2 0 0 0 2-2v-5A10 10 0 0 0 12 2z',
+      refer:'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM19 8v6M22 11h-6',
+      coupons:'M4 7a2 2 0 0 0-2 2v2a2 2 0 0 1 0 4v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a2 2 0 0 1 0-4V9a2 2 0 0 0-2-2zM14 7v12',
+      track:'M5 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0zM15 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0zM3 5h11v11H9M14 8h4l3 3v5h-2',
+    };
+    const accountNav = [
+      { key:'profile', label:'Profile Info', glyph:NAVICON.profile },
+      { key:'order', label:'My Order', glyph:NAVICON.order },
+      { key:'restock', label:'Restock Requests', glyph:NAVICON.restock },
+      { key:'wish', label:'Wish List', glyph:NAVICON.wish },
+      { key:'wallet', label:'My Wallet', glyph:NAVICON.wallet },
+      { key:'loyalty', label:'My Loyalty Point', glyph:NAVICON.loyalty },
+      { key:'inbox', label:'Inbox', glyph:NAVICON.inbox },
+      { key:'address', label:'My Address', glyph:NAVICON.address },
+      { key:'support', label:'Support Ticket', glyph:NAVICON.support },
+      { key:'refer', label:'Refer & Earn', glyph:NAVICON.refer },
+      { key:'coupons', label:'Coupons', glyph:NAVICON.coupons },
+      { key:'track', label:'Track Order', glyph:NAVICON.track },
+    ].map((n,idx)=>({ ...n, href: ({profile:'user.dashboard.dc.html',order:'userOrder.dc.html',wish:'userwishlist.dc.html',inbox:'userchat.dc.html',address:'useraddress.dc.html',support:'supportticket.dc.html',track:'usertrackorder.dc.html'}[n.key] || '#'), onClick:(e)=>{ const dest={profile:'user.dashboard.dc.html',order:'userOrder.dc.html',wish:'userwishlist.dc.html',inbox:'userchat.dc.html',address:'useraddress.dc.html',support:'supportticket.dc.html',track:'usertrackorder.dc.html'}[n.key]; if(dest){ return; } if(e&&e.preventDefault) e.preventDefault(); this.setState({acct:n.key}); },
+      style:'display:flex;align-items:center;gap:14px;padding:13px 16px;border-radius:var(--radius-md);font-size:14px;font-weight:600;text-decoration:none;transition:all var(--dur-fast) var(--ease-out);'
+        + ((this.state.acct ?? 'order')===n.key ? 'background:var(--iris-50);color:var(--color-primary);' : 'color:var(--text-body);') }));
+
+    const cartItems = this.state.cart.map(i=>({
+      ...i, priceStr:this.money(i.price*i.qty), isLast:i.qty<=1, notLast:i.qty>1,
+      inc:()=>this.incItem(i.id), decOrRemove:()=> i.qty<=1 ? this.removeItem(i.id) : this.decItem(i.id),
+    }));
+    const cartTotal = cartItems.reduce((s,i)=>s+i.price*i.qty,0);
+    const nUnits = cartItems.reduce((s,i)=>s+i.qty,0);
+
+    return {
+      cartOpen: this.state.cartOpen,
+      openCart:()=>this.openCart(), closeCart:()=>this.closeCart(),
+      cartItems, cartTotalStr:this.money(cartTotal), cartCountStr: nUnits+(nUnits===1?' item':' items'),
+      searchCatOpen: this.state.searchCatOpen,
+      openSearchCat:()=>this.openSearchCat(), closeSearchCat:()=>this.closeSearchCat(), clearMenuCat:()=>this.clearMenuCat(),
+      menuGroups,
+      catMenuOpen: this.state.catMenuOpen,
+      openCatMenu:()=>this.openCatMenu(), closeCatMenu:()=>this.closeCatMenu(),
+      ...(()=>{ const MD = (typeof menuDefs!=='undefined') ? menuDefs : []; const dOpen=this.state.drawerCat; return {
+        drawerCats: MD.map((c,i)=>({ name:c.name, glyph:c.glyph, groups:c.groups, open:dOpen===i, onToggle:()=>this.setState(st=>({drawerCat: st.drawerCat===i?null:i})), chevStyle:'transition:transform var(--dur-fast) var(--ease-out);'+(dOpen===i?'transform:rotate(180deg)':''), rowStyle:'width:100%;display:flex;align-items:center;gap:14px;padding:12px 14px;border:none;border-radius:var(--radius-md);cursor:pointer;font-size:15px;font-weight:600;font-family:var(--font-sans);'+(dOpen===i?'background:var(--iris-50);color:var(--color-primary);':'background:transparent;color:var(--text-body);') })) }; })(),
+      drawerOpen: !!this.state.drawerOpen,
+      openDrawer:()=>{ this.setState({drawerOpen:true, cartOpen:false, mobCatOpen:false, acctOpen:false, searchOpen:false}); document.body.style.overflow='hidden'; },
+      closeDrawer:()=>{ this.setState({drawerOpen:false}); document.body.style.overflow=''; },
+      searchCls: this.state.searchOpen ? 'is-open' : '',
+      toggleSearch:()=>{ this.setState(st=>({searchOpen:!st.searchOpen, cartOpen:false, mobCatOpen:false}), ()=>{ if(this.state.searchOpen){ const i=document.querySelector('.sd-search input'); i&&i.focus(); } }); },
+      searchIcon: this.state.searchOpen ? 'M18 6 6 18M6 6l12 12' : 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3',
+      mobCatOpen: !!this.state.mobCatOpen,
+      toggleMobCat:()=>{ if(window.innerWidth<=1024) this.setState(st=>({mobCatOpen:!st.mobCatOpen, catMenuOpen:false, cartOpen:false})); else if(!this.canHover()) this.setState(st=>({catMenuOpen:!st.catMenuOpen})); },
+      acctOpen: !!this.state.acctOpen,
+      openAcct:()=>{ if(this.canHover()) this.setState({acctOpen:true, cartOpen:false}); },
+      closeAcct:()=>this.setState({acctOpen:false}),
+      tapAcct:()=>{ if(this.canHover()) { this.setState({acctOpen:true}); return; } this.setState(st=>({acctOpen:!st.acctOpen, cartOpen:false})); },
+      tapCart: ()=>{ if(this.canHover() && window.innerWidth>1024) { this.setState({cartOpen:true}); return; } this.setState(st=>({cartOpen:!st.cartOpen, mobCatOpen:false, catMenuOpen:false})); },
+      menuCats,
+      count: decorated.length,
+      orderTabs: ['Order summary','Vendor info','Delivery man info','Reviews','Track order'].map((label,idx)=>{ const keys=['summary','vendor','delivery','reviews','track']; const k=keys[idx]; const active=(this.state.otab??'summary')===k; return { label, onClick:()=>this.setState({otab:k}), style:'background:none;border:none;font-family:var(--font-sans);cursor:pointer;font-size:15px;font-weight:'+(active?'700':'600')+';color:'+(active?'var(--color-primary)':'var(--text-muted)')+';padding-bottom:14px;border-bottom:2px solid '+(active?'var(--color-primary)':'transparent')+';white-space:nowrap' }; }),
+      isSummary:(this.state.otab??'summary')==='summary', isVendor:this.state.otab==='vendor', isDelivery:this.state.otab==='delivery', isReviews:this.state.otab==='reviews', isTrack:this.state.otab==='track',
+      starRow:[1,2,3,4,5],
+      trackSteps:[
+        {title:'Order placed',time:'09 Jul, 2026 11:39 PM',done:true},
+        {title:'Payment confirmed',time:'09 Jul, 2026 11:41 PM',done:true},
+        {title:'Processing',time:'In progress',done:false,current:true},
+        {title:'Out for delivery',time:'Pending',done:false},
+        {title:'Delivered',time:'Pending',done:false,last:true},
+      ].map((s,i,arr)=>({ title:s.title, time:s.time, done:s.done, line:i<arr.length-1,
+        titleColor: s.done||s.current ? 'var(--text-strong)' : 'var(--text-muted)',
+        dot: 'width:26px;height:26px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;'+(s.done?'background:var(--color-primary);':(s.current?'background:var(--surface-card);border:2px solid var(--color-primary);':'background:var(--surface-card);border:2px solid var(--border-default);')),
+        lineStyle:'width:2px;flex:1;min-height:24px;margin:2px 0;background:'+(s.done?'var(--color-primary)':'var(--border-default)') })),
+      accountNav,
+      formSkeletons:[1,2,3,4,5,6],
+      products: decorated, categories, brands, helpCards,
+      skeletons: [1,2,3,4,5,6],
+      isLoaded: cs==='loaded', isLoading: cs==='loading', isEmpty: cs==='empty', isError: cs==='error',
+      stateTabs: ['loaded','loading','empty','error'].map(k=>({ key:k, label:{loaded:'Default',loading:'Loading',empty:'Empty',error:'Error'}[k],
+        onClick:()=>this.setState({stateTab:k}),
+        style: 'padding:8px 16px;border-radius:var(--radius-full);font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:var(--font-sans);transition:all var(--dur-fast) var(--ease-out);' + (cs===k ? 'background:var(--color-primary);color:#fff;box-shadow:var(--shadow-primary);' : 'background:var(--surface-card);color:var(--text-body);box-shadow:var(--shadow-xs);') })),
+      quick: this.state.quick, quickOpen: !!this.state.quick,
+      closeQuick:()=>this.closeQuick(), stop:(e)=>{ if(e&&e.stopPropagation) e.stopPropagation(); },
+      qInc:()=>this.qInc(), qDec:()=>this.qDec(), quickQty:this.state.quickQty||1,
+      quickTitle: this.state.quick?this.state.quick.title:'', quickSeller: this.state.quick?this.state.quick.seller:'',
+      quickGlyph: this.state.quick?this.state.quick.glyph:'', quickTint: this.state.quick?this.state.quick.tint:'var(--iris-50)',
+      quickIconColor: this.state.quick?this.state.quick.iconColor:'var(--iris-400)',
+      quickPriceStr: this.state.quick?this.money(this.state.quick.price):'',
+      quickTotalStr: this.state.quick?this.money(this.state.quick.price*(this.state.quickQty||1)):'',
+      quickHasCompare: !!(this.state.quick&&this.state.quick.compare),
+      quickCompareStr: this.state.quick&&this.state.quick.compare?this.money(this.state.quick.compare):'',
+      quickAdd:()=>{ if(this.state.quick){ this.fireToast(this.state.quick.title+' added to cart'); this.closeQuick(); } },
+      activeChips:[
+        { label:"Men's Fashion", onX:()=>{} },
+        { label:'$0 – $4,000', onX:()=>{} },
+        { label:'Tech Connect', onX:()=>{} },
+      ],
+      pages:[1,2,3,4].map(n=>({ n, onClick:()=>this.setState({page:n}),
+        style:'min-width:40px;height:40px;padding:0 12px;border-radius:var(--radius-md);font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:var(--font-sans);font-variant-numeric:tabular-nums;transition:all var(--dur-fast) var(--ease-out);'+((this.state.page||1)===n?'background:var(--color-primary);color:#fff;box-shadow:var(--shadow-primary);':'background:var(--surface-card);color:var(--text-body);box-shadow:var(--shadow-xs);') })),
+      addToCart:(p)=>this.fireToast((p&&p.title?p.title:'Item')+' added to cart'),
+      toast:this.state.toast, toastOpen:!!this.state.toast,
+      openCart:()=>{ if(this.canHover()) this.setState({cartOpen:true, acctOpen:false}); },
+      openCatMenu:()=>{ if(this.canHover() && window.innerWidth>1024) this.setState({catMenuOpen:true}); },
+    };
+  }
+}
+</script>
+</body>
+</html>

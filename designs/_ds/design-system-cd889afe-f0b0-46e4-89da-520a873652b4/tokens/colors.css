@@ -1,0 +1,97 @@
+/* Sundry — Color tokens
+   Primary is "Iris" — a deep grape violet used sparingly as accent, never a flood.
+   Neutrals are a warm grey ramp. Status colors are calibrated for retail UI. */
+:root {
+  /* Primary — Iris (grape violet) */
+  --iris-50:  #F5F2FE;
+  --iris-100: #ECE5FD;
+  --iris-200: #D9CBFB;
+  --iris-300: #BEA6F5;
+  --iris-400: #9E77EC;
+  --iris-500: #7F4EE0;
+  --iris-600: #6A2FD6;
+  --iris-700: #5A25B4;
+  --iris-800: #4A2091;
+  --iris-900: #3D1D75;
+  --iris-950: #260F4D;
+
+  /* Secondary accent — Saffron (warm gold, for deals & highlights) */
+  --saffron-50:  #FEF7EC;
+  --saffron-100: #FCEBCB;
+  --saffron-200: #F8D48E;
+  --saffron-300: #F3BC53;
+  --saffron-400: #EFA524;
+  --saffron-500: #E08A0B;
+  --saffron-600: #C06D06;
+  --saffron-700: #99530A;
+
+  /* Neutrals — warm grey */
+  --neutral-0:   #FFFFFF;
+  --neutral-50:  #FAFAFB;
+  --neutral-100: #F4F4F6;
+  --neutral-150: #EDEDF1;
+  --neutral-200: #E6E6EC;
+  --neutral-300: #D5D5DE;
+  --neutral-400: #A9A9B7;
+  --neutral-500: #78788A;
+  --neutral-600: #565668;
+  --neutral-700: #3E3E4E;
+  --neutral-800: #2A2A37;
+  --neutral-900: #1A1A23;
+  --neutral-950: #101017;
+
+  /* Status */
+  --success-50:  #E9F8EF;
+  --success-500: #15925A;
+  --success-600: #0F7A4A;
+  --warning-50:  #FEF6E7;
+  --warning-500: #D9960C;
+  --warning-600: #B67A08;
+  --error-50:    #FDECEE;
+  --error-500:   #E23744;
+  --error-600:   #C31F2C;
+  --info-50:     #E9F6F6;
+  --info-500:    #0E9C9A;
+  --info-600:    #0B7E7C;
+
+  /* Semantic aliases */
+  --color-primary:        var(--iris-600);
+  --color-primary-hover:  var(--iris-700);
+  --color-primary-active: var(--iris-800);
+  --color-primary-subtle: var(--iris-50);
+  --color-primary-border: var(--iris-200);
+  --color-on-primary:     var(--neutral-0);
+
+  --color-accent:         var(--saffron-400);
+  --color-accent-strong:  var(--saffron-500);
+  --color-accent-subtle:  var(--saffron-50);
+
+  --text-strong:   var(--neutral-900);
+  --text-body:     var(--neutral-700);
+  --text-muted:    var(--neutral-500);
+  --text-subtle:   var(--neutral-400);
+  --text-on-dark:  var(--neutral-0);
+  --text-price:    var(--neutral-900);
+  --text-compare:  var(--neutral-400);
+
+  --surface-page:    var(--neutral-50);
+  --surface-card:    var(--neutral-0);
+  --surface-sunken:  var(--neutral-100);
+  --surface-inverse: var(--neutral-900);
+  --surface-hover:   var(--neutral-100);
+
+  --border-subtle:  var(--neutral-200);
+  --border-default: var(--neutral-300);
+  --border-strong:  var(--neutral-400);
+
+  --color-rating:  var(--saffron-400);
+
+  --status-success-bg: var(--success-50);
+  --status-success-fg: var(--success-600);
+  --status-warning-bg: var(--warning-50);
+  --status-warning-fg: var(--warning-600);
+  --status-error-bg:   var(--error-50);
+  --status-error-fg:   var(--error-600);
+  --status-info-bg:    var(--info-50);
+  --status-info-fg:    var(--info-600);
+}

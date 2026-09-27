@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/fonts.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/elevation.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/styles.css">
+  <script src="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/_ds_bundle.js"></script>
+  <style>
+    body{margin:0;background:var(--surface-page);color:var(--text-body);font-family:var(--font-sans);-webkit-font-smoothing:antialiased}
+    *{box-sizing:border-box}
+    a{color:var(--color-primary);text-decoration:none}a:hover{color:var(--color-primary-hover)}
+    @keyframes shimmer{to{background-position:-200% 0}}
+  
+    /* sundry-responsive */
+    .flt-scroll{overflow-x:hidden!important}
+    @media (max-width:1200px){
+      [style*="margin-left: auto"][style*="color: var(--color-accent-strong)"]{display:none!important}
+      nav [style*="height: 56px"]{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap!important}
+      nav [style*="height: 56px"] > *{flex-shrink:0}
+      nav [style*="height: 56px"] [style*="flex-wrap: wrap"]{flex-wrap:nowrap!important}
+      nav [style*="height: 56px"] button,nav [style*="height: 56px"] a{white-space:nowrap}
+      button,a[style*="height: 52px"],a[style*="height: 50px"],a[style*="height: 44px"],span[style*="border-radius: var(--radius-full)"]{white-space:nowrap}
+    }
+    @media (max-width:900px){
+      header[style*="position: sticky"]{position:relative!important;top:auto!important}
+      nav [style*="height: 56px"]{height:52px!important;flex-wrap:nowrap!important;overflow:visible!important;gap:8px!important;padding-top:0!important;padding-bottom:0!important}
+      nav [style*="height: 56px"] > div:not([style*="position: relative"])::-webkit-scrollbar{display:none}
+      nav [style*="height: 56px"] > *{flex-shrink:0}
+      nav [style*="height: 56px"] > [style*="position: relative"]{height:100%!important;width:auto}
+      nav [style*="height: 56px"] > [style*="position: relative"] > button{height:36px!important;padding:0 12px!important;font-size:13px!important;gap:6px!important;border-radius:var(--radius-full)!important;white-space:nowrap}
+      nav [style*="height: 56px"] > div:not([style*="position: relative"]){flex:1 1 auto!important;min-width:0!important;flex-shrink:1!important;margin-left:0!important;flex-wrap:nowrap!important;gap:6px!important;overflow-x:auto;scrollbar-width:none}
+      nav [style*="height: 56px"] > div:not([style*="position: relative"]) > a{flex-shrink:0;padding:7px 12px!important;border-radius:var(--radius-full);background:var(--surface-sunken);font-size:13px!important;white-space:nowrap}
+      nav [style*="height: 56px"] [style*="width: 280px"][style*="padding: 8px"]{width:calc(100vw - 32px)!important}
+    }
+    @media (max-width:1100px){
+      [style*="repeat(5, minmax(0px, 1fr))"]{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+      [style*="repeat(4, minmax(0px, 1fr))"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+      [style*="width: 560px"][style*="padding: 28px 32px"]{width:420px!important;gap:22px 24px!important}
+      [style*="minmax(260px, 1fr) minmax(0px, 2fr)"]{grid-template-columns:1fr!important}
+    }
+    @media (max-width:900px){
+      [style*="max-width: 320px"][style*="flex: 1 1 280px"],[style*="max-width: 380px"][style*="flex: 1 1 300px"],[style*="max-width: 280px"][style*="flex: 1 1 240px"]{max-width:none!important;flex-basis:100%!important;position:static!important}
+      [style*="position: sticky"][style*="top: 92px"]{position:static!important}
+      [style*="height: calc(100vh - 68px)"]{width:64px!important}
+      [style*="min-width: 216px"]{display:none!important}
+      header [style*="border-right: 1px solid var(--border-subtle)"][style*="height: 100%"]{width:64px!important;padding:0px 14px!important}
+      header [style*="border-right: 1px solid var(--border-subtle)"][style*="height: 100%"] > span:not(:first-child){display:none!important}
+      [style*="min-height: 560px"][style*="overflow: hidden"]{flex-direction:column!important}
+      [style*="width: 300px"][style*="border-right: 1px solid"]{width:100%!important;border-right:none!important;border-bottom:1px solid var(--border-subtle)}
+    }
+    @media (max-width:720px){
+      [style*="repeat(5, minmax(0px, 1fr))"],[style*="repeat(4, minmax(0px, 1fr))"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+      [style*="grid-template-columns: 1fr 1fr"]{grid-template-columns:1fr!important}
+      [style*="grid-template-columns: 1fr 1fr"] > [style*="grid-column: 1 / -1"]{grid-column:auto!important}
+      [style*="grid-template-columns: 2.4fr 1fr 1.2fr 1fr"]{grid-template-columns:1fr 1fr!important}
+      [style*="grid-template-columns: 2.4fr 1fr 1.2fr 1fr"] > :first-child{grid-column:1/-1}
+      [style*="minmax(300px, 1fr)"],[style*="minmax(280px, 1fr)"],[style*="minmax(360px, 1fr)"]{grid-template-columns:1fr!important}
+      [style*="flex: 3 1 640px"],[style*="flex: 3 1 620px"],[style*="flex: 3 1 420px"],[style*="flex: 2 1 420px"],[style*="flex: 1 1 340px"],[style*="flex: 2 1 480px"]{min-width:0!important;flex-basis:100%!important}
+      [style*="width: 560px"][style*="padding: 28px 32px"]{display:none!important}
+      [style*="width: 280px"][style*="border-right: 1px solid var(--border-subtle)"][style*="padding: 8px"]{width:min(280px,calc(100vw - 32px))!important;border-right:none!important}
+      header nav[style*="font-size: 13px"]{display:none!important}
+      button[aria-label="Fullscreen"],a[aria-label="View storefront"]{display:none!important}
+      main{padding-left:16px!important;padding-right:16px!important}
+      h1[style*="font-size: 30px"],h1[style*="font-size: 34px"],h1[style*="font-size: 38px"]{font-size:26px!important}
+    }
+    @media (max-width:720px){
+      [style*="height: 40px"][style*="justify-content: space-between"] > span:first-child{display:none!important}
+      [style*="height: 40px"][style*="justify-content: space-between"]{justify-content:center!important}
+      [style*="height: 40px"][style*="justify-content: space-between"] > div{gap:16px!important;font-size:12px}
+      [style*="height: 48px"][style*="border-radius: var(--radius-full)"] > [style*="position: relative"] > button{font-size:0!important;padding:0 8px!important;gap:0!important}
+      [style*="height: 48px"][style*="border-radius: var(--radius-full)"] > [style*="position: relative"] > button::before{content:"All";font-size:13px}
+      [style*="height: 48px"][style*="border-radius: var(--radius-full)"] > button:last-child{font-size:0!important;padding:0 12px!important;gap:0!important}
+      aside[style*="max-width: 280px"][style*="flex: 1 1 240px"]{display:none!important}
+    }
+    @media (max-width:720px){
+      [style*="grid-template-columns: 2.4fr 1fr 1.2fr 1fr"][style*="text-transform: uppercase"],[style*="grid-template-columns: 2.4fr 1fr 1.2fr 1fr"][style*="background: var(--surface-sunken)"]{display:none!important}
+    }
+    @media (max-width:480px){
+      [style*="repeat(4, minmax(0px, 1fr))"]:not(:has(> .qv-cell)):not(:has(> [style*="text-align: center"])){grid-template-columns:1fr!important}
+      [style*="padding: 24px 28px"]{padding:18px!important}
+    }
+  </style>
+</helmet>
+
+<div style="max-width:1120px;margin:0 auto;padding:56px clamp(16px,4vw,40px)">
+
+  <header style="padding-bottom:32px;border-bottom:1px solid var(--border-subtle)">
+    <span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--color-primary)">Sundry · Patterns</span>
+    <h1 style="font-family:var(--font-display);font-size:38px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong);margin:8px 0 8px">Component States</h1>
+    <p style="font-size:17px;line-height:1.6;color:var(--text-muted);max-width:640px;margin:0">How each surface behaves while data loads, when it succeeds, and when there's nothing to show.</p>
+  </header>
+
+  <!-- Product grid: loaded / loading / empty -->
+  <section style="padding-top:44px">
+    <h2 style="font-family:var(--font-display);font-size:24px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong);margin:0 0 20px">Product grid</h2>
+
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+      <span style="width:8px;height:8px;border-radius:50%;background:var(--success-500)"></span>
+      <span style="font-size:14px;font-weight:700;color:var(--text-strong)">Loaded</span>
+      <span style="font-size:13px;color:var(--text-muted)">— data resolved, cards render</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:36px">
+      <sc-for list="{{ products }}" as="p" hint-placeholder-count="4">
+        <x-import component-from-global-scope="DesignSystem_cd889a.ProductCard" title="{{ p.title }}" seller="{{ p.seller }}" price="{{ p.price }}" compare="{{ p.compare }}" rating="{{ p.rating }}" reviews="{{ p.reviews }}" tint="{{ p.tint }}" icon-color="{{ p.iconColor }}" hint-size="100%,360px"></x-import>
+      </sc-for>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+      <span style="width:8px;height:8px;border-radius:50%;background:var(--saffron-400)"></span>
+      <span style="font-size:14px;font-weight:700;color:var(--text-strong)">Loading</span>
+      <span style="font-size:13px;color:var(--text-muted)">— skeleton placeholders, shimmer</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:36px">
+      <sc-for list="{{ skeletons }}" as="k" hint-placeholder-count="4">
+        <div style="background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden">
+          <div style="aspect-ratio:1/1;background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div>
+          <div style="padding:14px;display:flex;flex-direction:column;gap:8px">
+            <div style="height:10px;width:45%;border-radius:6px;background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div>
+            <div style="height:14px;width:90%;border-radius:6px;background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div>
+            <div style="height:14px;width:60%;border-radius:6px;background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div>
+            <div style="height:18px;width:40%;border-radius:6px;margin-top:6px;background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+      <span style="width:8px;height:8px;border-radius:50%;background:var(--neutral-400)"></span>
+      <span style="font-size:14px;font-weight:700;color:var(--text-strong)">Empty</span>
+      <span style="font-size:13px;color:var(--text-muted)">— resolved, no results</span>
+    </div>
+    <div style="background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:56px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px">
+      <span style="width:72px;height:72px;border-radius:var(--radius-full);background:var(--iris-50);display:grid;place-items:center">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--iris-400)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
+      </span>
+      <h3 style="font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--text-strong);margin:0">No featured products yet</h3>
+      <p style="font-size:14px;color:var(--text-muted);margin:0;max-width:380px">We're curating this week's picks from our sellers. Check back soon, or browse everything in the meantime.</p>
+      <div style="margin-top:6px"><x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="primary" size="md" hint-size="auto,44px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>Browse all products</x-import></div>
+    </div>
+  </section>
+
+  <!-- Empty states -->
+  <section style="padding-top:52px">
+    <h2 style="font-family:var(--font-display);font-size:24px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong);margin:0 0 20px">Empty states</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px">
+      <div style="background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:36px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px">
+        <span style="width:60px;height:60px;border-radius:var(--radius-full);background:var(--iris-50);display:grid;place-items:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L23 6H6"/></svg></span>
+        <h3 style="font-size:16px;font-weight:700;color:var(--text-strong);margin:0">Your cart is empty</h3>
+        <p style="font-size:13px;color:var(--text-muted);margin:0">Add items from any seller and check out in one place.</p>
+        <div style="margin-top:4px"><x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="primary" size="sm" hint-size="auto,36px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>Start shopping</x-import></div>
+      </div>
+      <div style="background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:36px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px">
+        <span style="width:60px;height:60px;border-radius:var(--radius-full);background:var(--error-50);display:grid;place-items:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--error-500)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l9 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg></span>
+        <h3 style="font-size:16px;font-weight:700;color:var(--text-strong);margin:0">No saved items</h3>
+        <p style="font-size:13px;color:var(--text-muted);margin:0">Tap the heart on any product to save it here.</p>
+        <div style="margin-top:4px"><x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="secondary" size="sm" hint-size="auto,36px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>Explore products</x-import></div>
+      </div>
+      <div style="background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:36px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px">
+        <span style="width:60px;height:60px;border-radius:var(--radius-full);background:var(--surface-sunken);display:grid;place-items:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+        <h3 style="font-size:16px;font-weight:700;color:var(--text-strong);margin:0">No results for "xdfg"</h3>
+        <p style="font-size:13px;color:var(--text-muted);margin:0">Try a different term or browse by category.</p>
+        <div style="margin-top:4px"><x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="ghost" size="sm" hint-size="auto,36px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Clear search</x-import></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Control states -->
+  <section style="padding-top:52px">
+    <h2 style="font-family:var(--font-display);font-size:24px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong);margin:0 0 20px">Control states</h2>
+    <div style="display:flex;flex-wrap:wrap;gap:20px">
+      <div style="flex:1 1 340px;min-width:0;background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:24px">
+        <div style="font-size:13px;font-weight:700;color:var(--text-strong);margin-bottom:16px">Button</div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:center;gap:14px"><span style="width:80px;font-size:12px;color:var(--text-muted)">Default</span><x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="primary" size="md" hint-size="auto,44px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>Add to cart</x-import></div>
+          <div style="display:flex;align-items:center;gap:14px"><span style="width:80px;font-size:12px;color:var(--text-muted)">Hover</span><div style="box-shadow:var(--shadow-primary);border-radius:var(--radius-md)"><x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="primary" size="md" style="background:var(--color-primary-hover)" hint-size="auto,44px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>Add to cart</x-import></div></div>
+          <div style="display:flex;align-items:center;gap:14px"><span style="width:80px;font-size:12px;color:var(--text-muted)">Disabled</span><x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="primary" size="md" disabled="{{ true }}" hint-size="auto,44px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>Add to cart</x-import></div>
+        </div>
+      </div>
+      <div style="flex:1 1 340px;min-width:0;background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:24px">
+        <div style="font-size:13px;font-weight:700;color:var(--text-strong);margin-bottom:16px">Input</div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div><span style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px">Default</span><div style="display:flex;align-items:center;height:44px;padding:0 14px;border-radius:var(--radius-md);background:var(--surface-card);border:1px solid var(--border-subtle);font-size:14px;color:var(--text-subtle)">Search products…</div></div>
+          <div><span style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px">Focused</span><div style="display:flex;align-items:center;height:44px;padding:0 14px;border-radius:var(--radius-md);background:var(--surface-card);border:1.5px solid var(--color-primary);box-shadow:0 0 0 3px var(--iris-50);font-size:14px;color:var(--text-strong)">Noise-cancel headphones</div></div>
+          <div><span style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px">Error</span><div style="display:flex;align-items:center;height:44px;padding:0 14px;border-radius:var(--radius-md);background:var(--surface-card);border:1.5px solid var(--error-500);font-size:14px;color:var(--text-strong)">a@</div><span style="display:block;font-size:12px;color:var(--error-600);margin-top:6px">Enter a valid email address</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1120,&quot;height&quot;:1400}}">
+class Component extends DCLogic {
+  renderVals(){
+    const T = { tech:['var(--iris-50)','var(--iris-400)'], beauty:['#FDEFF4','#DB7BA6'], women:['#FCEEF3','#D976A0'], phone:['#EDF1FE','#6B86E8'] };
+    const deco = a => a.map(p => { const [t,ic] = T[p.cat]||T.tech; return { ...p, compare:p.compare||undefined, tint:t, iconColor:ic }; });
+    return {
+      products: deco([
+        {title:'Aura Noise-Cancel Headphones',seller:'Sundry Audio',price:189,compare:329,rating:4.8,reviews:342,cat:'tech'},
+        {title:'Ruby Matte Lipstick Set',seller:'Bloom Beauty Co.',price:32,compare:58,rating:4.6,reviews:98,cat:'beauty'},
+        {title:'Leather Structured Tote',seller:'Maison Ardent',price:159,compare:249,rating:4.9,reviews:64,cat:'women'},
+        {title:'iPhone 15 Pro Max 256GB',seller:'Hanover Electronics',price:1149,compare:1399,rating:4.8,reviews:214,cat:'phone'},
+      ]),
+      skeletons: [1,2,3,4],
+    };
+  }
+}
+</script>
+</body>
+</html>

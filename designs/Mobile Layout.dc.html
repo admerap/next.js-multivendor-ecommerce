@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/fonts.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/elevation.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/styles.css">
+  <script src="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/_ds_bundle.js"></script>
+  <style>
+    body{margin:0;background:var(--surface-sunken);color:var(--text-body);font-family:var(--font-sans);-webkit-font-smoothing:antialiased}
+    *{box-sizing:border-box}
+    a{color:var(--color-primary);text-decoration:none}a:hover{color:var(--color-primary-hover)}
+    .mscroll::-webkit-scrollbar{display:none}
+  </style>
+</helmet>
+
+<div style="min-height:100vh;padding:40px 16px;display:flex;flex-direction:column;align-items:center;gap:24px">
+  <div style="text-align:center">
+    <span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--color-primary)">Sundry · Responsive</span>
+    <h1 style="font-family:var(--font-display);font-size:30px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong);margin:6px 0 4px">Mobile Layout</h1>
+    <p style="font-size:15px;color:var(--text-muted);margin:0">The home page at 390px — single-column, thumb-friendly, bottom tab bar.</p>
+  </div>
+
+  <!-- Phone frame -->
+  <div style="width:390px;max-width:100%;height:800px;background:#000;border-radius:44px;padding:12px;box-shadow:var(--shadow-xl);flex-shrink:0">
+    <div class="mscroll" style="position:relative;width:100%;height:100%;background:var(--surface-page);border-radius:32px;overflow-y:auto;overflow-x:hidden;-ms-overflow-style:none;scrollbar-width:none">
+
+      <!-- Status bar -->
+      <div style="position:sticky;top:0;z-index:20;background:var(--surface-card)">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 22px 4px;font-size:13px;font-weight:700;color:var(--text-strong)">
+          <span>9:41</span>
+          <div style="display:flex;align-items:center;gap:5px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--text-strong)"><path d="M2 20h2v-4H2zM7 20h2V10H7zM12 20h2V4h-2zM17 20h2v-8h-2z"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-strong)" stroke-width="2"><path d="M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M2 9a15 15 0 0 1 20 0"/></svg>
+            <svg width="22" height="16" viewBox="0 0 24 24" fill="var(--text-strong)"><rect x="2" y="7" width="18" height="10" rx="2.5"/><rect x="21" y="10" width="1.5" height="4" rx="1"/></svg>
+          </div>
+        </div>
+        <!-- App header -->
+        <div style="display:flex;align-items:center;gap:10px;padding:6px 16px 12px">
+          <span style="width:32px;height:32px;background:var(--color-primary);box-shadow:var(--shadow-primary);border-radius:9px;display:grid;place-items:center;flex-shrink:0">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
+          </span>
+          <span style="font-family:var(--font-display);font-size:21px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong)">Sundry</span>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:14px">
+            <span style="position:relative"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-body)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l9 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg><span style="position:absolute;top:-5px;right:-6px;width:14px;height:14px;font-size:9px;font-weight:700;color:#fff;background:var(--error-500);border-radius:50%;display:grid;place-items:center">5</span></span>
+            <span style="position:relative"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-body)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L23 6H6"/></svg><span style="position:absolute;top:-5px;right:-6px;width:14px;height:14px;font-size:9px;font-weight:700;color:#fff;background:var(--color-primary);border-radius:50%;display:grid;place-items:center">3</span></span>
+          </div>
+        </div>
+        <!-- Search -->
+        <div style="padding:0 16px 12px">
+          <div style="display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;border-radius:var(--radius-full);background:var(--surface-sunken);border:1px solid var(--border-subtle)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <span style="font-size:14px;color:var(--text-subtle)">Search products, brands…</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category chips -->
+      <div class="mscroll" style="display:flex;gap:8px;padding:14px 16px 4px;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none">
+        <sc-for list="{{ chips }}" as="c" hint-placeholder-count="6">
+          <span style="flex-shrink:0;padding:8px 14px;border-radius:var(--radius-full);font-size:13px;font-weight:600;white-space:nowrap;background:{{ c.bg }};color:{{ c.fg }}">{{ c.name }}</span>
+        </sc-for>
+      </div>
+
+      <!-- Hero -->
+      <div style="padding:14px 16px 4px">
+        <div style="position:relative;border-radius:var(--radius-xl);overflow:hidden;padding:22px;min-height:170px;display:flex;flex-direction:column;justify-content:center;gap:12px;background:linear-gradient(120deg,var(--iris-700),var(--iris-900))">
+          <div style="position:absolute;inset:0;opacity:.3;background:radial-gradient(circle at 82% 25%,var(--iris-400),transparent 55%)"></div>
+          <span style="position:relative;width:fit-content;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:var(--radius-full);background:var(--saffron-100);color:var(--saffron-700)">New season drop</span>
+          <h2 style="position:relative;font-family:var(--font-display);color:#fff;font-size:24px;font-weight:800;line-height:1.1;letter-spacing:-0.02em;margin:0">One marketplace.<br>Every seller you love.</h2>
+          <div style="position:relative;margin-top:2px"><x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="accent" size="sm" hint-size="auto,36px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Shop new arrivals</x-import></div>
+        </div>
+      </div>
+
+      <!-- Flash deal -->
+      <div style="padding:20px 16px 0">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--saffron-500)"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>
+            <h3 style="font-family:var(--font-display);font-size:18px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong);margin:0">Flash Deal</h3>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-variant-numeric:tabular-nums">
+            <span style="background:var(--iris-600);color:#fff;font-size:12px;font-weight:800;border-radius:6px;padding:3px 6px">22</span><span style="color:var(--text-muted);font-weight:700">:</span>
+            <span style="background:var(--iris-600);color:#fff;font-size:12px;font-weight:800;border-radius:6px;padding:3px 6px">13</span><span style="color:var(--text-muted);font-weight:700">:</span>
+            <span style="background:var(--iris-600);color:#fff;font-size:12px;font-weight:800;border-radius:6px;padding:3px 6px">40</span>
+          </div>
+        </div>
+        <div class="mscroll" style="display:flex;gap:12px;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;padding-bottom:4px">
+          <sc-for list="{{ flash }}" as="p" hint-placeholder-count="4">
+            <div style="width:150px;flex-shrink:0">
+              <x-import component-from-global-scope="DesignSystem_cd889a.ProductCard" title="{{ p.title }}" seller="{{ p.seller }}" price="{{ p.price }}" compare="{{ p.compare }}" rating="{{ p.rating }}" reviews="{{ p.reviews }}" tint="{{ p.tint }}" icon-color="{{ p.iconColor }}" hint-size="150px,320px"></x-import>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- Categories grid -->
+      <div style="padding:24px 16px 0">
+        <h3 style="font-family:var(--font-display);font-size:18px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong);margin:0 0 12px">Shop by Category</h3>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+          <sc-for list="{{ cats }}" as="c" hint-placeholder-count="8">
+            <a href="#" style="display:flex;flex-direction:column;align-items:center;gap:6px">
+              <span style="width:100%;aspect-ratio:1/1;border-radius:var(--radius-lg);display:grid;place-items:center;background:{{ c.bg }};box-shadow:var(--shadow-xs)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="{{ c.fg }}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{ c.glyph }}"/></svg></span>
+              <span style="font-size:10.5px;font-weight:600;color:var(--text-body);text-align:center;line-height:1.2">{{ c.name }}</span>
+            </a>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- Featured -->
+      <div style="padding:24px 16px 0">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <h3 style="font-family:var(--font-display);font-size:18px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong);margin:0">Featured Products</h3>
+          <a href="#" style="font-size:13px;font-weight:600;color:var(--text-muted)">See all</a>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+          <sc-for list="{{ featured }}" as="p" hint-placeholder-count="4">
+            <x-import component-from-global-scope="DesignSystem_cd889a.ProductCard" title="{{ p.title }}" seller="{{ p.seller }}" price="{{ p.price }}" compare="{{ p.compare }}" rating="{{ p.rating }}" reviews="{{ p.reviews }}" tint="{{ p.tint }}" icon-color="{{ p.iconColor }}" hint-size="100%,320px"></x-import>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="height:92px"></div>
+
+      <!-- Bottom tab bar -->
+      <div style="position:sticky;bottom:0;z-index:20;background:var(--surface-card);border-top:1px solid var(--border-subtle);padding:8px 16px 20px;display:flex;justify-content:space-between">
+        <span style="display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--color-primary)"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span style="font-size:10px;font-weight:700">Home</span></span>
+        <span style="display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text-muted)"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span style="font-size:10px;font-weight:600">Categories</span></span>
+        <span style="display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text-muted)"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l9 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg><span style="font-size:10px;font-weight:600">Wishlist</span></span>
+        <span style="display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text-muted)"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L23 6H6"/></svg><span style="font-size:10px;font-weight:600">Cart</span></span>
+        <span style="display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text-muted)"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a6 6 0 0 0-12 0M12 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg><span style="font-size:10px;font-weight:600">Account</span></span>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:430,&quot;height&quot;:920}}">
+class Component extends DCLogic {
+  renderVals(){
+    const T = { tech:['var(--iris-50)','var(--iris-400)'], phone:['#EDF1FE','#6B86E8'], women:['#FCEEF3','#D976A0'],
+      beauty:['#FDEFF4','#DB7BA6'], home:['#EEF4F0','#5FA37E'], kids:['#FEF6E7','#E0A93F'], men:['#EEF1F6','#7086A8'], audio:['#F0EEFB','#8B72E0'] };
+    const deco = a => a.map(p => { const [t,ic] = T[p.cat]||T.tech; return { ...p, compare:p.compare||undefined, tint:t, iconColor:ic }; });
+    return {
+      chips: [
+        { name:'All', bg:'var(--color-primary)', fg:'#fff' },
+        { name:'Electronics', bg:'var(--surface-card)', fg:'var(--text-body)' },
+        { name:'Fashion', bg:'var(--surface-card)', fg:'var(--text-body)' },
+        { name:'Beauty', bg:'var(--surface-card)', fg:'var(--text-body)' },
+        { name:'Home', bg:'var(--surface-card)', fg:'var(--text-body)' },
+        { name:'Sports', bg:'var(--surface-card)', fg:'var(--text-body)' },
+      ],
+      cats: [
+        { name:"Men's", bg:'#EEF1F6', fg:'#7086A8', glyph:'M16 4a2 2 0 0 1-4 0 2 2 0 0 1-4 0L3.5 6.5 6 11v9h12v-9l2.5-4.5z' },
+        { name:"Women's", bg:'#FCEEF3', fg:'#D976A0', glyph:'M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0' },
+        { name:"Kid's", bg:'#FEF6E7', fg:'#E0A93F', glyph:'M9 12h.01M15 12h.01M10 16a3.5 3.5 0 0 0 4 0M12 3a9 9 0 0 0-9 9 9 9 0 0 0 18 0 9 9 0 0 0-9-9z' },
+        { name:'Beauty', bg:'#FDEFF4', fg:'#DB7BA6', glyph:'M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5z' },
+        { name:'Home', bg:'#EEF4F0', fg:'#5FA37E', glyph:'M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M2 13a2 2 0 0 1 4 0v3h12v-3a2 2 0 0 1 4 0v5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1zM6 16h12' },
+        { name:'Phones', bg:'#EDF1FE', fg:'#6B86E8', glyph:'M7 2h10a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM11 18h2' },
+        { name:'Tech', bg:'var(--iris-50)', fg:'var(--iris-400)', glyph:'M6 6h12v12H6zM9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2M10 10h4v4h-4z' },
+        { name:'Sports', bg:'#EAF5F2', fg:'#4FA394', glyph:'M6.5 6.5 17.5 17.5M3 8l1-1 2 2-1 1zM8 3l-1 1 2 2 1-1zM21 16l-1 1-2-2 1-1zM16 21l1-1-2-2-1 1z' },
+      ],
+      flash: deco([
+        {title:'iPhone 15 Pro Max 256GB',seller:'Hanover Electronics',price:1149,compare:1399,rating:4.8,reviews:214,cat:'phone'},
+        {title:'Ruby Matte Lipstick Set',seller:'Bloom Beauty Co.',price:32,compare:58,rating:4.6,reviews:98,cat:'beauty'},
+        {title:'Leather Structured Tote',seller:'Maison Ardent',price:159,compare:249,rating:4.9,reviews:64,cat:'women'},
+        {title:'Aura Noise-Cancel Headphones',seller:'Sundry Audio',price:189,compare:329,rating:4.8,reviews:342,cat:'audio'},
+      ]),
+      featured: deco([
+        {title:'Pulse Smart Watch, 46mm',seller:'Hanover Electronics',price:120,compare:170,rating:4.6,reviews:88,cat:'tech'},
+        {title:'Botanical Moisturizing Cream',seller:'Bloom Beauty Co.',price:14,rating:4.5,reviews:41,cat:'beauty'},
+        {title:'Terra Woven Market Bag',seller:'Maison Ardent',price:29,rating:4.7,reviews:22,cat:'women'},
+        {title:'Vortex Table Blender',seller:'Copper & Oak',price:59,rating:4.3,reviews:34,cat:'home'},
+      ]),
+    };
+  }
+}
+</script>
+</body>
+</html>

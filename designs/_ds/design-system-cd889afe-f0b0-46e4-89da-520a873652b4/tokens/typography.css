@@ -1,0 +1,38 @@
+/* Sundry — Typography tokens
+   Display/headings: Bricolage Grotesque. UI & body: Manrope. */
+:root {
+  --font-display: "Bricolage Grotesque", "Manrope", system-ui, sans-serif;
+  --font-sans:    "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-num:     "Manrope", system-ui, sans-serif; /* use with font-variant-numeric: tabular-nums */
+
+  /* Type scale */
+  --text-display:   3.5rem;   /* 56px */
+  --text-h1:        2.5rem;   /* 40px */
+  --text-h2:        2rem;     /* 32px */
+  --text-h3:        1.5rem;   /* 24px */
+  --text-h4:        1.25rem;  /* 20px */
+  --text-lg:        1.125rem; /* 18px */
+  --text-base:      1rem;     /* 16px */
+  --text-sm:        0.875rem; /* 14px */
+  --text-caption:   0.75rem;  /* 12px */
+
+  /* Line heights */
+  --leading-tight:  1.1;
+  --leading-snug:   1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed:1.65;
+
+  /* Weights */
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+  --weight-extra:    800;
+
+  /* Tracking */
+  --tracking-tight:  -0.02em;
+  --tracking-snug:   -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.02em;
+  --tracking-caps:   0.08em;
+}

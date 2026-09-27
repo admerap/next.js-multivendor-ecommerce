@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/fonts.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/elevation.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/styles.css">
+  <script src="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/_ds_bundle.js"></script>
+  <style>
+    body{margin:0;background:var(--surface-page);color:var(--text-body);font-family:var(--font-sans);-webkit-font-smoothing:antialiased}
+    *{box-sizing:border-box}
+    a{color:var(--color-primary);text-decoration:none}a:hover{color:var(--color-primary-hover)}
+  
+    /* sundry-responsive */
+    .flt-scroll{overflow-x:hidden!important}
+    @media (max-width:1200px){
+      [style*="margin-left: auto"][style*="color: var(--color-accent-strong)"]{display:none!important}
+      nav [style*="height: 56px"]{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap!important}
+      nav [style*="height: 56px"] > *{flex-shrink:0}
+      nav [style*="height: 56px"] [style*="flex-wrap: wrap"]{flex-wrap:nowrap!important}
+      nav [style*="height: 56px"] button,nav [style*="height: 56px"] a{white-space:nowrap}
+      button,a[style*="height: 52px"],a[style*="height: 50px"],a[style*="height: 44px"],span[style*="border-radius: var(--radius-full)"]{white-space:nowrap}
+    }
+    @media (max-width:900px){
+      header[style*="position: sticky"]{position:relative!important;top:auto!important}
+      nav [style*="height: 56px"]{height:52px!important;flex-wrap:nowrap!important;overflow:visible!important;gap:8px!important;padding-top:0!important;padding-bottom:0!important}
+      nav [style*="height: 56px"] > div:not([style*="position: relative"])::-webkit-scrollbar{display:none}
+      nav [style*="height: 56px"] > *{flex-shrink:0}
+      nav [style*="height: 56px"] > [style*="position: relative"]{height:100%!important;width:auto}
+      nav [style*="height: 56px"] > [style*="position: relative"] > button{height:36px!important;padding:0 12px!important;font-size:13px!important;gap:6px!important;border-radius:var(--radius-full)!important;white-space:nowrap}
+      nav [style*="height: 56px"] > div:not([style*="position: relative"]){flex:1 1 auto!important;min-width:0!important;flex-shrink:1!important;margin-left:0!important;flex-wrap:nowrap!important;gap:6px!important;overflow-x:auto;scrollbar-width:none}
+      nav [style*="height: 56px"] > div:not([style*="position: relative"]) > a{flex-shrink:0;padding:7px 12px!important;border-radius:var(--radius-full);background:var(--surface-sunken);font-size:13px!important;white-space:nowrap}
+      nav [style*="height: 56px"] [style*="width: 280px"][style*="padding: 8px"]{width:calc(100vw - 32px)!important}
+    }
+    @media (max-width:1100px){
+      [style*="repeat(5, minmax(0px, 1fr))"]{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+      [style*="repeat(4, minmax(0px, 1fr))"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+      [style*="width: 560px"][style*="padding: 28px 32px"]{width:420px!important;gap:22px 24px!important}
+      [style*="minmax(260px, 1fr) minmax(0px, 2fr)"]{grid-template-columns:1fr!important}
+    }
+    @media (max-width:900px){
+      [style*="max-width: 320px"][style*="flex: 1 1 280px"],[style*="max-width: 380px"][style*="flex: 1 1 300px"],[style*="max-width: 280px"][style*="flex: 1 1 240px"]{max-width:none!important;flex-basis:100%!important;position:static!important}
+      [style*="position: sticky"][style*="top: 92px"]{position:static!important}
+      [style*="height: calc(100vh - 68px)"]{width:64px!important}
+      [style*="min-width: 216px"]{display:none!important}
+      header [style*="border-right: 1px solid var(--border-subtle)"][style*="height: 100%"]{width:64px!important;padding:0px 14px!important}
+      header [style*="border-right: 1px solid var(--border-subtle)"][style*="height: 100%"] > span:not(:first-child){display:none!important}
+      [style*="min-height: 560px"][style*="overflow: hidden"]{flex-direction:column!important}
+      [style*="width: 300px"][style*="border-right: 1px solid"]{width:100%!important;border-right:none!important;border-bottom:1px solid var(--border-subtle)}
+    }
+    @media (max-width:720px){
+      [style*="repeat(5, minmax(0px, 1fr))"],[style*="repeat(4, minmax(0px, 1fr))"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+      [style*="grid-template-columns: 1fr 1fr"]{grid-template-columns:1fr!important}
+      [style*="grid-template-columns: 1fr 1fr"] > [style*="grid-column: 1 / -1"]{grid-column:auto!important}
+      [style*="grid-template-columns: 2.4fr 1fr 1.2fr 1fr"]{grid-template-columns:1fr 1fr!important}
+      [style*="grid-template-columns: 2.4fr 1fr 1.2fr 1fr"] > :first-child{grid-column:1/-1}
+      [style*="minmax(300px, 1fr)"],[style*="minmax(280px, 1fr)"],[style*="minmax(360px, 1fr)"]{grid-template-columns:1fr!important}
+      [style*="flex: 3 1 640px"],[style*="flex: 3 1 620px"],[style*="flex: 3 1 420px"],[style*="flex: 2 1 420px"],[style*="flex: 1 1 340px"],[style*="flex: 2 1 480px"]{min-width:0!important;flex-basis:100%!important}
+      [style*="width: 560px"][style*="padding: 28px 32px"]{display:none!important}
+      [style*="width: 280px"][style*="border-right: 1px solid var(--border-subtle)"][style*="padding: 8px"]{width:min(280px,calc(100vw - 32px))!important;border-right:none!important}
+      header nav[style*="font-size: 13px"]{display:none!important}
+      button[aria-label="Fullscreen"],a[aria-label="View storefront"]{display:none!important}
+      main{padding-left:16px!important;padding-right:16px!important}
+      h1[style*="font-size: 30px"],h1[style*="font-size: 34px"],h1[style*="font-size: 38px"]{font-size:26px!important}
+    }
+    @media (max-width:720px){
+      [style*="height: 40px"][style*="justify-content: space-between"] > span:first-child{display:none!important}
+      [style*="height: 40px"][style*="justify-content: space-between"]{justify-content:center!important}
+      [style*="height: 40px"][style*="justify-content: space-between"] > div{gap:16px!important;font-size:12px}
+      [style*="height: 48px"][style*="border-radius: var(--radius-full)"] > [style*="position: relative"] > button{font-size:0!important;padding:0 8px!important;gap:0!important}
+      [style*="height: 48px"][style*="border-radius: var(--radius-full)"] > [style*="position: relative"] > button::before{content:"All";font-size:13px}
+      [style*="height: 48px"][style*="border-radius: var(--radius-full)"] > button:last-child{font-size:0!important;padding:0 12px!important;gap:0!important}
+      aside[style*="max-width: 280px"][style*="flex: 1 1 240px"]{display:none!important}
+    }
+    @media (max-width:720px){
+      [style*="grid-template-columns: 2.4fr 1fr 1.2fr 1fr"][style*="text-transform: uppercase"],[style*="grid-template-columns: 2.4fr 1fr 1.2fr 1fr"][style*="background: var(--surface-sunken)"]{display:none!important}
+    }
+    @media (max-width:480px){
+      [style*="repeat(4, minmax(0px, 1fr))"]:not(:has(> .qv-cell)):not(:has(> [style*="text-align: center"])){grid-template-columns:1fr!important}
+      [style*="padding: 24px 28px"]{padding:18px!important}
+    }
+  </style>
+</helmet>
+
+<div style="max-width:1120px;margin:0 auto;padding:56px clamp(16px,4vw,40px)">
+
+  <!-- Masthead -->
+  <header style="display:flex;flex-direction:column;gap:16px;padding-bottom:32px;border-bottom:1px solid var(--border-subtle)">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="width:44px;height:44px;background:var(--color-primary);box-shadow:var(--shadow-primary);border-radius:12px;display:grid;place-items:center">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
+      </span>
+      <span style="font-family:var(--font-display);font-size:34px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong)">Sundry</span>
+      <span style="margin-left:8px;align-self:center;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:var(--radius-full);background:var(--iris-50);color:var(--iris-700)">Design System v1</span>
+    </div>
+    <p style="font-size:18px;line-height:1.6;color:var(--text-muted);max-width:640px;margin:0">The foundations and components behind Sundry — a premium multi-vendor marketplace. Every one of ~35 screens is built from these tokens and parts.</p>
+  </header>
+
+  <!-- Brand color -->
+  <section style="padding-top:48px">
+    <div style="margin-bottom:20px"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--color-primary)">01 — Brand</span><h2 style="font-family:var(--font-display);font-size:28px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong);margin:6px 0 0">Primary &amp; Accent</h2></div>
+    <div style="display:flex;flex-wrap:wrap;gap:20px">
+      <div style="flex:1 1 300px;min-width:0;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
+        <div style="height:120px;background:var(--iris-600);display:flex;align-items:flex-end;padding:16px"><span style="color:#fff;font-weight:700;font-size:18px">Iris</span></div>
+        <div style="background:var(--surface-card);padding:16px"><p style="margin:0;font-size:13px;color:var(--text-body)">#6A2FD6 · a deep grape violet. Used sparingly — primary actions, active states, links, eyebrows. Never a flood.</p></div>
+      </div>
+      <div style="flex:1 1 300px;min-width:0;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
+        <div style="height:120px;background:var(--saffron-400);display:flex;align-items:flex-end;padding:16px"><span style="color:var(--neutral-900);font-weight:700;font-size:18px">Saffron</span></div>
+        <div style="background:var(--surface-card);padding:16px"><p style="margin:0;font-size:13px;color:var(--text-body)">#EFA524 · warm gold. Reserved for deals, countdowns and highlights only.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Color scales -->
+  <section style="padding-top:48px">
+    <div style="margin-bottom:20px"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--color-primary)">02 — Color</span><h2 style="font-family:var(--font-display);font-size:28px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong);margin:6px 0 0">Scales &amp; Neutrals</h2></div>
+    <sc-for list="{{ scales }}" as="row" hint-placeholder-count="3">
+      <div style="margin-bottom:22px">
+        <div style="font-size:13px;font-weight:700;color:var(--text-strong);margin-bottom:8px">{{ row.name }}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <sc-for list="{{ row.stops }}" as="s" hint-placeholder-count="10">
+            <div style="flex:1 1 80px;min-width:72px">
+              <div style="height:52px;border-radius:var(--radius-md);background:{{ s.v }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.04)"></div>
+              <div style="font-size:10px;font-weight:600;color:var(--text-muted);margin-top:5px">{{ s.k }}</div>
+              <div style="font-size:9.5px;color:var(--text-subtle);font-variant-numeric:tabular-nums">{{ s.hex }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+    <div style="font-size:13px;font-weight:700;color:var(--text-strong);margin:8px 0">Status</div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px">
+      <sc-for list="{{ status }}" as="st" hint-placeholder-count="4">
+        <div style="flex:1 1 180px;min-width:0;display:flex;align-items:center;gap:12px;background:var(--surface-card);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:12px">
+          <span style="width:36px;height:36px;border-radius:var(--radius-sm);background:{{ st.v }}"></span>
+          <div><div style="font-size:13px;font-weight:700;color:var(--text-strong)">{{ st.name }}</div><div style="font-size:11px;color:var(--text-subtle);font-variant-numeric:tabular-nums">{{ st.hex }}</div></div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- Typography -->
+  <section style="padding-top:48px">
+    <div style="margin-bottom:20px"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--color-primary)">03 — Type</span><h2 style="font-family:var(--font-display);font-size:28px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong);margin:6px 0 0">Bricolage Grotesque + Manrope</h2></div>
+    <div style="background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:8px 24px">
+      <div style="display:flex;align-items:baseline;gap:16px;padding:18px 0;border-bottom:1px solid var(--border-subtle)"><span style="width:92px;flex-shrink:0;font-size:12px;color:var(--text-muted)">Display · 56</span><span style="font-family:var(--font-display);font-size:clamp(34px,8vw,56px);font-weight:800;letter-spacing:-0.02em;color:var(--text-strong);line-height:1.05;min-width:0">One marketplace</span></div>
+      <div style="display:flex;align-items:baseline;gap:16px;padding:18px 0;border-bottom:1px solid var(--border-subtle)"><span style="width:92px;flex-shrink:0;font-size:12px;color:var(--text-muted)">H1 · 40</span><span style="font-family:var(--font-display);font-size:40px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong)">Every seller you love</span></div>
+      <div style="display:flex;align-items:baseline;gap:16px;padding:18px 0;border-bottom:1px solid var(--border-subtle)"><span style="width:92px;flex-shrink:0;font-size:12px;color:var(--text-muted)">H2 · 32</span><span style="font-family:var(--font-display);font-size:32px;font-weight:700;letter-spacing:-0.02em;color:var(--text-strong)">Featured Products</span></div>
+      <div style="display:flex;align-items:baseline;gap:16px;padding:18px 0;border-bottom:1px solid var(--border-subtle)"><span style="width:92px;flex-shrink:0;font-size:12px;color:var(--text-muted)">H3 · 24</span><span style="font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--text-strong)">Shop by Category</span></div>
+      <div style="display:flex;align-items:baseline;gap:16px;padding:18px 0;border-bottom:1px solid var(--border-subtle)"><span style="width:92px;flex-shrink:0;font-size:12px;color:var(--text-muted)">Body · 16</span><span style="font-size:16px;color:var(--text-body)">Thousands of independent shops, one confident checkout.</span></div>
+      <div style="display:flex;align-items:baseline;gap:16px;padding:18px 0"><span style="width:92px;flex-shrink:0;font-size:12px;color:var(--text-muted)">Caption · 12</span><span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--color-primary)">Handpicked</span></div>
+    </div>
+  </section>
+
+  <!-- Spacing / radius / shadow -->
+  <section style="padding-top:48px">
+    <div style="margin-bottom:20px"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--color-primary)">04 — Foundations</span><h2 style="font-family:var(--font-display);font-size:28px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong);margin:6px 0 0">Spacing · Radius · Elevation</h2></div>
+    <div style="display:flex;flex-wrap:wrap;gap:20px">
+      <div style="flex:1 1 320px;min-width:0;background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:20px">
+        <div style="font-size:13px;font-weight:700;color:var(--text-strong);margin-bottom:14px">8px spacing scale</div>
+        <sc-for list="{{ spacing }}" as="sp" hint-placeholder-count="7">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+            <span style="width:52px;font-size:11px;color:var(--text-muted);font-variant-numeric:tabular-nums">{{ sp.label }}</span>
+            <span style="height:14px;border-radius:4px;background:var(--iris-300);width:{{ sp.w }}"></span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="flex:1 1 320px;min-width:0;background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:20px">
+        <div style="font-size:13px;font-weight:700;color:var(--text-strong);margin-bottom:14px">Radius</div>
+        <div style="display:flex;flex-wrap:wrap;gap:14px">
+          <div style="text-align:center"><div style="width:64px;height:48px;background:var(--iris-100);border-radius:var(--radius-sm)"></div><div style="font-size:10px;color:var(--text-muted);margin-top:6px">sm 6</div></div>
+          <div style="text-align:center"><div style="width:64px;height:48px;background:var(--iris-100);border-radius:var(--radius-md)"></div><div style="font-size:10px;color:var(--text-muted);margin-top:6px">md 10</div></div>
+          <div style="text-align:center"><div style="width:64px;height:48px;background:var(--iris-100);border-radius:var(--radius-lg)"></div><div style="font-size:10px;color:var(--text-muted);margin-top:6px">lg 14</div></div>
+          <div style="text-align:center"><div style="width:64px;height:48px;background:var(--iris-100);border-radius:var(--radius-xl)"></div><div style="font-size:10px;color:var(--text-muted);margin-top:6px">xl 20</div></div>
+          <div style="text-align:center"><div style="width:64px;height:48px;background:var(--iris-100);border-radius:var(--radius-full)"></div><div style="font-size:10px;color:var(--text-muted);margin-top:6px">full</div></div>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--text-strong);margin:22px 0 14px">Elevation</div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px">
+          <div style="text-align:center"><div style="width:64px;height:48px;background:#fff;border-radius:var(--radius-md);box-shadow:var(--shadow-xs)"></div><div style="font-size:10px;color:var(--text-muted);margin-top:8px">xs</div></div>
+          <div style="text-align:center"><div style="width:64px;height:48px;background:#fff;border-radius:var(--radius-md);box-shadow:var(--shadow-sm)"></div><div style="font-size:10px;color:var(--text-muted);margin-top:8px">sm</div></div>
+          <div style="text-align:center"><div style="width:64px;height:48px;background:#fff;border-radius:var(--radius-md);box-shadow:var(--shadow-md)"></div><div style="font-size:10px;color:var(--text-muted);margin-top:8px">md</div></div>
+          <div style="text-align:center"><div style="width:64px;height:48px;background:#fff;border-radius:var(--radius-md);box-shadow:var(--shadow-lg)"></div><div style="font-size:10px;color:var(--text-muted);margin-top:8px">lg</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Components -->
+  <section style="padding-top:48px">
+    <div style="margin-bottom:20px"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--color-primary)">05 — Components</span><h2 style="font-family:var(--font-display);font-size:28px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong);margin:6px 0 0">The building blocks</h2></div>
+    <div style="display:flex;flex-wrap:wrap;gap:20px">
+      <div style="flex:1 1 340px;min-width:0;background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:24px">
+        <div style="font-size:13px;font-weight:700;color:var(--text-strong);margin-bottom:16px">Button — <span style="color:var(--text-muted);font-weight:500">primary · secondary · ghost · accent</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+          <x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="primary" size="md" hint-size="auto,44px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>Add to cart</x-import>
+          <x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="secondary" size="md" hint-size="auto,44px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M4 9h16"/></svg>Visit store</x-import>
+          <x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="ghost" size="md" hint-size="auto,44px">Cancel</x-import>
+          <x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="accent" size="md" hint-size="auto,44px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>Grab deal</x-import>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--text-strong);margin:22px 0 16px">Badge</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+          <x-import component-from-global-scope="DesignSystem_cd889a.Badge" variant="discount" hint-size="auto,22px">−35%</x-import>
+          <x-import component-from-global-scope="DesignSystem_cd889a.Badge" variant="new" hint-size="auto,22px">New</x-import>
+          <x-import component-from-global-scope="DesignSystem_cd889a.Badge" variant="hot" hint-size="auto,22px">Hot</x-import>
+          <x-import component-from-global-scope="DesignSystem_cd889a.Badge" variant="accent" hint-size="auto,22px">Best Seller</x-import>
+          <x-import component-from-global-scope="DesignSystem_cd889a.Badge" variant="neutral" hint-size="auto,22px">In stock</x-import>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--text-strong);margin:22px 0 16px">Rating &amp; Tabs</div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <x-import component-from-global-scope="DesignSystem_cd889a.StarRating" value="{{ 4.5 }}" count="{{ 128 }}" size="{{ 18 }}" hint-size="auto,20px"></x-import>
+          <x-import component-from-global-scope="DesignSystem_cd889a.Tabs" tabs="{{ demoTabs }}" defaultValue="best" hint-size="auto,44px"></x-import>
+        </div>
+      </div>
+      <div style="flex:1 1 260px;min-width:0;display:flex;flex-direction:column;gap:20px">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-strong);margin-bottom:12px">ProductCard</div>
+          <x-import component-from-global-scope="DesignSystem_cd889a.ProductCard" title="Aura Noise-Cancel Headphones" seller="Sundry Audio" price="{{ 189 }}" compare="{{ 329 }}" rating="{{ 4.8 }}" reviews="{{ 342 }}" tint="var(--iris-50)" icon-color="var(--iris-400)" hint-size="100%,360px"></x-import>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-strong);margin-bottom:12px">SellerCard</div>
+          <x-import component-from-global-scope="DesignSystem_cd889a.SellerCard" name="Hanover Electronics" tagline="Top rated" rating="{{ 4.9 }}" reviews="{{ 194 }}" products="{{ 20 }}" tint="var(--iris-50)" hint-size="100%,220px"></x-import>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1120,&quot;height&quot;:1600}}">
+class Component extends DCLogic {
+  renderVals(){
+    const mk = (name, prefix, keys) => ({ name, stops: keys.map(k => ({ k:prefix+'-'+k, v:'var(--'+prefix+'-'+k+')', hex:'' })) });
+    const HEX = {
+      'iris-50':'#F5F2FE','iris-100':'#ECE5FD','iris-200':'#D9CBFB','iris-300':'#BEA6F5','iris-400':'#9E77EC','iris-500':'#7F4EE0','iris-600':'#6A2FD6','iris-700':'#5A25B4','iris-800':'#4A2091','iris-900':'#3D1D75',
+      'saffron-50':'#FEF7EC','saffron-100':'#FCEBCB','saffron-200':'#F8D48E','saffron-300':'#F3BC53','saffron-400':'#EFA524','saffron-500':'#E08A0B','saffron-600':'#C06D06','saffron-700':'#99530A',
+      'neutral-0':'#FFFFFF','neutral-50':'#FAFAFB','neutral-100':'#F4F4F6','neutral-200':'#E6E6EC','neutral-300':'#D5D5DE','neutral-400':'#A9A9B7','neutral-500':'#78788A','neutral-600':'#565668','neutral-700':'#3E3E4E','neutral-800':'#2A2A37','neutral-900':'#1A1A23',
+    };
+    const withHex = row => ({ ...row, stops: row.stops.map(s => ({ ...s, hex: HEX[s.k] || '' })) });
+    const scales = [
+      withHex(mk('Iris (primary)', 'iris', ['50','100','200','300','400','500','600','700','800','900'])),
+      withHex(mk('Saffron (accent)', 'saffron', ['50','100','200','300','400','500','600','700'])),
+      withHex(mk('Neutral (warm grey)', 'neutral', ['0','50','100','200','300','400','500','600','700','800','900'])),
+    ];
+    const status = [
+      { name:'Success', v:'var(--success-500)', hex:'#15925A' },
+      { name:'Warning', v:'var(--warning-500)', hex:'#D9960C' },
+      { name:'Error', v:'var(--error-500)', hex:'#E23744' },
+      { name:'Info', v:'var(--info-500)', hex:'#0E9C9A' },
+    ];
+    const spacing = [
+      { label:'4px', w:'4px' }, { label:'8px', w:'8px' }, { label:'12px', w:'12px' },
+      { label:'16px', w:'16px' }, { label:'24px', w:'24px' }, { label:'32px', w:'32px' },
+      { label:'48px', w:'48px' }, { label:'64px', w:'64px' }, { label:'96px', w:'96px' },
+    ];
+    return {
+      scales, status, spacing,
+      demoTabs: [{label:'Best Selling',value:'best'},{label:'Top Rated',value:'rated'},{label:'Trending',value:'trend'}],
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/fonts.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/tokens/elevation.css">
+  <link rel="stylesheet" href="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/styles.css">
+  <script src="_ds/design-system-cd889afe-f0b0-46e4-89da-520a873652b4/_ds_bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    body{margin:0;background:var(--surface-page);color:var(--text-body);font-family:var(--font-sans);-webkit-font-smoothing:antialiased}
+    *{box-sizing:border-box}
+    a{color:var(--color-primary);text-decoration:none}
+    a:hover{color:var(--color-primary-hover)}
+    @keyframes shimmer{to{background-position:-200% 0}}
+    @media (max-width:900px){
+      header[style*="position: sticky"]{position:relative!important;top:auto!important}
+      nav [style*="height: 56px"]{height:52px!important;flex-wrap:nowrap!important;overflow:visible!important;gap:8px!important;padding-top:0!important;padding-bottom:0!important}
+      nav [style*="height: 56px"] > div:not([style*="position: relative"])::-webkit-scrollbar{display:none}
+      nav [style*="height: 56px"] > *{flex-shrink:0}
+      nav [style*="height: 56px"] > [style*="position: relative"]{height:100%!important;width:auto}
+      nav [style*="height: 56px"] > [style*="position: relative"] > button{height:36px!important;padding:0 12px!important;font-size:13px!important;gap:6px!important;border-radius:var(--radius-full)!important;white-space:nowrap}
+      nav [style*="height: 56px"] > div:not([style*="position: relative"]){flex:1 1 auto!important;min-width:0!important;flex-shrink:1!important;margin-left:0!important;flex-wrap:nowrap!important;gap:6px!important;overflow-x:auto;scrollbar-width:none}
+      nav [style*="height: 56px"] > div:not([style*="position: relative"]) > a{flex-shrink:0;padding:7px 12px!important;border-radius:var(--radius-full);background:var(--surface-sunken);font-size:13px!important;white-space:nowrap}
+      nav [style*="height: 56px"] [style*="width: 280px"][style*="padding: 8px"]{width:calc(100vw - 32px)!important}
+    }
+    @media (max-width:1100px){.vd-who{display:none !important}}
+  
+    /* sundry-responsive */
+    .flt-scroll{overflow-x:hidden!important}
+    @media (max-width:1200px){
+      [style*="margin-left: auto"][style*="color: var(--color-accent-strong)"]{display:none!important}
+      nav [style*="height: 56px"]{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap!important}
+      nav [style*="height: 56px"] > *{flex-shrink:0}
+      nav [style*="height: 56px"] [style*="flex-wrap: wrap"]{flex-wrap:nowrap!important}
+      nav [style*="height: 56px"] button,nav [style*="height: 56px"] a{white-space:nowrap}
+      button,a[style*="height: 52px"],a[style*="height: 50px"],a[style*="height: 44px"],span[style*="border-radius: var(--radius-full)"]{white-space:nowrap}
+    }
+    @media (max-width:1100px){
+      [style*="repeat(5, minmax(0px, 1fr))"]{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+      [style*="repeat(4, minmax(0px, 1fr))"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+      [style*="width: 560px"][style*="padding: 28px 32px"]{width:420px!important;gap:22px 24px!important}
+      [style*="minmax(260px, 1fr) minmax(0px, 2fr)"]{grid-template-columns:1fr!important}
+    }
+    @media (max-width:900px){
+      [style*="max-width: 320px"][style*="flex: 1 1 280px"],[style*="max-width: 380px"][style*="flex: 1 1 300px"],[style*="max-width: 280px"][style*="flex: 1 1 240px"]{max-width:none!important;flex-basis:100%!important;position:static!important}
+      [style*="position: sticky"][style*="top: 92px"]{position:static!important}
+      
+      [style*="min-width: 216px"]{display:none!important}
+      header [style*="border-right: 1px solid var(--border-subtle)"][style*="height: 100%"]{width:64px!important;padding:0px 14px!important}
+      header [style*="border-right: 1px solid var(--border-subtle)"][style*="height: 100%"] > span:not(:first-child){display:none!important}
+      [style*="min-height: 560px"][style*="overflow: hidden"]{flex-direction:column!important}
+      [style*="width: 300px"][style*="border-right: 1px solid"]{width:100%!important;border-right:none!important;border-bottom:1px solid var(--border-subtle)}
+    }
+    @media (max-width:720px){
+      [style*="repeat(5, minmax(0px, 1fr))"],[style*="repeat(4, minmax(0px, 1fr))"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+      [style*="grid-template-columns: 1fr 1fr"]{grid-template-columns:1fr!important}
+      [style*="grid-template-columns: 1fr 1fr"] > [style*="grid-column: 1 / -1"]{grid-column:auto!important}
+      [style*="grid-template-columns: 2.4fr 1fr 1.2fr 1fr"]{grid-template-columns:1fr 1fr!important}
+      [style*="grid-template-columns: 2.4fr 1fr 1.2fr 1fr"] > :first-child{grid-column:1/-1}
+      [style*="minmax(300px, 1fr)"],[style*="minmax(280px, 1fr)"],[style*="minmax(360px, 1fr)"]{grid-template-columns:1fr!important}
+      [style*="flex: 3 1 640px"],[style*="flex: 3 1 620px"],[style*="flex: 3 1 420px"],[style*="flex: 2 1 420px"],[style*="flex: 1 1 340px"],[style*="flex: 2 1 480px"]{min-width:0!important;flex-basis:100%!important}
+      [style*="width: 560px"][style*="padding: 28px 32px"]{display:none!important}
+      [style*="width: 280px"][style*="border-right: 1px solid var(--border-subtle)"][style*="padding: 8px"]{width:min(280px,calc(100vw - 32px))!important;border-right:none!important}
+      header nav[style*="font-size: 13px"]{display:none!important}
+      button[aria-label="Fullscreen"],a[aria-label="View storefront"]{display:none!important}
+      main{padding-left:16px!important;padding-right:16px!important}
+      h1[style*="font-size: 30px"],h1[style*="font-size: 34px"],h1[style*="font-size: 38px"]{font-size:26px!important}
+    }
+    @media (max-width:720px){
+      [style*="height: 40px"][style*="justify-content: space-between"] > span:first-child{display:none!important}
+      [style*="height: 40px"][style*="justify-content: space-between"]{justify-content:center!important}
+      [style*="height: 40px"][style*="justify-content: space-between"] > div{gap:16px!important;font-size:12px}
+      [style*="height: 48px"][style*="border-radius: var(--radius-full)"] > [style*="position: relative"] > button{font-size:0!important;padding:0 8px!important;gap:0!important}
+      [style*="height: 48px"][style*="border-radius: var(--radius-full)"] > [style*="position: relative"] > button::before{content:"All";font-size:13px}
+      [style*="height: 48px"][style*="border-radius: var(--radius-full)"] > button:last-child{font-size:0!important;padding:0 12px!important;gap:0!important}
+      aside[style*="max-width: 280px"][style*="flex: 1 1 240px"]{display:none!important}
+    }
+    @media (max-width:720px){
+      [style*="grid-template-columns: 2.4fr 1fr 1.2fr 1fr"][style*="text-transform: uppercase"],[style*="grid-template-columns: 2.4fr 1fr 1.2fr 1fr"][style*="background: var(--surface-sunken)"]{display:none!important}
+    }
+    @media (max-width:720px){
+      header [style*="border-right: 1px solid var(--border-subtle)"][style*="height: 100%"]{border-right:none!important}
+      main h1{font-size:24px!important}
+    }
+    @media (max-width:480px){
+      [style*="repeat(4, minmax(0px, 1fr))"]:not(:has(> .qv-cell)):not(:has(> [style*="text-align: center"])){grid-template-columns:1fr!important}
+      [style*="padding: 24px 28px"]{padding:18px!important}
+    }
+  
+    .vd-back{display:none}
+    html.rz *{transition:none!important;animation:none!important}
+    @media (max-width:1200px){
+      .vd-brand{width:64px!important;padding:0 14px!important}
+      .vd-brand > span ~ span{display:none!important}
+      aside.vd-aside{width:64px!important}
+      .vd-aside .vd-panel{display:none!important}
+      .vd-aside.is-open{position:fixed!important;top:68px!important;left:0;bottom:0;height:auto!important;width:300px!important;z-index:45;box-shadow:var(--shadow-xl);animation:vdIn var(--dur-med) var(--ease-out)}
+      .vd-aside.is-open .vd-panel{display:flex!important;overflow-y:auto;overscroll-behavior:contain}
+      .vd-back{display:block;position:fixed;inset:68px 0 0 0;z-index:44;background:rgba(26,26,35,.4);animation:vdFade var(--dur-med) var(--ease-out)}
+      .vd-wallet{grid-template-columns:1fr!important}
+    }
+    @media (max-width:900px){
+      .vd-crumb{display:none!important}
+      .vd-hbar{padding:0 16px 0 8px!important}
+      .vd-wmini{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+    }
+    @media (max-width:720px){
+      aside.vd-aside:not(.is-open){display:none!important}
+      .vd-aside.is-open{width:min(320px,86vw)!important;display:flex!important}
+      .vd-brand{border-right:none!important;width:auto!important;padding:0 0 0 16px!important}
+      .vd-toggle{margin-left:10px!important}
+      .vd-hbar{padding:0 12px 0 4px!important;gap:6px!important}
+      .vd-hbar [aria-label="Fullscreen"],.vd-hbar [aria-label="View storefront"],.vd-hbar [aria-label="Notifications"],.vd-who{display:none!important}
+      .vd-main{padding:20px 16px 40px!important;gap:16px!important}
+      .vd-main h1{font-size:24px!important}
+      .vd-tools{width:100%}
+      .vd-tools > span{flex-basis:100%}
+      .vd-seg{flex:1 1 100%!important;min-width:0}
+      .vd-seg > button{min-width:0!important;flex:1 1 0%!important;font-size:12.5px!important;padding-left:4px!important;padding-right:4px!important;white-space:nowrap;text-align:center}
+      .vd-tools > a{width:100%;justify-content:center}
+      .vd-card{padding:16px!important}
+      .vd-card h2{font-size:18px!important}
+      .vd-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+      .vd-stats > a{padding:12px!important;gap:8px!important;flex-wrap:wrap}
+      .vd-stats > a > span:nth-child(2){font-size:13px!important;flex-basis:100%;order:3}
+      .vd-wmini{gap:10px!important}
+      .vd-wmini > div{padding:14px!important}
+      .vd-wmini [style*="font-size:24px"],.vd-wmini [style*="font-size: 24px"]{font-size:19px!important}
+      .vd-wallet [style*="font-size: 38px"]{font-size:30px!important}
+      .vd-chart{height:240px!important}
+    }
+    @media (max-width:360px){ .vd-wmini{grid-template-columns:1fr!important} }
+    @media (max-width:720px){
+      .vd-form{grid-template-columns:1fr!important}
+      .vd-ptabs{width:100%}
+      .vd-ptabs > a{flex:1;justify-content:center;padding:0 12px!important}
+      .vd-save{width:100%}
+      .vd-main h1{font-size:22px!important}
+    }
+    .vt-row > [data-l]::before{display:none}
+    @media (max-width:1100px){
+      .vf-3{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+      .vf-3 > .vf-wide{grid-column:1/-1!important}
+    }
+    @media (max-width:900px){
+      .vf-split{grid-template-columns:1fr!important}
+    }
+    @media (max-width:1200px){
+      .vt-scroll{overflow:visible!important}
+      .vt-inner{min-width:0!important;padding:0 16px 4px}
+      .vt-head{display:none!important}
+      .vt-row{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px 16px!important;padding:16px!important;margin-bottom:12px;border:1px solid var(--border-subtle)!important;border-radius:var(--radius-lg)}
+      .vt-row > .vt-sl{display:none}
+      .vt-row > .vt-main{grid-column:1/-1}
+      .vt-row > .vt-act{grid-column:1/-1;justify-content:flex-start!important;padding-top:12px;border-top:1px solid var(--border-subtle)}
+      .vt-row > [data-l]::before{display:block;content:attr(data-l);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-subtle);margin-bottom:4px}
+      .vt-row > div[data-l]{flex-direction:column;align-items:flex-start!important}
+      .vt-row > div[data-l="Review"]{grid-column:1/-1}
+      .vt-row > div[data-l="Reviewer"]{flex-direction:row!important;flex-wrap:wrap;align-items:center!important}
+      .vt-row > div[data-l="Reviewer"]::before{flex-basis:100%}
+    }
+    @media (max-width:720px){
+      .vf-3,.vf-2{grid-template-columns:1fr!important}
+      .vf-3 > .vf-wide{grid-column:auto!important}
+      .vt-tools{padding:16px!important}
+      .vt-search{flex:1 1 100%!important}
+      .vt-btns{margin-left:0!important;width:100%}
+      .vt-btns > *{flex:1 1 0;padding:0 10px!important}
+      .vf-foot > *{flex:1 1 0}
+      .vf-tb{overflow-x:auto;flex-wrap:nowrap!important}
+      .vr-back{align-items:flex-end!important;padding:0!important}
+      .vr-card{width:100%!important;border-radius:var(--radius-xl) var(--radius-xl) 0 0!important;padding:22px 18px!important}
+      .vr-foot > *{flex:1 1 0}
+      .vd-toast{left:16px!important;right:16px!important}
+    }
+    @media (max-width:1100px){
+      .vo-grid{grid-template-columns:1fr!important}
+      .vo-side{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))}
+      .vo-sum{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+    }
+    @media (max-width:1200px){
+      .vt-row .vo-amt{align-items:flex-start!important}
+      .vt-row .vo-st{justify-content:flex-start!important}
+      .vt-row > span[data-l]{text-align:left!important}
+    }
+    @media (max-width:720px){
+      .vo-side{grid-template-columns:1fr!important}
+      .vo-sum{gap:10px!important}
+      .vo-sum > button{padding:12px!important;gap:10px!important}
+      .vo-sum > button > span:nth-child(2){font-size:13px!important;white-space:normal!important}
+      .vo-acts{width:100%}
+      .vo-acts > *{flex:1 1 0}
+    }
+    @media (max-width:360px){ .vo-sum{grid-template-columns:1fr!important} }
+    @keyframes vdIn{from{transform:translateX(-100%)}to{transform:none}}
+    @keyframes vdFade{from{opacity:0}to{opacity:1}}
+      /* vendor-ux */
+    :where(button,a,input,select,textarea,[role="switch"]):focus-visible{outline:2px solid var(--color-primary);outline-offset:2px;border-radius:var(--radius-sm)}
+    @media (prefers-reduced-motion: reduce){ *{animation-duration:.01ms!important;transition-duration:.01ms!important} }
+    .vf-foot{position:sticky;bottom:0;z-index:20;padding:14px 16px;margin:0 -4px;border-radius:var(--radius-lg);background:rgba(255,255,255,.92);backdrop-filter:blur(8px);box-shadow:var(--shadow-lg)}
+    .vt-row{cursor:default}
+      .vd-more{display:none}
+    .vd-moreback{display:none}
+    @media (max-width:720px){
+      .vd-more{display:grid!important}
+      .vd-hbar .vd-iconset{display:none!important}
+      .vd-moreback{display:block;position:fixed;inset:0;z-index:48}
+      .vd-hbar .vd-iconset.is-open{display:flex!important;flex-direction:column;align-items:stretch;gap:2px!important;position:absolute;top:calc(100% + 8px);right:12px;z-index:50;width:min(260px,calc(100vw - 24px));padding:6px;background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);animation:vdMore var(--dur-fast) var(--ease-out);transform-origin:top right}
+      .vd-hbar .vd-iconset.is-open > *{display:flex!important;margin:0!important}
+      .vd-hbar .vd-iconset.is-open > button,.vd-hbar .vd-iconset.is-open > a,.vd-hbar .vd-iconset.is-open > div > button{position:relative;width:100%!important;height:46px!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:12px;padding:0 12px!important;border-radius:var(--radius-md)!important;border:none!important;background:transparent!important;color:var(--text-body)!important;transition:background var(--dur-fast)}
+      .vd-hbar .vd-iconset.is-open > button:hover,.vd-hbar .vd-iconset.is-open > a:hover,.vd-hbar .vd-iconset.is-open > div > button:hover{background:var(--surface-sunken)!important}
+      .vd-hbar .vd-iconset.is-open > button::after,.vd-hbar .vd-iconset.is-open > a::after,.vd-hbar .vd-iconset.is-open > div > button::after{content:attr(aria-label);font-size:14px;font-weight:600;color:var(--text-body)}
+      .vd-hbar .vd-iconset.is-open > button > span[style*="position: absolute"],.vd-hbar .vd-iconset.is-open > button > span[style*="position:absolute"]{position:static!important;order:3;margin-left:auto}
+      .vd-hbar .vd-iconset.is-open > div{width:100%}
+      .vd-hbar .vd-iconset.is-open [role="menu"]{right:auto!important;left:0;top:calc(100% + 4px)!important}
+    }
+    @keyframes vdMore{from{opacity:0;transform:scale(.96) translateY(-4px)}to{opacity:1;transform:none}}
+  </style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;flex-direction:column">
+
+  <!-- Top bar -->
+  <header style="position:sticky;top:0;z-index:40;height:68px;background:var(--surface-card);box-shadow:var(--shadow-xs);display:flex;align-items:center">
+    <div class="vd-brand" style="width:{{ sideW }};flex-shrink:0;height:100%;display:flex;align-items:center;gap:10px;padding:0 {{ brandPad }};border-right:1px solid var(--border-subtle);transition:width var(--dur-med) var(--ease-out),padding var(--dur-med) var(--ease-out);overflow:hidden">
+      <span style="width:36px;height:36px;background:var(--color-primary);box-shadow:var(--shadow-primary);border-radius:10px;display:grid;place-items:center">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
+      </span>
+      <sc-if value="{{ sideOpen }}" hint-placeholder-val="{{ true }}">
+        <span style="font-family:var(--font-display);font-size:22px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong)">Sundry</span>
+        <span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:var(--radius-full);background:var(--iris-50);color:var(--color-primary)">Seller</span>
+      </sc-if>
+    </div>
+    <button class="vd-toggle" onClick="{{ sideBtn }}" aria-label="{{ sideAria }}" title="{{ sideAria }}" style="margin-left:16px;width:38px;height:38px;flex-shrink:0;display:grid;place-items:center;border:1px solid var(--border-subtle);background:var(--surface-card);cursor:pointer;color:var(--text-body);border-radius:var(--radius-md);transition:all var(--dur-fast) var(--ease-out)" style-hover="border-color:var(--iris-200);color:var(--color-primary);background:var(--iris-50)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ sideIcon }}"/></svg></button>
+    <div class="vd-hbar" style="flex:1;min-width:0;display:flex;align-items:center;gap:16px;padding:0 28px 0 16px">
+      <nav class="vd-crumb" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted)">
+        <a href="Sundry Home.dc.html" style="font-weight:600">Home</a>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        <a href="vendororderlist.dc.html" style="font-weight:600">Orders</a>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        <a href="vendororderlist.dc.html" style="font-weight:600">All Orders</a>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        <span style="color:var(--text-strong);font-weight:600">Order #100193</span>
+      </nav>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
+        <button type="button" class="vd-more" onClick="{{ toggleMore }}" aria-label="More options" aria-haspopup="menu" aria-expanded="{{ moreOpen }}" style="width:40px;height:40px;place-items:center;border-radius:var(--radius-md);border:none;background:{{ moreBg }};cursor:pointer;color:var(--text-body)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button>
+        <sc-if value="{{ moreOpen }}" hint-placeholder-val="{{ false }}"><div class="vd-moreback" onClick="{{ closeMore }}"></div></sc-if>
+        <div class="vd-iconset {{ moreCls }}" style="display:flex;align-items:center;gap:6px">
+        <a href="Sundry Home.dc.html" aria-label="View storefront" style="width:40px;height:40px;display:grid;place-items:center;border-radius:var(--radius-md);color:var(--text-body)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M4 9h16M9 20v-6h6v6"/></svg></a>
+        <button aria-label="Notifications" style="width:40px;height:40px;display:grid;place-items:center;border-radius:var(--radius-md);border:none;background:none;cursor:pointer;color:var(--text-body)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg></button>
+        <button aria-label="Messages" style="position:relative;width:40px;height:40px;display:grid;place-items:center;border-radius:var(--radius-md);border:none;background:none;cursor:pointer;color:var(--text-body)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span style="position:absolute;top:4px;right:4px;width:16px;height:16px;border-radius:50%;background:var(--error-500);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center">1</span></button>
+        <button aria-label="New orders" style="position:relative;width:40px;height:40px;display:grid;place-items:center;border-radius:var(--radius-md);border:none;background:none;cursor:pointer;color:var(--text-body)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg><span style="position:absolute;top:4px;right:4px;width:16px;height:16px;border-radius:50%;background:var(--color-primary);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center">3</span></button>
+        <button aria-label="Fullscreen" style="width:40px;height:40px;display:grid;place-items:center;border-radius:var(--radius-md);border:none;background:none;cursor:pointer;color:var(--text-body)"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+                </div>
+        <div style="position:relative;margin-left:8px">
+        <button onClick="{{ toggleProfile }}" aria-haspopup="menu" aria-expanded="{{ profileOpen }}" style="{{ profileBtnStyle }}">
+          <span style="position:relative;width:36px;height:36px;border-radius:50%;background:var(--iris-50);display:grid;place-items:center;font-size:13px;font-weight:700;color:var(--color-primary)">JD<span style="position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;background:var(--success-500);border:2px solid var(--surface-card)"></span></span>
+          <span class="vd-who" style="display:flex;flex-direction:column;align-items:flex-start;line-height:1.2;white-space:nowrap"><span style="font-size:13px;font-weight:700;color:var(--text-strong);white-space:nowrap">James Dawson</span><span style="font-size:11px;color:var(--text-muted);white-space:nowrap">Hanover Electronics</span></span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="{{ chevStyle }}"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <sc-if value="{{ profileOpen }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ closeProfile }}" style="position:fixed;inset:0;z-index:45"></div>
+          <div role="menu" style="position:absolute;top:calc(100% + 10px);right:0;z-index:50;width:260px;background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);border:1px solid var(--border-subtle);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid var(--border-subtle);background:var(--surface-sunken)">
+              <span style="width:42px;height:42px;flex-shrink:0;border-radius:50%;background:var(--iris-50);display:grid;place-items:center;font-size:14px;font-weight:700;color:var(--color-primary)">JD</span>
+              <span style="min-width:0"><span style="display:block;font-size:14px;font-weight:700;color:var(--text-strong)">James Dawson</span><span style="display:block;font-size:12px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">james@hanover-electronics.com</span></span>
+            </div>
+            <div style="padding:6px">
+              <a href="vendorProfile.dc.html" role="menuitem" style="display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;color:var(--text-body);transition:all var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a6 6 0 0 0-12 0M12 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>Profile Settings</a>
+              <a href="vendorchangepassword.dc.html" role="menuitem" style="display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;color:var(--text-body);transition:all var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg>Change Password</a>
+            </div>
+            <div style="padding:6px;border-top:1px solid var(--border-subtle)">
+              <a href="Login Page.dc.html" role="menuitem" style="display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;color:var(--error-600);transition:all var(--dur-fast) var(--ease-out)" style-hover="background:var(--error-50);color:var(--error-600)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Log Out</a>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+      </div>
+    </div>
+  </header>
+  <sc-if value="{{ vdOpen }}" hint-placeholder-val="{{ false }}"><div class="vd-back" onClick="{{ closeVd }}"></div></sc-if>
+
+  <div style="flex:1;display:flex;align-items:stretch">
+
+    <!-- Sidebar: icon rail + section panel -->
+    <aside class="vd-aside {{ vdCls }}" style="width:{{ sideW }};flex-shrink:0;display:flex;background:var(--surface-card);border-right:1px solid var(--border-subtle);position:sticky;top:68px;height:calc(100vh - 68px);overflow:hidden;transition:width var(--dur-med) var(--ease-out)">
+      <div class="vd-rail" style="width:64px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 0;border-right:1px solid var(--border-subtle)">
+        <sc-for list="{{ rail }}" as="r" hint-placeholder-count="8">
+          <button onClick="{{ r.onClick }}" aria-label="{{ r.label }}" title="{{ r.label }}" style="{{ r.style }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ r.glyph }}"/></svg></button>
+        </sc-for>
+      </div>
+      <sc-if value="{{ panelOn }}" hint-placeholder-val="{{ true }}">
+      <div class="vd-panel" style="flex:1;min-width:216px;display:flex;flex-direction:column;padding:20px 14px">
+        <h2 style="font-family:var(--font-display);font-size:18px;font-weight:800;letter-spacing:-0.01em;color:var(--text-strong);margin:0 6px 18px">{{ railTitle }}</h2>
+        <sc-for list="{{ railGroups }}" as="g" hint-placeholder-count="1">
+          <div style="margin-bottom:14px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-subtle);margin:0 10px 8px">{{ g.title }}</div>
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="2">
+                <a href="{{ it.href }}" style="{{ it.style }}"><span style="display:flex;align-items:center;gap:10px;min-width:0"><sc-if value="{{ it.hasDot }}" hint-placeholder-val="{{ false }}"><span style="{{ it.dotStyle }}"></span></sc-if><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.label }}</span></span><sc-if value="{{ it.hasCount }}" hint-placeholder-val="{{ false }}"><span style="{{ it.countStyle }}">{{ it.count }}</span></sc-if></a>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+        <a href="#" style="margin-top:auto;display:flex;align-items:center;gap:12px;padding:14px;border-radius:var(--radius-lg);background:linear-gradient(120deg,var(--iris-600),var(--iris-800));color:#fff;box-shadow:var(--shadow-primary)">
+          <span style="width:36px;height:36px;flex-shrink:0;border-radius:var(--radius-md);background:rgba(255,255,255,.18);display:grid;place-items:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+          <span style="flex:1;min-width:0"><span style="display:block;font-size:14px;font-weight:700">Setup Guide</span><span style="display:block;height:5px;border-radius:var(--radius-full);background:rgba(255,255,255,.25);margin:6px 0 4px;overflow:hidden"><span style="display:block;width:20%;height:100%;background:var(--saffron-300);border-radius:var(--radius-full)"></span></span><span style="font-size:11px;color:var(--iris-100)">20% complete</span></span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </a>
+      </div>
+      </sc-if>
+    </aside>
+
+    <!-- Main -->
+    <main class="vd-main" style="flex:1;min-width:0;padding:28px clamp(16px,3vw,36px) 48px;display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <h1 style="display:flex;align-items:center;gap:12px;font-family:var(--font-display);font-size:30px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong);margin:0"><span style="width:40px;height:40px;flex-shrink:0;border-radius:var(--radius-md);background:var(--iris-50);display:grid;place-items:center;color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2 2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2zM9 12h6M9 16h4"/></svg></span>Order Details</h1>
+        <div class="vd-tools" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)">Preview state</span>
+          <div class="vd-seg" style="display:flex;gap:2px;padding:4px;border-radius:var(--radius-md);background:var(--surface-sunken);border:1px solid var(--border-subtle)">
+            <sc-for list="{{ segTabs }}" as="t" hint-placeholder-count="4"><button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</button></sc-for>
+          </div>
+          
+          <div style="display:flex;gap:6px"><a href="vendororderdetails.dc.html" aria-label="Previous order" style="width:44px;height:44px;display:grid;place-items:center;border-radius:var(--radius-full);background:var(--iris-50);color:var(--color-primary)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></a><a href="vendororderdetails.dc.html" aria-label="Next order" style="width:44px;height:44px;display:grid;place-items:center;border-radius:var(--radius-full);background:var(--surface-card);box-shadow:var(--shadow-xs);color:var(--text-muted)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></a></div>
+        </div>
+      </div>
+
+      <sc-if value="{{ isLoaded }}" hint-placeholder-val="{{ true }}">
+        <div class="vo-grid" style="display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;align-items:start">
+          <section class="vd-card" style="background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:24px;min-width:0">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+              <div><h2 style="font-family:var(--font-display);font-size:22px;font-weight:800;letter-spacing:-0.01em;color:var(--text-strong);margin:0">Order #100193</h2><div style="font-size:13px;color:var(--text-muted);margin-top:4px">22 Sep 2026 · 7:29 PM</div></div>
+              <div class="vo-acts" style="display:flex;gap:10px;flex-wrap:wrap">
+                <a href="vendoreditproduct.dc.html" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 16px;border-radius:var(--radius-md);border:1px solid var(--border-subtle);background:var(--surface-card);color:var(--text-strong);font-size:14px;font-weight:600;white-space:nowrap" style-hover="border-color:var(--color-primary);color:var(--color-primary)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>Edit Products</a>
+                <button type="button" onClick="{{ onPrint }}" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 18px;border-radius:var(--radius-md);border:none;background:var(--color-primary);color:#fff;font-size:14px;font-weight:600;font-family:var(--font-sans);cursor:pointer;box-shadow:var(--shadow-xs);white-space:nowrap" style-hover="background:var(--color-primary-hover)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>Print Invoice</button>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin:16px 0 20px;font-size:13px">
+              <span style="display:flex;align-items:center;gap:8px;color:var(--text-muted)">Status <span style="{{ statusPill }}">{{ statusLabel }}</span></span>
+              <span style="color:var(--text-muted)">Order verification code <b style="color:var(--text-strong);font-variant-numeric:tabular-nums;letter-spacing:.04em">677904</b></span>
+            </div>
+            <div style="border:1px solid var(--border-subtle);border-radius:var(--radius-lg);overflow:hidden">
+              <div style="display:flex;align-items:center;gap:10px;padding:12px 18px;background:var(--iris-50);border-bottom:1px solid var(--border-subtle);font-size:13px"><span style="color:var(--color-primary);display:flex"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M10 21v-4h4v4"/></svg></span><span style="color:var(--text-muted)">Sold by</span><b style="color:var(--color-primary)">Hanover Electronics</b></div>
+              <div class="vt-inner" style="min-width:0">
+                <div class="vt-head" style="display:grid;grid-template-columns:36px minmax(0,2.4fr) 60px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:14px;padding:12px 18px;background:var(--surface-sunken);font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted)"><span>SL</span><span>Item Details</span><span style="text-align:center">Qty</span><span style="text-align:right">Item Price</span><span style="text-align:right">Discount</span><span style="text-align:right">Total</span></div>
+                <sc-for list="{{ items }}" as="it" hint-placeholder-count="2">
+                  <div class="vt-row" style="display:grid;grid-template-columns:36px minmax(0,2.4fr) 60px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:center;padding:16px 18px;border-bottom:1px solid var(--border-subtle)">
+                    <span class="vt-sl" style="font-size:14px;color:var(--text-muted)">{{ it.sl }}</span>
+                    <div class="vt-main" style="display:flex;align-items:center;gap:12px;min-width:0"><span style="width:52px;height:52px;flex-shrink:0;border-radius:var(--radius-md);display:grid;place-items:center;background:{{ it.tint }};color:{{ it.icon }}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{ it.glyph }}"/></svg></span><div style="min-width:0"><div style="font-size:14px;font-weight:700;color:var(--text-strong)">{{ it.title }}</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Unit price {{ it.unit }}</div></div></div>
+                    <span data-l="Qty" style="font-size:14px;font-weight:600;color:var(--text-strong);text-align:center">{{ it.qty }}</span>
+                    <span data-l="Item price" style="font-size:14px;color:var(--text-body);text-align:right;font-variant-numeric:tabular-nums">{{ it.price }}</span>
+                    <span data-l="Discount" style="font-size:14px;color:var(--text-body);text-align:right;font-variant-numeric:tabular-nums">{{ it.disc }}</span>
+                    <span data-l="Total" style="font-size:14px;font-weight:800;color:var(--text-strong);text-align:right;font-variant-numeric:tabular-nums">{{ it.total }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:20px"><div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;justify-content:space-between;gap:12px;font-size:14px;"><span style="color:var(--text-muted)">Item price</span><span style="font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-strong)">$238.00</span></div><div style="display:flex;justify-content:space-between;gap:12px;font-size:14px;"><span style="color:var(--text-muted)">Item discount</span><span style="font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-strong)">−$0.00</span></div><div style="display:flex;justify-content:space-between;gap:12px;font-size:14px;"><span style="color:var(--text-muted)">Sub total</span><span style="font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-strong)">$238.00</span></div><div style="display:flex;justify-content:space-between;gap:12px;font-size:14px;"><span style="color:var(--text-muted)">Coupon discount</span><span style="font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-strong)">−$20.00</span></div><div style="display:flex;justify-content:space-between;gap:12px;font-size:14px;"><span style="color:var(--text-muted)">VAT / Tax</span><span style="font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-strong)">$17.44</span></div><div style="display:flex;justify-content:space-between;gap:12px;font-size:14px;"><span style="color:var(--text-muted)">Shipping fee</span><span style="font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-strong)">$10.00</span></div><div style="display:flex;justify-content:space-between;gap:12px;font-size:14px;padding-top:12px;border-top:1px solid var(--border-subtle);font-size:16px;"><span style="color:var(--text-strong);font-weight:800">Total</span><span style="font-variant-numeric:tabular-nums;font-weight:800;color:var(--color-primary)">$245.44</span></div>
+            </div></div>
+          </section>
+          <div class="vo-side" style="display:flex;flex-direction:column;gap:16px;min-width:0">
+            <section class="vd-card" style="background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:22px"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px"><h3 style="display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--text-strong);margin:0"><span style="color:var(--color-primary);display:flex"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5h20v14H2zM2 10h20"/></svg></span>Payment</h3><span style="{{ payPill }}">{{ payLabel }}</span></div><div style="display:grid;grid-template-columns:auto 1fr;gap:10px 14px;font-size:14px"><span style="color:var(--text-muted)">Payment method</span><span style="font-weight:600;color:var(--text-strong);min-width:0;overflow-wrap:anywhere">Card · Stripe</span><span style="color:var(--text-muted)">Card</span><span style="font-weight:600;color:var(--text-strong);min-width:0;overflow-wrap:anywhere">Visa •••• 4242</span><span style="color:var(--text-muted)">Order amount</span><span style="font-weight:600;color:var(--text-strong);min-width:0;overflow-wrap:anywhere">$245.44</span></div></section>
+            <section class="vd-card" style="background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:22px"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px"><h3 style="display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--text-strong);margin:0"><span style="color:var(--color-primary);display:flex"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7M5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg></span>Order &amp; Shipping Info</h3></div>
+              <label style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;font-weight:600;color:var(--text-body)">Change order status</span><div style="position:relative"><select value="{{ status }}" onChange="{{ onStatus }}" style="height:48px;width:100%;padding:0 40px 0 14px;border-radius:var(--radius-md);border:1px solid var(--border-subtle);background:var(--surface-card);font-size:14px;font-weight:600;color:var(--text-strong);font-family:var(--font-sans);appearance:none;cursor:pointer"><sc-for list="{{ statusOpts }}" as="o" hint-placeholder-count="8"><option value="{{ o }}">{{ o }}</option></sc-for></select><span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-muted);display:flex"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></div></label>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;height:52px;padding:0 14px;margin-top:14px;border-radius:var(--radius-md);border:1px solid var(--border-subtle)"><span style="font-size:14px;color:var(--text-body)">Payment status</span><span style="display:flex;align-items:center;gap:10px"><b style="{{ payTextStyle }}">{{ payLabel }}</b><button type="button" role="switch" onClick="{{ togglePaid }}" style="{{ paidTrack }}"><span style="{{ paidKnob }}"></span></button></span></div>
+              <div style="font-size:14px;font-weight:700;color:var(--text-strong);margin:18px 0 10px">Shipping method · Standard</div>
+              <div style="display:flex;gap:10px;padding:14px;border-radius:var(--radius-md);background:var(--saffron-50);border:1px solid var(--saffron-100);font-size:13px;line-height:1.5;color:var(--text-body)"><span style="color:var(--saffron-600);display:flex;flex-shrink:0;margin-top:1px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16v-4M12 8h.01"/></svg></span>This order uses Sundry's in-house shipping and must be delivered with the option the customer chose at checkout.</div></section>
+            <section class="vd-card" style="background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:22px"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px"><h3 style="display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--text-strong);margin:0"><span style="color:var(--color-primary);display:flex"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0zM12 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg></span>Shipping address</h3></div><div style="display:grid;grid-template-columns:auto 1fr;gap:10px 14px;font-size:14px"><span style="color:var(--text-muted)">Name</span><span style="font-weight:600;color:var(--text-strong);min-width:0;overflow-wrap:anywhere">Robert Weiss</span><span style="color:var(--text-muted)">Contact</span><span style="font-weight:600;color:var(--text-strong);min-width:0;overflow-wrap:anywhere">+1 (•••) •••-0148</span><span style="color:var(--text-muted)">Country</span><span style="font-weight:600;color:var(--text-strong);min-width:0;overflow-wrap:anywhere">United States</span><span style="color:var(--text-muted)">City</span><span style="font-weight:600;color:var(--text-strong);min-width:0;overflow-wrap:anywhere">Kingston, NY</span><span style="color:var(--text-muted)">Zip code</span><span style="font-weight:600;color:var(--text-strong);min-width:0;overflow-wrap:anywhere">12401</span><span style="color:var(--text-muted)">Address</span><span style="font-weight:600;color:var(--text-strong);min-width:0;overflow-wrap:anywhere">142 Market St, Apt 5B</span></div></section>
+            <section class="vd-card" style="background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:22px"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px"><h3 style="display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--text-strong);margin:0"><span style="color:var(--color-primary);display:flex"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5h20v14H2zM2 10h20"/></svg></span>Billing address</h3></div><div style="display:grid;grid-template-columns:auto 1fr;gap:10px 14px;font-size:14px"><span style="color:var(--text-muted)">Name</span><span style="font-weight:600;color:var(--text-strong);min-width:0;overflow-wrap:anywhere">Robert Weiss</span><span style="color:var(--text-muted)">Contact</span><span style="font-weight:600;color:var(--text-strong);min-width:0;overflow-wrap:anywhere">+1 (•••) •••-0148</span><span style="color:var(--text-muted)">Country</span><span style="font-weight:600;color:var(--text-strong);min-width:0;overflow-wrap:anywhere">United States</span><span style="color:var(--text-muted)">City</span><span style="font-weight:600;color:var(--text-strong);min-width:0;overflow-wrap:anywhere">Kingston, NY</span><span style="color:var(--text-muted)">Zip code</span><span style="font-weight:600;color:var(--text-strong);min-width:0;overflow-wrap:anywhere">12401</span><span style="color:var(--text-muted)">Address</span><span style="font-weight:600;color:var(--text-strong);min-width:0;overflow-wrap:anywhere">142 Market St, Apt 5B</span></div></section>
+            <section class="vd-card" style="background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:22px"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px"><h3 style="display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--text-strong);margin:0"><span style="color:var(--color-primary);display:flex"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a6 6 0 0 0-12 0M12 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg></span>Customer information</h3></div><div style="display:flex;align-items:center;gap:14px"><span style="width:64px;height:64px;flex-shrink:0;border-radius:50%;background:var(--iris-50);color:var(--color-primary);display:grid;place-items:center;font-size:20px;font-weight:800">RW</span><div style="min-width:0;display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--text-muted)"><b style="font-size:15px;color:var(--text-strong)">Robert Weiss</b><span><b style="color:var(--text-strong)">14</b> orders with you</span><span>+1 (•••) •••-0148</span><span>r•••@gmail.com</span></div></div><a href="userchat.dc.html" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;height:42px;margin-top:16px;border-radius:var(--radius-md);border:1px solid var(--border-subtle);font-size:13px;font-weight:600;color:var(--text-strong)" style-hover="border-color:var(--color-primary);color:var(--color-primary)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Message via Sundry AI Support</a></section>
+            <section class="vd-card" style="background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:22px"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px"><h3 style="display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--text-strong);margin:0"><span style="color:var(--color-primary);display:flex"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5M4 9v11h16V9M4 9h16"/></svg></span>Shop information</h3></div><div style="display:flex;align-items:center;gap:14px"><span style="width:64px;height:64px;flex-shrink:0;border-radius:50%;background:var(--color-primary);color:#fff;display:grid;place-items:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg></span><div style="min-width:0;display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--text-muted)"><b style="font-size:15px;color:var(--text-strong)">Hanover Electronics</b><span><b style="color:var(--text-strong)">1,284</b> orders served</span><span>+1 (212) 555-0148</span><span>88 Hudson St, New York, NY</span></div></div></section>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}"><section class="vd-card" style="background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:24px;display:flex;flex-direction:column;gap:16px"><div style="display:flex;gap:12px;flex-wrap:wrap"><div style="height:46px;width:320px;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div><div style="height:46px;width:120px;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div></div><div style="display:flex;gap:14px;align-items:center"><div style="height:52px;width:52px;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div><div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="height:14px;width:45%;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div><div style="height:11px;width:25%;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div></div><div style="height:24px;width:44px;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div></div><div style="display:flex;gap:14px;align-items:center"><div style="height:52px;width:52px;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div><div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="height:14px;width:45%;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div><div style="height:11px;width:25%;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div></div><div style="height:24px;width:44px;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div></div><div style="display:flex;gap:14px;align-items:center"><div style="height:52px;width:52px;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div><div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="height:14px;width:45%;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div><div style="height:11px;width:25%;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div></div><div style="height:24px;width:44px;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div></div><div style="display:flex;gap:14px;align-items:center"><div style="height:52px;width:52px;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div><div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="height:14px;width:45%;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div><div style="height:11px;width:25%;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div></div><div style="height:24px;width:44px;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div></div><div style="display:flex;gap:14px;align-items:center"><div style="height:52px;width:52px;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div><div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="height:14px;width:45%;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div><div style="height:11px;width:25%;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div></div><div style="height:24px;width:44px;border-radius:var(--radius-md);background:linear-gradient(100deg,var(--neutral-100) 30%,var(--neutral-150) 50%,var(--neutral-100) 70%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div></div></section></sc-if>
+      <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+        <section class="vd-card" style="background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:64px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px">
+          <span style="width:72px;height:72px;border-radius:50%;background:var(--iris-50);display:grid;place-items:center;color:var(--iris-400)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/></svg></span>
+          <h3 style="font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--text-strong);margin:0">Order not found</h3>
+          <p style="font-size:14px;color:var(--text-muted);margin:0;max-width:400px;text-wrap:pretty">This order may have been removed or belongs to another store. Go back to your orders list.</p>
+          <a href="vendororderlist.dc.html" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;margin-top:4px;border-radius:var(--radius-md);background:var(--color-primary);color:#fff;font-size:14px;font-weight:600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Back to All Orders</a>
+        </section>
+      </sc-if>
+      <sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}">
+        <section class="vd-card" style="background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:64px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px">
+          <span style="width:72px;height:72px;border-radius:50%;background:var(--error-50);display:grid;place-items:center;color:var(--error-500)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span>
+          <h3 style="font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--text-strong);margin:0">Couldn't load this page</h3>
+          <p style="font-size:14px;color:var(--text-muted);margin:0;max-width:380px">Something went wrong reaching your store data. Check your connection and try again.</p>
+          <x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="primary" size="md" hint-size="auto,44px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg>Retry</x-import>
+        </section>
+      </sc-if>
+      <sc-if value="{{ saved }}" hint-placeholder-val="{{ false }}"><div role="status" aria-live="polite" class="vd-toast" style="position:fixed;bottom:24px;right:24px;z-index:80;display:flex;align-items:center;gap:10px;background:var(--surface-inverse);color:#fff;padding:14px 18px;border-radius:var(--radius-md);box-shadow:var(--shadow-xl);font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--success-500)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{{ savedMsg }}</div></sc-if>
+
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const SERIES = {
+  year:  { labels: MONTHS, income:[4200,5100,4800,6300,7200,6900,8400,9100,8700,9800,11200,12600], comm:[420,510,480,630,720,690,840,910,870,980,1120,1260] },
+  month: { labels: ['Week 1','Week 2','Week 3','Week 4'], income:[2600,3100,2900,4000], comm:[260,310,290,400] },
+  week:  { labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], income:[380,520,470,610,720,940,810], comm:[38,52,47,61,72,94,81] },
+};
+const money = n => '$' + Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+class Component extends DCLogic {
+  state = { ostatus:'Delivered', paid:true,  saving:false, saved:false,  stateTab:'loaded', range:'year', rail:'orders', sideOpen:true, profileOpen:false };
+  chartRef = React.createRef();
+
+  componentDidMount(){ this.syncChart(); this._k=(e)=>{ if(e.key==='Escape') this.setState({moreOpen:false, vdOpen:false, profileOpen:false}); }; window.addEventListener('keydown', this._k); let rzT; this._r=()=>{ document.documentElement.classList.add('rz'); clearTimeout(rzT); rzT=setTimeout(()=>document.documentElement.classList.remove('rz'),160); if(window.innerWidth>1200 && this.state.vdOpen) this.setState({vdOpen:false}); const nb=window.innerWidth<=1200; if(nb!==this._nb){ this._nb=nb; this.forceUpdate(); } }; window.addEventListener('resize', this._r); }
+  componentDidUpdate(pp, ps){ this.syncChart(); if(this.chart && ps && ps.sideOpen!==this.state.sideOpen){ setTimeout(()=>this.chart && this.chart.resize(), 240); } }
+  componentWillUnmount(){ if(this.chart){ this.chart.destroy(); this.chart=null; } window.removeEventListener('keydown', this._k); window.removeEventListener('resize', this._r); }
+
+  syncChart(){
+    const canvas = this.chartRef.current;
+    if(!canvas){ if(this.chart){ this.chart.destroy(); this.chart=null; } return; }
+    if(!window.Chart){ clearTimeout(this._t); this._t = setTimeout(()=>this.syncChart(), 150); return; }
+    const d = SERIES[this.state.range];
+    if(this.chart && this.chart.canvas !== canvas){ this.chart.destroy(); this.chart=null; }
+    if(this.chart){
+      this.chart.data.labels = d.labels;
+      this.chart.data.datasets[0].data = d.income;
+      this.chart.data.datasets[1].data = d.comm;
+      this.chart.update();
+      return;
+    }
+    const css = getComputedStyle(document.documentElement);
+    const v = n => css.getPropertyValue(n).trim();
+    const ctx = canvas.getContext('2d');
+    const grad = ctx.createLinearGradient(0,0,0,320);
+    grad.addColorStop(0, v('--iris-200')); grad.addColorStop(1, 'rgba(255,255,255,0)');
+    this.chart = new window.Chart(ctx, {
+      type:'line',
+      data:{ labels:d.labels, datasets:[
+        { label:'Income', data:d.income, borderColor:v('--color-primary'), backgroundColor:grad, fill:true, tension:.38, borderWidth:2.5, pointRadius:0, pointHoverRadius:5, pointBackgroundColor:v('--color-primary') },
+        { label:'Commission given', data:d.comm, borderColor:v('--saffron-400'), backgroundColor:'transparent', fill:false, tension:.38, borderWidth:2, borderDash:[5,4], pointRadius:0, pointHoverRadius:5, pointBackgroundColor:v('--saffron-400') },
+      ]},
+      options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
+        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:v('--neutral-900'), padding:12, cornerRadius:10, titleFont:{family:'Manrope',weight:'700'}, bodyFont:{family:'Manrope'}, callbacks:{ label:c=>' '+c.dataset.label+': '+money(c.parsed.y) } } },
+        scales:{ x:{ grid:{display:false}, border:{display:false}, ticks:{ color:v('--text-muted'), font:{family:'Manrope',size:12} } },
+          y:{ grid:{ color:v('--border-subtle') }, border:{display:false}, ticks:{ color:v('--text-muted'), font:{family:'Manrope',size:12}, callback:x=>'$'+(x>=1000?(x/1000)+'k':x) } } } }
+    });
+  }
+
+  renderVals(){
+    const S = this.state;
+    const seg = (active) => 'height:34px;padding:0 14px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-size:13px;font-weight:600;font-family:var(--font-sans);transition:all var(--dur-fast) var(--ease-out);' + (active ? 'background:var(--surface-card);color:var(--text-strong);box-shadow:var(--shadow-xs);' : 'background:transparent;color:var(--text-muted);');
+
+    const RAIL = [
+      { key:'home', label:'Home', glyph:'m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z', title:'Home', groups:[{ title:'Overview', items:[{label:'Dashboard',href:'vendordashboard.dc.html'},'POS'] }] },
+      { key:'products', label:'Catalog', glyph:'M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8', title:'Catalog', groups:[{ title:'Products', items:[{label:'Product List',href:'vendorproductlist.dc.html'},{label:'Add New Product',href:'vendoraddproduct.dc.html'},{label:'Approved Products',href:'vendorproductlist.dc.html'},{label:'Pending Requests',href:'vendorproductlist.dc.html'},{label:'Limited Stocks',href:'vendorproductlist.dc.html'},{label:'Bulk Import',href:'vendoraddproduct.dc.html'}] },{ title:'Product Reviews', items:[{label:'Product Reviews',href:'vendorproductreview.dc.html'}] }] },
+      { key:'orders', label:'Orders', glyph:'M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0', title:'Orders', groups:[{ title:'Sales', items:[{label:'All Orders',href:'vendororderlist.dc.html'},{label:'Pending',href:'vendororderlist.dc.html'},{label:'Confirmed',href:'vendororderlist.dc.html'},{label:'Packaging',href:'vendororderlist.dc.html'},{label:'Out for Delivery',href:'vendororderlist.dc.html'},{label:'Delivered',href:'vendororderlist.dc.html'},{label:'Returned',href:'vendororderlist.dc.html'},{label:'Failed to Deliver',href:'vendororderlist.dc.html'},{label:'Canceled',href:'vendororderlist.dc.html'}] },{ title:'Refunds', items:[{label:'Refund Requests',href:'vendororderlist.dc.html'}] }] },
+      { key:'promo', label:'Promotions', glyph:'M3 11l18-5v12L3 14v-3zM11.6 16.8a3 3 0 1 1-5.8-1.6', title:'Promotions', groups:[{ title:'Promotion Management', items:[{label:'Coupons',href:'vendorcoupon.dc.html'},'Clearance Sale','Flash deals','Featured products'] }] },
+      { key:'reports', label:'Reports', glyph:'M3 3v18h18M7 16V10M12 16V6M17 16v-4', title:'Reports', groups:[{ title:'Reports & Analytics', items:[{label:'Transactions Report',href:'vendortransactionreport.dc.html'},{label:'Product Report',href:'vendorproductreport.dc.html'},{label:'Order Report',href:'vendororderreport.dc.html'},'VAT Report'] }] },
+      { key:'customers', label:'Customers', glyph:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8', title:'Customers', groups:[{ title:'People', items:[{label:'Reviews',href:'vendorproductreview.dc.html'},'Delivery partners','Support tickets'] }] },
+      { key:'settings', label:'Settings', glyph:'M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6', title:'Settings', groups:[{ title:'Store', items:['Shop settings','Payouts (Stripe)','Shipping methods'] }] },
+    ];
+    const cur = RAIL.find(r=>r.key===S.rail) || RAIL[0];
+    const rail = RAIL.map(r=>({ label:r.label, glyph:r.glyph, onClick:()=>this.setState({rail:r.key}),
+      style:'width:42px;height:42px;display:grid;place-items:center;border-radius:var(--radius-md);border:none;cursor:pointer;transition:all var(--dur-fast) var(--ease-out);' + (r.key===cur.key ? 'background:var(--color-primary);color:#fff;box-shadow:var(--shadow-primary);' : 'background:transparent;color:var(--text-muted);') }));
+    const ACTIVE = "All Orders";
+    const railGroups = cur.groups.map((g,gi)=>({ title:g.title, items:g.items.map((x,ii)=>{ const label=x.label||x; const href=x.href||'#'; const on = ACTIVE ? label===ACTIVE : (gi===0&&ii===0);
+      const NC={'All Orders':[25,'iris'],'Pending':[3,'info'],'Confirmed':[4,'success'],'Packaging':[1,'saffron'],'Out for Delivery':[2,'iris'],'Delivered':[11,'success'],'Returned':[1,'warning'],'Failed to Deliver':[2,'error'],'Canceled':[1,'neutral'],'Refund Requests':[2,'warning'],'Product List':[8,'iris'],'Pending Requests':[1,'warning'],'Limited Stocks':[3,'error'],'Product Reviews':[3,'iris']}; const TN={iris:['--iris-50','--color-primary'],info:['--info-50','--info-600'],success:['--success-50','--success-600'],saffron:['--saffron-50','--saffron-600'],warning:['--warning-50','--warning-600'],error:['--error-50','--error-600'],neutral:['--neutral-100','--text-muted']}; const nc=NC[label];
+      return { label, href, hasCount:!!nc, count:nc?nc[0]:'', hasDot:!!nc && label!=='All Orders' && g.title==='Sales',
+        dotStyle: nc ? 'width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var('+TN[nc[1]][1]+')' : '',
+        countStyle: nc ? 'min-width:24px;height:22px;padding:0 7px;flex-shrink:0;display:inline-grid;place-items:center;border-radius:var(--radius-full);font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums;background:var('+TN[nc[1]][0]+');color:var('+TN[nc[1]][1]+')' : '',
+        style:'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;transition:all var(--dur-fast) var(--ease-out);' + (on ? 'background:var(--iris-50);color:var(--color-primary);' : 'color:var(--text-body);') }; }) }));
+
+    const tone = { info:['--info-50','--info-600'], success:['--success-50','--success-600'], warning:['--warning-50','--warning-600'], error:['--error-50','--error-600'], iris:['--iris-50','--color-primary'], neutral:['--neutral-100','--text-muted'], saffron:['--saffron-50','--saffron-600'] };
+    const wrap = t => 'width:36px;height:36px;flex-shrink:0;border-radius:var(--radius-md);display:grid;place-items:center;background:var('+tone[t][0]+');color:var('+tone[t][1]+')';
+    const statuses = [
+      { label:'Pending', count:3, t:'warning', glyph:'M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z' },
+      { label:'Confirmed', count:4, t:'success', glyph:'M22 11.1V12a10 10 0 1 1-5.9-9.1M22 4 12 14l-3-3' },
+      { label:'Packaging', count:1, t:'saffron', glyph:'M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8' },
+      { label:'Out for delivery', count:2, t:'info', glyph:'M1 3h15v13H1zM16 8h4l3 3v5h-7M5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z' },
+      { label:'Delivered', count:11, t:'iris', glyph:'M20 6 9 17l-5-5' },
+      { label:'Canceled', count:1, t:'neutral', glyph:'M18 6 6 18M6 6l12 12' },
+      { label:'Returned', count:1, t:'warning', glyph:'M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5' },
+      { label:'Failed to deliver', count:2, t:'error', glyph:'M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z' },
+    ].map(s=>({ ...s, iconWrap:wrap(s.t), countStyle:'font-family:var(--font-display);font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:var('+tone[s.t][1]+')' }));
+
+    const wallet = [
+      { value:'$500.00', label:'Pending withdraw', t:'warning', glyph:'M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z' },
+      { value:'$6,401.97', label:'Total commission', t:'iris', glyph:'M19 5 5 19M6.5 9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM17.5 20a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z' },
+      { value:'$600.00', label:'Already withdrawn', t:'success', glyph:'M22 11.1V12a10 10 0 1 1-5.9-9.1M22 4 12 14l-3-3' },
+      { value:'$822.00', label:'Delivery charge earned', t:'info', glyph:'M1 3h15v13H1zM16 8h4l3 3v5h-7M5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z' },
+      { value:'$2,534.50', label:'Total tax', t:'neutral', glyph:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h5' },
+      { value:'$25,756.80', label:'Total sales (Stripe)', t:'saffron', glyph:'M3 3v18h18M7 14l4-4 4 4 5-6' },
+    ].map(w=>({ ...w, iconWrap:'width:42px;height:42px;flex-shrink:0;border-radius:var(--radius-md);display:grid;place-items:center;background:var('+tone[w.t][0]+');color:var('+tone[w.t][1]+')' }));
+
+    const G = {
+      bag:'M6 8h12l1 12H5zM9 8V6a3 3 0 0 1 6 0v2',
+      head:'M4 15v-2a8 8 0 0 1 16 0v2M18 15h1.5a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5H18zM6 15H4.5A1.5 1.5 0 0 0 3 16.5v3A1.5 1.5 0 0 0 4.5 21H6z',
+      phone:'M7 2h10a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM11 18h2',
+      watch:'M9 2h6l1 4H8zM8 18l1 4h6l1-4M12 9v3l2 1M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12z',
+      bolt:'M13 2 3 14h7l-1 8 10-12h-7z',
+      laptop:'M4 5h16v11H4zM2 19h20',
+    };
+    const rated = [
+      { title:'Aura Noise-Cancel Headphones', rating:'4.8', reviews:342, price:'$189.00', tint:'var(--iris-50)', icon:'var(--color-primary)', glyph:G.head },
+      { title:'iPhone 15 Pro Max 256GB', rating:'4.8', reviews:214, price:'$1,149.00', tint:'var(--info-50)', icon:'var(--info-600)', glyph:G.phone },
+      { title:'Pulse Smart Watch, 46mm', rating:'4.6', reviews:88, price:'$120.00', tint:'var(--success-50)', icon:'var(--success-600)', glyph:G.watch },
+      { title:'MagSafe Portable Charger 10K', rating:'4.5', reviews:61, price:'$24.00', tint:'var(--saffron-50)', icon:'var(--saffron-600)', glyph:G.bolt },
+    ];
+    const topSelling = [
+      { title:'iPhone 15 Pro Max 256GB', revenue:'$22,980.00', sold:20, tint:'var(--info-50)', icon:'var(--info-600)', glyph:G.phone },
+      { title:'Aura Noise-Cancel Headphones', revenue:'$17,955.00', sold:95, tint:'var(--iris-50)', icon:'var(--color-primary)', glyph:G.head },
+      { title:'Aurora 15 Pro Laptop', revenue:'$8,800.00', sold:4, tint:'var(--neutral-100)', icon:'var(--text-muted)', glyph:G.laptop },
+      { title:'Pulse Smart Watch, 46mm', revenue:'$3,960.00', sold:33, tint:'var(--success-50)', icon:'var(--success-600)', glyph:G.watch },
+      { title:'MagSafe Portable Charger 10K', revenue:'$1,464.00', sold:61, tint:'var(--saffron-50)', icon:'var(--saffron-600)', glyph:G.bolt },
+    ];
+    const av = t => 'width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-size:18px;font-weight:800;background:var('+tone[t][0]+');color:var('+tone[t][1]+')';
+    const couriers = [
+      { name:'Marcus Dean', initials:'MD', rating:'4.9', delivered:128, avatar:av('success') },
+      { name:'Priya Tandon', initials:'PT', rating:'4.8', delivered:96, avatar:av('iris') },
+      { name:'Leo Martins', initials:'LM', rating:'4.6', delivered:71, avatar:av('info') },
+      { name:'Aisha Karim', initials:'AK', rating:'4.7', delivered:54, avatar:av('saffron') },
+    ];
+
+    const d = SERIES[S.range];
+    const sum = a => a.reduce((x,y)=>x+y,0);
+    return {
+      rail, railTitle:cur.title, railGroups,
+      sideOpen:S.sideOpen, sideW: S.sideOpen ? '280px' : '64px', brandPad: S.sideOpen ? '20px' : '14px',
+      toggleSide:()=>this.setState(st=>({sideOpen:!st.sideOpen})),
+      sideBtn:()=>{ if(window.innerWidth<=1200) this.setState(st=>({vdOpen:!st.vdOpen, profileOpen:false})); else this.setState(st=>({sideOpen:!st.sideOpen})); },
+      panelOn: S.sideOpen || !!S.vdOpen,
+      vdOpen: !!S.vdOpen, vdCls: S.vdOpen ? 'is-open' : '', closeVd:()=>this.setState({vdOpen:false}),
+      sideAria: ((typeof window!=='undefined' && window.innerWidth<=1200) ? S.vdOpen : S.sideOpen) ? 'Hide sidebar' : 'Open menu',
+      sideIcon: (typeof window!=='undefined' && window.innerWidth<=1200) ? (S.vdOpen ? 'm11 17-5-5 5-5M18 17l-5-5 5-5' : 'M4 6h16M4 12h16M4 18h16') : (S.sideOpen ? 'm11 17-5-5 5-5M18 17l-5-5 5-5' : 'M4 6h16M4 12h16M4 18h16'),
+      moreOpen: !!S.moreOpen, moreCls: S.moreOpen ? 'is-open' : '', moreBg: S.moreOpen ? 'var(--surface-sunken)' : 'none', toggleMore:()=>this.setState(st=>({moreOpen:!st.moreOpen, profileOpen:false})), closeMore:()=>this.setState({moreOpen:false}),
+      profileOpen:S.profileOpen,
+      toggleProfile:()=>this.setState(st=>({moreOpen:false, profileOpen:!st.profileOpen})),
+      closeProfile:()=>this.setState({profileOpen:false}),
+      chevStyle: 'transition:transform var(--dur-fast) var(--ease-out);' + (S.profileOpen ? 'transform:rotate(180deg)' : ''),
+      profileBtnStyle: 'display:flex;align-items:center;gap:10px;height:48px;padding:0 12px 0 6px;border-radius:var(--radius-full);cursor:pointer;font-family:var(--font-sans);transition:all var(--dur-fast) var(--ease-out);' + (S.profileOpen ? 'border:1px solid var(--iris-200);background:var(--iris-50);box-shadow:0 0 0 3px var(--iris-50);' : 'border:1px solid var(--border-subtle);background:var(--surface-card);'),
+      segTabs: [['loaded','Default'],['loading','Loading'],['empty','Empty'],['error','Error']].map(([k,l])=>({ label:l, onClick:()=>this.setState({stateTab:k}), style:seg(S.stateTab===k) })),
+      isLoaded:S.stateTab==='loaded', isLoading:S.stateTab==='loading', isEmpty:S.stateTab==='empty', isError:S.stateTab==='error',
+      rangeTabs: [['year','This year'],['month','This month'],['week','This week']].map(([k,l])=>({ label:l, onClick:()=>this.setState({range:k}), style:seg(S.range===k) })),
+      incomeTotal: money(sum(d.income)), commTotal: money(sum(d.comm)),
+      chartRef:this.chartRef,
+      statuses, wallet, rated, topSelling, couriers,
+      sk8:[1,2,3,4,5,6,7,8], sk6:[1,2,3,4,5,6],
+      saved: !!S.saved, savedMsg: S.savedMsg || '',
+      saveLabel: S.saving ? 'Saving…' : 'Save Changes',
+      save:()=>{ this.setState({saving:true}); setTimeout(()=>{ this.setState({saving:false, saved:true, savedMsg:'Profile updated'}); setTimeout(()=>this.setState({saved:false}),2400); },700); },
+      ...(()=>{ const S=this.state; const flash=(m)=>{ this.setState({saved:true,savedMsg:m}); clearTimeout(this._ft); this._ft=setTimeout(()=>this.setState({saved:false}),2400); };
+        const trk=(on)=>'position:relative;width:44px;height:24px;flex-shrink:0;padding:0;border-radius:var(--radius-full);border:none;cursor:pointer;transition:background var(--dur-fast) var(--ease-out);background:'+(on?'var(--color-primary)':'var(--neutral-300)');
+        const knb=(on)=>'position:absolute;top:3px;left:'+(on?'23px':'3px')+';width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:var(--shadow-xs);transition:left var(--dur-fast) var(--ease-out)';
+        const chip=(on)=>'height:34px;padding:0 14px;border-radius:var(--radius-full);cursor:pointer;font-size:13px;font-weight:600;font-family:var(--font-sans);transition:all var(--dur-fast) var(--ease-out);'+(on?'border:1px solid var(--color-primary);background:var(--iris-50);color:var(--color-primary)':'border:1px solid var(--border-subtle);background:var(--surface-card);color:var(--text-body)');
+        const tone={neutral:['--neutral-100','--text-muted'],success:['--success-50','--success-600'],warning:['--warning-50','--warning-600'],error:['--error-50','--error-600'],iris:['--iris-50','--color-primary'],info:['--info-50','--info-600'],saffron:['--saffron-50','--saffron-600']};
+        const pill=(t)=>'display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:var(--radius-full);background:var('+tone[t][0]+');color:var('+tone[t][1]+')';
+        return ((()=>{ const ST={'Pending':['info','M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z',3],'Confirmed':['success','M22 11.1V12a10 10 0 1 1-5.9-9.1M22 4 12 14l-3-3',4],'Packaging':['saffron','M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8',1],'Out for Delivery':['iris','M1 3h15v13H1zM16 8h4l3 3v5h-7M5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',2],'Delivered':['success','M20 6 9 17l-5-5',11],'Canceled':['neutral','M18 6 6 18M6 6l12 12',1],'Returned':['warning','M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5',1],'Failed to Deliver':['error','M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z',2]}; const st=S.ostatus;
+          return {
+            status:st, statusLabel:st, statusPill:pill(ST[st][0]), statusOpts:Object.keys(ST),
+            onStatus:(e)=>{ this.setState({ostatus:e.target.value}); flash('Order marked as '+e.target.value); },
+            payLabel:S.paid?'Paid':'Unpaid', payPill:pill(S.paid?'success':'error'), payTextStyle:'font-size:14px;color:'+(S.paid?'var(--success-600)':'var(--error-600)'),
+            togglePaid:()=>{ this.setState(x=>({paid:!x.paid})); flash(S.paid?'Payment marked unpaid':'Payment marked paid'); }, paidTrack:trk(S.paid), paidKnob:knb(S.paid),
+            onPrint:()=>{ flash('Preparing invoice…'); setTimeout(()=>window.print(),300); },
+            items:[
+              {sl:1,title:'Aura Noise-Cancel Headphones',unit:'\u0024189.00',qty:1,price:'\u0024189.00',disc:'\u00240.00',total:'\u0024189.00',tint:'var(--iris-50)',icon:'var(--color-primary)',glyph:'M4 15v-2a8 8 0 0 1 16 0v2M18 15h1.5a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5H18zM6 15H4.5A1.5 1.5 0 0 0 3 16.5v3A1.5 1.5 0 0 0 4.5 21H6z'},
+              {sl:2,title:'MagSafe Portable Charger 10K',unit:'\u002424.50',qty:2,price:'\u002449.00',disc:'\u00240.00',total:'\u002449.00',tint:'var(--saffron-50)',icon:'var(--saffron-600)',glyph:'M13 2 3 14h7l-1 8 10-12h-7z'},
+            ],
+          }; })()); })(),
+    };
+  }
+}
+</script>
+</body>
+</html>
