@@ -49,6 +49,7 @@ app/
   layout.tsx                 # fonts, ThemeProvider, <html data-theme>, Toaster
   globals.css                # tokens (DESIGN_SYSTEM.md §11)
   (storefront)/layout.tsx    # StorefrontHeader + Footer (forcedTheme light)
+  (auth)/layout.tsx          # /login + /register: minimal AuthHeader only (no storefront header/footer)
   (account)/account/layout.tsx   # storefront header + AccountSidebar
   vendor/(auth)/…            # vendor login/register (simple header, no sidebar)
   vendor/(panel)/layout.tsx  # VendorShell: top bar + rail/panel sidebar
@@ -67,11 +68,11 @@ design/          # the approved .dc.html design files (read-only reference)
 
 **Storefront** — `Sundry Home` → `/` · `Category Page` → `/category/[slug]` · `Product Detail Page` → `/product/[slug]` · `Cart Page` → `/cart` · `Checkout Page` → `/checkout` (steps: Shipping & Billing → Payment; success opens the Thank-you modal) · `Order Complete` → `/checkout/complete` · `All Vendor Page` → `/vendors` · `Vendor Details Page` → `/vendors/[slug]` · `Login Page` → `/login` · `Register Page` → `/register`
 
-**Account** — `user.dashboard` → `/account` · `userOrder` → `/account/orders` · `userorderdetails` → `/account/orders/[id]` · `usertrackorder` → `/account/track-order` · `userwishlist` → `/account/wishlist` · `useraddress` → `/account/addresses` · `userchat` → `/account/inbox` (tabs: Support = Sundry AI Support, Deliveryman) · `supportticket` → `/account/support`
+**Account** — `user.dashboard` → `/dashboard` · `userOrder` → `/account/orders` · `userorderdetails` → `/account/orders/[id]` · `usertrackorder` → `/account/track-order` · `userwishlist` → `/account/wishlist` · `useraddress` → `/account/addresses` · `userchat` → `/account/inbox` (tabs: Support = Sundry AI Support, Deliveryman) · `supportticket` → `/account/support`
 
-**Vendor** — `vendorLogin` → `/vendor/login` · `vendorregister` → `/vendor/register` · `vendordashboard` → `/vendor` · `vendorProfile` → `/vendor/profile` · `vendorchangepassword` → `/vendor/change-password` · `vendorproductlist` → `/vendor/products` · `vendoraddproduct` → `/vendor/products/new` · `vendoreditproduct` → `/vendor/products/[id]/edit` · `vendorproductreview` → `/vendor/reviews` · `vendororderlist` → `/vendor/orders` · `vendororderdetails` → `/vendor/orders/[id]` · `vendorcoupon` → `/vendor/coupons` · `vendorproductreport` / `vendororderreport` / `vendortransactionreport` → `/vendor/reports/{products|orders|transactions}`
+**Vendor** — `vendorLogin` → `/vendor/login` · `vendorregister` → `/vendor/register` · `vendordashboard` → `/vendor/dashboard` · `vendorProfile` → `/vendor/profile` · `vendorchangepassword` → `/vendor/change-password` · `vendorproductlist` → `/vendor/products` · `vendoraddproduct` → `/vendor/products/new` · `vendoreditproduct` → `/vendor/products/[id]/edit` · `vendorproductreview` → `/vendor/reviews` · `vendororderlist` → `/vendor/orders` · `vendororderdetails` → `/vendor/orders/[id]` · `vendorcoupon` → `/vendor/coupons` · `vendorproductreport` / `vendororderreport` / `vendortransactionreport` → `/vendor/reports/{products|orders|transactions}`
 
-**Admin** — `admindashboard` → `/admin` · `adminallorders` → `/admin/orders` · `adminproductlist` → `/admin/products` · `adminproductadd` → `/admin/products/new` · `adminvendorproductlist` → `/admin/products/requests` · `adminproductdetail` → `/admin/products/[id]` · `adminproductstock` → `/admin/products/stock` · `adminvendorlist` → `/admin/vendors` · `adminaddvendor` → `/admin/vendors/new` · `admincustomerlist` → `/admin/customers` · `admincustomerreview` → `/admin/customers/reviews` · `adminearningreports` / `adminorderreport` / `adminproductreport` / `admintransactionreport` → `/admin/reports/{earnings|orders|products|transactions}`
+**Admin** — `admindashboard` → `/admin/dashboard` · `adminallorders` → `/admin/orders` · `adminproductlist` → `/admin/products` · `adminproductadd` → `/admin/products/new` · `adminvendorproductlist` → `/admin/products/requests` · `adminproductdetail` → `/admin/products/[id]` · `adminproductstock` → `/admin/products/stock` · `adminvendorlist` → `/admin/vendors` · `adminaddvendor` → `/admin/vendors/new` · `admincustomerlist` → `/admin/customers` · `admincustomerreview` → `/admin/customers/reviews` · `adminearningreports` / `adminorderreport` / `adminproductreport` / `admintransactionreport` → `/admin/reports/{earnings|orders|products|transactions}`
 
 Reference only (not routes): `Design System`, `Component States`, `Mobile Layout`, `Canvas`.
 
@@ -106,6 +107,7 @@ Reference only (not routes): `Design System`, `Component States`, `Mobile Layout
 
 ## 9. UX behaviors to preserve (already approved in the designs)
 
+- **Auth pages (`/login`, `/register`):** minimal header (logo · Home · Sell on Sundry · Start selling → `/vendor/login`), no footer, two-column card (Iris brand panel + form; panel hidden ≤900). The design files were updated to match.
 - **Header (storefront):** "All Categories" in the search pill **and** the nav button both open the two-pane mega-menu (hover on desktop, tap on touch, no dead zone). ≤1024: compact row ☰ · search · wishlist · cart; logo hidden ≤720; the category panel floats over content; drawer = Shop / My Account / More.
 - **MiniCart:** hover-open on desktop, tap-open on touch; items grouped by seller; qty stepper recalculates subtotal/total; free-shipping bar turns green at the threshold.
 - **Product cards:** hover lift; quick-view eye opens QuickViewModal; wishlist toggle; add-to-cart. On touch these controls are always visible.

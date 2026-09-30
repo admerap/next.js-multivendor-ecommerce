@@ -149,405 +149,96 @@
       [style*="height: 40px"][style*="justify-content: space-between"]{justify-content:center!important}
       .r-footbrand{grid-column:1/-1}
     }
+
+    /* auth layout */
+    @media (max-width:900px){ .au-card{grid-template-columns:1fr!important} .au-brand{display:none!important} }
+    @media (max-width:720px){ .au-nav{display:none!important} }
 </style>
 </helmet>
 
 <div>
 
-  <!-- Utility bar -->
-  <div style="background:var(--surface-inverse);color:var(--neutral-300);font-size:13px">
-    <div style="max-width:var(--container-max);margin:0 auto;padding:0 var(--container-pad);height:40px;display:flex;align-items:center;justify-content:space-between">
-      <span style="display:flex;align-items:center;gap:8px">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7 12.8 12.8 0 0 0 .7 2.8 2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5 12.8 12.8 0 0 0 2.8.7 2 2 0 0 1 1.7 2z"/></svg>
-        +1 (800) 555-0142
-      </span>
-      <div style="display:flex;align-items:center;gap:22px">
-        <a href="usertrackorder.dc.html" style="color:var(--neutral-300)">Track order</a>
-        <a href="supportticket.dc.html" style="color:var(--neutral-300)">Help Center</a>
-        <a href="Register Page.dc.html" style="color:var(--saffron-300);font-weight:600;display:flex;align-items:center;gap:6px">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M4 9h16"/></svg>
-          Become a Seller
+  <!-- Header (auth: minimal, no search/cart/footer) -->
+  <header style="background:var(--surface-card);border-bottom:1px solid var(--border-subtle)">
+    <div style="max-width:var(--container-max);margin:0 auto;padding:0 var(--container-pad);height:72px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="display:flex;align-items:center;gap:32px">
+        <a href="Sundry Home.dc.html" style="display:flex;align-items:center;gap:10px">
+          <span style="width:40px;height:40px;background:var(--color-primary);box-shadow:var(--shadow-primary);border-radius:var(--radius-md);display:grid;place-items:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg></span>
+          <span style="font-family:var(--font-display);font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong)">Sundry</span>
         </a>
+        <nav class="au-nav" aria-label="Main" style="display:flex;align-items:center;gap:4px">
+          <a href="Sundry Home.dc.html" style="display:inline-flex;align-items:center;height:44px;padding:0 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;color:var(--text-body)" style-hover="background:var(--surface-hover);color:var(--color-primary)">Home</a>
+          <a href="vendorLogin.dc.html" style="display:inline-flex;align-items:center;height:44px;padding:0 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;color:var(--text-body)" style-hover="background:var(--surface-hover);color:var(--color-primary)">Sell on Sundry</a>
+        </nav>
       </div>
+      <a href="vendorLogin.dc.html" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 20px;border-radius:var(--radius-md);background:var(--color-primary);color:#fff;font-size:14px;font-weight:600;box-shadow:var(--shadow-primary)" style-hover="background:var(--color-primary-hover);color:#fff"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M4 9h16"/></svg>Start selling</a>
     </div>
-  </div>
-
-  <!-- Header -->
-  <header class="sd-head" style="background:var(--surface-card);box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:40">
-    <div style="max-width:var(--container-max);margin:0 auto;padding:14px var(--container-pad);display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-      <button class="sd-m" onClick="{{ openDrawer }}" aria-label="Open menu" style="width:42px;height:42px;flex-shrink:0;place-items:center;border-radius:var(--radius-md);border:1px solid var(--border-subtle);background:var(--surface-card);cursor:pointer;color:var(--text-strong)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-      <a href="Sundry Home.dc.html" class="r-logo" style="display:flex;align-items:center;gap:10px;flex-shrink:0">
-        <span style="width:38px;height:38px;background:var(--color-primary);box-shadow:var(--shadow-primary);border-radius:11px;display:grid;place-items:center">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
-        </span>
-        <span style="font-family:var(--font-display);font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong)">Sundry</span>
-      </a>
-      <div class="sd-search {{ searchCls }}" style="flex:1 1 300px;min-width:0;display:flex;align-items:center;height:48px;padding:0 8px;border-radius:var(--radius-full);background:var(--surface-sunken);border:1px solid var(--border-subtle)">
-        <div class="r-searchcat" style="position:relative;display:flex;align-items:center" onMouseEnter="{{ openSearchCat }}" onMouseLeave="{{ closeSearchCat }}">
-        <button style="display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;font-size:14px;font-weight:600;color:var(--text-body);background:none;border:none;border-right:1px solid var(--border-default);cursor:pointer;white-space:nowrap">All Categories
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-        </button>
-        <sc-if value="{{ searchCatOpen }}" hint-placeholder-val="{{ false }}">
-          <div style="position:absolute;top:100%;left:0;z-index:60;padding-top:12px" onMouseLeave="{{ clearMenuCat }}">
-            <div style="display:flex;background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);border:1px solid var(--border-subtle);overflow:hidden;min-height:420px">
-              <div style="width:280px;flex-shrink:0;padding:8px;border-right:1px solid var(--border-subtle)">
-                <sc-for list="{{ menuCats }}" as="c" hint-placeholder-count="8">
-                  <a href="Category Page.dc.html" onMouseEnter="{{ c.onHover }}" class="flt-row" style="{{ c.rowStyle }}">
-                    <span style="width:32px;height:32px;flex-shrink:0;border-radius:var(--radius-sm);display:grid;place-items:center;background:{{ c.tint }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ c.icon }}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{ c.glyph }}"/></svg></span>
-                    <span style="flex:1">{{ c.name }}</span>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{ c.chev }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                  </a>
-                </sc-for>
-              </div>
-              <div style="width:560px;padding:28px 32px;display:grid;grid-template-columns:1fr 1fr;gap:28px 40px;align-content:start">
-                <sc-for list="{{ menuGroups }}" as="g" hint-placeholder-count="4">
-                  <div>
-                    <h4 style="font-family:var(--font-display);font-size:16px;font-weight:800;letter-spacing:-0.01em;color:var(--text-strong);margin:0 0 14px">{{ g.title }}</h4>
-                    <div style="display:flex;flex-direction:column;gap:11px">
-                      <sc-for list="{{ g.items }}" as="sub" hint-placeholder-count="5">
-                        <a href="Category Page.dc.html" class="brand-row" style="font-size:14px;color:var(--text-body)">{{ sub }}</a>
-                      </sc-for>
-                    </div>
-                  </div>
-                </sc-for>
-              </div>
-            </div>
-          </div>
-        </sc-if>
-        </div>
-        <input placeholder="Search products, brands and categories…" style="flex:1;min-width:0;background:transparent;border:none;outline:none;padding:0 12px;font-size:14px;color:var(--text-strong);font-family:var(--font-sans)">
-        <button style="height:36px;padding:0 16px;display:flex;align-items:center;gap:6px;background:var(--color-primary);color:#fff;border:none;border-radius:var(--radius-full);font-weight:600;font-size:13px;cursor:pointer">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          Search
-        </button>
-      </div>
-      <div class="sd-icons" style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-        <button class="sd-m" onClick="{{ toggleSearch }}" aria-label="Search" style="width:40px;height:40px;place-items:center;border-radius:var(--radius-md);border:none;background:none;cursor:pointer;color:var(--text-body)"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ searchIcon }}"/></svg></button>
-        <button style="position:relative;display:flex;flex-direction:column;align-items:center;padding:4px 12px;border-radius:var(--radius-md);background:none;border:none;cursor:pointer">
-          <span style="position:relative"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-body)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l9 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg>
-          <span style="position:absolute;top:-6px;right:-8px;font-size:10px;font-weight:700;color:#fff;background:var(--error-500);border-radius:50%;width:16px;height:16px;display:grid;place-items:center">5</span></span>
-          <span class="sd-label" style="font-size:11px;margin-top:2px;font-weight:500;color:var(--text-muted)">Wishlist</span>
-        </button>
-        <div class="sd-d" style="position:relative" onMouseEnter="{{ openAcct }}" onMouseLeave="{{ closeAcct }}">
-        <button onClick="{{ tapAcct }}" aria-haspopup="menu" style="display:flex;flex-direction:column;align-items:center;padding:4px 12px;border-radius:var(--radius-md);background:none;border:none;cursor:pointer">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-body)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a6 6 0 0 0-12 0M12 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>
-          <span style="font-size:11px;margin-top:2px;font-weight:500;color:var(--text-muted)">Account</span>
-        </button>
-          <sc-if value="{{ acctOpen }}" hint-placeholder-val="{{ false }}">
-            <div style="position:absolute;top:100%;right:0;padding-top:12px;z-index:60">
-              <div role="menu" style="width:280px;background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);border:1px solid var(--border-subtle);overflow:hidden">
-                <a href="user.dashboard.dc.html" style="display:flex;align-items:center;gap:12px;padding:16px;background:linear-gradient(120deg,var(--iris-50),var(--surface-card));border-bottom:1px solid var(--border-subtle)">
-                  <span style="width:44px;height:44px;flex-shrink:0;border-radius:50%;background:var(--color-primary);display:grid;place-items:center;color:#fff;font-weight:700">T</span>
-                  <span style="flex:1;min-width:0"><span style="display:block;font-size:12px;color:var(--text-muted)">Hello, Test</span><span style="display:block;font-size:15px;font-weight:700;color:var(--text-strong)">My Dashboard</span><span style="display:block;font-size:12px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">test@gmail.com</span></span>
-                </a>
-                <div style="padding:6px">
-                  <a href="user.dashboard.dc.html" role="menuitem" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;color:var(--text-body);transition:all var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a6 6 0 0 0-12 0M12 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>Profile Info</a>
-                  <a href="userOrder.dc.html" role="menuitem" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;color:var(--text-body);transition:all var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>My Orders</a>
-                  <a href="userwishlist.dc.html" role="menuitem" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;color:var(--text-body);transition:all var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l9 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg>Wish List</a>
-                  <a href="usertrackorder.dc.html" role="menuitem" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;color:var(--text-body);transition:all var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7M5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>Track Order</a>
-                  <a href="userchat.dc.html" role="menuitem" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;color:var(--text-body);transition:all var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Inbox</a>
-                  <a href="supportticket.dc.html" role="menuitem" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;color:var(--text-body);transition:all var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9a2 2 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a2 2 0 0 0 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1z"/></svg>Support Ticket</a>
-                </div>
-                <div style="padding:6px;border-top:1px solid var(--border-subtle)">
-                  <a href="Login Page.dc.html" role="menuitem" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:600;color:var(--error-600);transition:all var(--dur-fast) var(--ease-out)" style-hover="background:var(--error-50);color:var(--error-600)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Log Out</a>
-                </div>
-              </div>
-            </div>
-          </sc-if>
-        </div>
-        <div style="position:relative" onMouseEnter="{{ openCart }}" onMouseLeave="{{ closeCart }}">
-        <button onClick="{{ tapCart }}" aria-label="Cart" style="display:flex;align-items:center;gap:10px;padding:8px 16px 8px 12px;margin-left:4px;border-radius:var(--radius-full);background:var(--color-primary-subtle);border:none;cursor:pointer">
-          <span style="position:relative"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
-          <span style="position:absolute;top:-8px;right:-8px;font-size:10px;font-weight:700;color:#fff;background:var(--color-primary);border-radius:50%;width:16px;height:16px;display:grid;place-items:center">3</span></span>
-          <span class="sd-carttext" style="display:flex;flex-direction:column;line-height:1.15;text-align:left">
-            <span style="font-size:10px;font-weight:500;color:var(--text-muted)">Cart total</span>
-            <span style="font-size:14px;font-weight:700;color:var(--text-strong);font-variant-numeric:tabular-nums">{{ cartTotalStr }}</span>
-          </span>
-        </button>
-        <sc-if value="{{ cartOpen }}" hint-placeholder-val="{{ false }}">
-          <div class="r-cartback" onClick="{{ closeCart }}"></div>
-          <div class="r-cartpop" style="position:absolute;top:100%;right:0;padding-top:12px;z-index:60">
-          <div class="r-cartcard" style="width:404px;max-width:92vw;background:var(--surface-card);border-radius:var(--radius-xl);box-shadow:var(--shadow-xl);border:1px solid var(--border-subtle);overflow:hidden">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:linear-gradient(120deg,var(--iris-50),var(--surface-card))">
-              <span style="display:flex;align-items:center;gap:10px"><span style="width:34px;height:34px;border-radius:var(--radius-md);background:var(--color-primary);display:grid;place-items:center;box-shadow:var(--shadow-primary)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L23 6H6M9 8h11"/></svg></span><span style="font-family:var(--font-display);font-size:18px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong)">Shopping Cart</span><span style="font-size:12px;font-weight:700;color:var(--color-primary);background:var(--iris-50);border-radius:var(--radius-full);padding:2px 9px">{{ cartCountStr }}</span></span>
-              <button onClick="{{ closeCart }}" aria-label="Close" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:var(--radius-full);background:var(--surface-card);border:1px solid var(--border-subtle);cursor:pointer;color:var(--text-muted);transition:all var(--dur-fast) var(--ease-out)" style-hover="background:var(--error-50);color:var(--error-500);border-color:var(--error-50)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-            </div>
-            <div style="padding:20px">
-              <div style="max-height:280px;overflow-y:auto;margin:-4px -8px 12px;padding:4px 8px 0">
-              <sc-for list="{{ cartItems }}" as="it" hint-placeholder-count="2">
-                <div style="display:flex;align-items:center;gap:14px;padding:12px;margin-bottom:16px;border-radius:var(--radius-lg);background:var(--surface-sunken)">
-                  <span style="width:64px;height:64px;flex-shrink:0;border-radius:var(--radius-md);display:grid;place-items:center;background:{{ it.tint }}"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="{{ it.iconColor }}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="{{ it.glyph }}"/></svg></span>
-                  <div style="min-width:0;flex:1"><h4 style="font-size:14px;font-weight:600;color:var(--text-strong);margin:0 0 2px;text-wrap:pretty">{{ it.title }}</h4><span style="display:block;font-size:11px;font-weight:600;color:var(--color-primary);margin-bottom:4px">{{ it.seller }}</span><span style="font-size:15px;font-weight:800;color:var(--text-strong);font-variant-numeric:tabular-nums">{{ it.priceStr }}</span></div>
-                  <div style="display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:4px">
-                    <button onClick="{{ it.decOrRemove }}" style="background:none;border:none;cursor:pointer;color:var(--error-500);display:grid;place-items:center;padding:3px;border-radius:6px;transition:background var(--dur-fast)" style-hover="background:var(--error-50)"><sc-if value="{{ it.isLast }}" hint-placeholder-val="{{ true }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></sc-if><sc-if value="{{ it.notLast }}" hint-placeholder-val="{{ false }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg></sc-if></button>
-                    <span style="font-size:13px;font-weight:700;color:var(--text-strong);font-variant-numeric:tabular-nums;padding:2px 0">{{ it.qty }}</span>
-                    <button onClick="{{ it.inc }}" style="background:none;border:none;cursor:pointer;color:var(--color-primary);display:grid;place-items:center;padding:3px;border-radius:6px;transition:background var(--dur-fast)" style-hover="background:var(--iris-50)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>
-                  </div>
-                </div>
-              </sc-for>
-              </div>
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><span style="font-size:15px;color:var(--text-body)">Subtotal</span><b style="color:var(--color-primary);font-size:19px;font-weight:800;font-variant-numeric:tabular-nums">{{ cartTotalStr }}</b></div>
-              <div style="display:flex;gap:10px;align-items:stretch">
-                <button style="display:flex;align-items:center;gap:4px;background:none;border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:0 16px;font-size:13px;font-weight:600;color:var(--text-body);cursor:pointer;font-family:var(--font-sans);white-space:nowrap;transition:all var(--dur-fast)" style-hover="border-color:var(--color-primary);color:var(--color-primary)">Expand cart <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
-                <div style="flex:1"><x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="primary" size="lg" block="{{ true }}" hint-size="100%,52px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>Proceed To Checkout</x-import></div>
-              </div>
-            </div>
-          </div>
-          </div>
-        </sc-if>
-        </div>
-      </div>
-    </div>
-    <nav class="r-nav" style="position:relative;border-top:1px solid var(--border-subtle)">
-      <div style="max-width:var(--container-max);margin:0 auto;padding:0 var(--container-pad);height:56px;display:flex;align-items:center;gap:8px">
-        <div class="r-navcat" style="position:relative;height:100%;display:flex;align-items:center" onMouseEnter="{{ openCatMenu }}" onMouseLeave="{{ closeCatMenu }}">
-        <button onClick="{{ toggleMobCat }}" style="display:flex;align-items:center;gap:8px;height:44px;padding:0 18px;background:var(--color-primary);color:#fff;border:none;border-radius:var(--radius-md);font-weight:600;font-size:14px;cursor:pointer">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-          All Categories
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-        </button>
-        <sc-if value="{{ catMenuOpen }}" hint-placeholder-val="{{ false }}">
-          <div class="r-mega" style="position:absolute;top:100%;left:0;z-index:60;padding-top:8px" onMouseLeave="{{ clearMenuCat }}">
-            <div style="display:flex;background:var(--surface-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);border:1px solid var(--border-subtle);overflow:hidden;min-height:420px">
-              <div style="width:280px;flex-shrink:0;padding:8px;border-right:1px solid var(--border-subtle)">
-                <sc-for list="{{ menuCats }}" as="c" hint-placeholder-count="8">
-                  <a href="Category Page.dc.html" onMouseEnter="{{ c.onHover }}" class="flt-row" style="{{ c.rowStyle }}">
-                    <span style="width:32px;height:32px;flex-shrink:0;border-radius:var(--radius-sm);display:grid;place-items:center;background:{{ c.tint }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ c.icon }}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{ c.glyph }}"/></svg></span>
-                    <span style="flex:1">{{ c.name }}</span>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{ c.chev }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                  </a>
-                </sc-for>
-              </div>
-              <div style="width:560px;padding:28px 32px;display:grid;grid-template-columns:1fr 1fr;gap:28px 40px;align-content:start">
-                <sc-for list="{{ menuGroups }}" as="g" hint-placeholder-count="4">
-                  <div>
-                    <h4 style="font-family:var(--font-display);font-size:16px;font-weight:800;letter-spacing:-0.01em;color:var(--text-strong);margin:0 0 14px">{{ g.title }}</h4>
-                    <div style="display:flex;flex-direction:column;gap:11px">
-                      <sc-for list="{{ g.items }}" as="sub" hint-placeholder-count="5">
-                        <a href="Category Page.dc.html" class="brand-row" style="font-size:14px;color:var(--text-body)">{{ sub }}</a>
-                      </sc-for>
-                    </div>
-                  </div>
-                </sc-for>
-              </div>
-            </div>
-          </div>
-        </sc-if>
-        </div>
-        <div class="r-navlinks" style="display:flex;align-items:center;gap:2px;margin-left:12px;flex-wrap:wrap">
-          <a href="Sundry Home.dc.html" style="font-weight:600;font-size:14px;color:var(--text-body);padding:8px 12px">Home</a>
-          <a href="Category Page.dc.html" style="font-weight:600;font-size:14px;color:var(--text-body);padding:8px 12px">Brands</a>
-          <a href="Category Page.dc.html" style="font-weight:600;font-size:14px;color:var(--text-body);padding:8px 12px">Offers</a>
-          <a href="All Vendor Page.dc.html" style="font-weight:600;font-size:14px;color:var(--color-primary);padding:8px 12px">All Vendors</a>
-          <a href="vendordashboard.dc.html" style="font-weight:600;font-size:14px;color:var(--text-body);padding:8px 12px">Vendor Zone</a>
-        </div>
-        <span style="margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--color-accent-strong)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11 3 5V3h2l6 6M9 3h12v12M13 21l-4-4 8-8"/></svg>
-          Free shipping on orders over $75
-        </span>
-      </div>
-      <sc-if value="{{ mobCatOpen }}" hint-placeholder-val="{{ false }}">
-        <div class="r-mobcatback" onClick="{{ toggleMobCat }}"></div>
-        <div class="r-mobcat" style="position:absolute;left:0;right:0;top:100%;z-index:58;max-width:var(--container-max);margin:0 auto;padding:8px var(--container-pad) 0">
-          <div style="background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);padding:8px;max-height:min(70vh,560px);overflow-y:auto;overscroll-behavior:contain">
-            <sc-for list="{{ drawerCats }}" as="c" hint-placeholder-count="8">
-              <div>
-                <button onClick="{{ c.onToggle }}" style="{{ c.rowStyle }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ c.glyph }}"/></svg><span style="flex:1;text-align:left">{{ c.name }}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="{{ c.chevStyle }}"><path d="m6 9 6 6 6-6"/></svg></button>
-                <sc-if value="{{ c.open }}" hint-placeholder-val="{{ false }}">
-                  <div style="margin:2px 8px 8px 48px;padding:6px 0 6px 12px;border-left:2px solid var(--iris-100);display:flex;flex-direction:column;gap:12px">
-                    <sc-for list="{{ c.groups }}" as="g" hint-placeholder-count="2">
-                      <div><div style="font-size:13px;font-weight:700;color:var(--text-strong);margin-bottom:6px">{{ g.title }}</div><div style="display:flex;flex-direction:column;gap:7px"><sc-for list="{{ g.items }}" as="sub" hint-placeholder-count="3"><a href="Category Page.dc.html" style="font-size:14px;color:var(--text-muted)">{{ sub }}</a></sc-for></div></div>
-                    </sc-for>
-                  </div>
-                </sc-if>
-              </div>
-            </sc-for>
-          </div>
-        </div>
-      </sc-if>
-
-    </nav>
   </header>
 
-  <!-- Mobile drawer -->
-  <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
-    <div onClick="{{ closeDrawer }}" style="position:fixed;inset:0;z-index:100;background:rgba(26,26,35,.5);backdrop-filter:blur(2px);animation:sdFade var(--dur-med) var(--ease-out)"></div>
-    <aside role="dialog" aria-modal="true" aria-label="Menu" style="overscroll-behavior:contain;position:fixed;top:0;left:0;bottom:0;z-index:101;width:min(340px,88vw);background:var(--surface-card);box-shadow:var(--shadow-xl);display:flex;flex-direction:column;animation:sdIn var(--dur-med) var(--ease-out)">
-      <div style="display:flex;align-items:center;gap:10px;padding:16px 16px 14px;border-bottom:1px solid var(--border-subtle)">
-        <span style="width:34px;height:34px;background:var(--color-primary);border-radius:10px;display:grid;place-items:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg></span>
-        <span style="font-family:var(--font-display);font-size:22px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong)">Sundry</span>
-        <button onClick="{{ closeDrawer }}" aria-label="Close menu" style="margin-left:auto;width:38px;height:38px;border-radius:var(--radius-full);border:1px solid var(--border-subtle);background:var(--surface-card);cursor:pointer;color:var(--text-muted);display:grid;place-items:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  <!-- Auth (two columns: brand panel + form) -->
+  <section style="padding:clamp(24px,5vw,56px) var(--container-pad);display:flex;justify-content:center">
+    <div class="au-card" style="width:100%;max-width:1120px;display:grid;grid-template-columns:1fr 1fr;border-radius:var(--radius-xl);overflow:hidden;background:var(--surface-card);box-shadow:var(--shadow-md)">
+      <aside class="au-brand" style="position:relative;overflow:hidden;min-height:560px;padding:clamp(32px,4vw,48px);display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(135deg,var(--iris-700),var(--iris-900));color:#fff">
+        <div style="position:absolute;inset:0;opacity:.35;pointer-events:none;background:radial-gradient(circle at 85% 15%,var(--iris-400),transparent 55%)"></div>
+        <div style="position:relative">
+          <span style="display:flex;align-items:center;gap:10px"><span style="width:40px;height:40px;border-radius:var(--radius-md);background:rgba(255,255,255,.15);display:grid;place-items:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg></span><span style="font-family:var(--font-display);font-size:27px;font-weight:800;letter-spacing:-0.02em">Sundry</span></span>
+          <p style="margin:20px 0 0;max-width:340px;font-size:16px;line-height:1.6;color:rgba(255,255,255,.8)">One storefront, one checkout, thousands of independent sellers and brands.</p>
+        </div>
+        <ul style="position:relative;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px">
+          <li style="display:flex;align-items:center;gap:12px;font-size:14px;font-weight:600"><span style="width:36px;height:36px;flex-shrink:0;border-radius:var(--radius-md);background:rgba(255,255,255,.15);display:grid;place-items:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7M5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg></span>Free shipping on orders over $75</li>
+          <li style="display:flex;align-items:center;gap:12px;font-size:14px;font-weight:600"><span style="width:36px;height:36px;flex-shrink:0;border-radius:var(--radius-md);background:rgba(255,255,255,.15);display:grid;place-items:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM9 12l2 2 4-4"/></svg></span>Secure Stripe checkout &amp; buyer protection</li>
+          <li style="display:flex;align-items:center;gap:12px;font-size:14px;font-weight:600"><span style="width:36px;height:36px;flex-shrink:0;border-radius:var(--radius-md);background:rgba(255,255,255,.15);display:grid;place-items:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg></span>7-day hassle-free returns</li>
+        </ul>
+      </aside>
+      <div style="padding:clamp(24px,4vw,56px);display:flex;flex-direction:column;justify-content:center">
+        <h1 style="font-family:var(--font-display);font-size:clamp(27px,3.5vw,34px);font-weight:800;letter-spacing:-0.02em;line-height:1.15;color:var(--text-strong);margin:0">Create your account</h1>
+        <p style="font-size:16px;color:var(--text-muted);margin:8px 0 28px">Join Sundry to shop thousands of independent sellers with one checkout.</p>
+        <sc-if value="{{ formError }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--radius-md);background:var(--error-50);color:var(--error-600);font-size:13px;font-weight:600;margin-bottom:18px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>{{ formError }}</div>
+        </sc-if>
+        <sc-if value="{{ doneMsg }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--radius-md);background:var(--success-50);color:var(--success-600);font-size:13px;font-weight:600;margin-bottom:18px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{{ doneMsg }}</div>
+        </sc-if>
+  
+        <form onSubmit="{{ submit }}" novalidate style="display:flex;flex-direction:column;gap:18px">
+  
+              <label style="display:flex;flex-direction:column;gap:7px">
+                <span style="font-size:13px;font-weight:600;color:var(--text-body)">Full Name <span style="color:var(--error-500)">*</span></span>
+                <div style="{{ f_name.wrap }}">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="{{ f_name.glyph }}"/></svg>
+                  <input type="{{ f_name.type }}" value="{{ f_name.value }}" onInput="{{ f_name.onInput }}" placeholder="Test Khan" autocomplete="name" style="flex:1;min-width:0;height:100%;border:none;outline:none;background:transparent;padding:0 10px;font-size:14px;color:var(--text-strong);font-family:var(--font-sans)">
+                  
+                </div>
+                <sc-if value="{{ f_name.hasErr }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--error-600)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>{{ f_name.err }}</span></sc-if>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:7px">
+                <span style="font-size:13px;font-weight:600;color:var(--text-body)">Email <span style="color:var(--error-500)">*</span></span>
+                <div style="{{ f_email.wrap }}">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="{{ f_email.glyph }}"/></svg>
+                  <input type="{{ f_email.type }}" value="{{ f_email.value }}" onInput="{{ f_email.onInput }}" placeholder="you@example.com" autocomplete="email" style="flex:1;min-width:0;height:100%;border:none;outline:none;background:transparent;padding:0 10px;font-size:14px;color:var(--text-strong);font-family:var(--font-sans)">
+                  
+                </div>
+                <sc-if value="{{ f_email.hasErr }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--error-600)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>{{ f_email.err }}</span></sc-if>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:7px">
+                <span style="font-size:13px;font-weight:600;color:var(--text-body)">Password <span style="color:var(--error-500)">*</span></span>
+                <div style="{{ f_password.wrap }}">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="{{ f_password.glyph }}"/></svg>
+                  <input type="{{ f_password.type }}" value="{{ f_password.value }}" onInput="{{ f_password.onInput }}" placeholder="At least 8 characters" autocomplete="current-password" style="flex:1;min-width:0;height:100%;border:none;outline:none;background:transparent;padding:0 10px;font-size:14px;color:var(--text-strong);font-family:var(--font-sans)">
+                  <button type="button" onClick="{{ togglePw }}" aria-label="Show password" style="width:36px;height:36px;flex-shrink:0;display:grid;place-items:center;border:none;background:none;cursor:pointer;color:var(--text-muted)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ pwEye }}"/></svg></button>
+                </div>
+                <sc-if value="{{ f_password.hasErr }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--error-600)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>{{ f_password.err }}</span></sc-if>
+              </label>
+          <p style="font-size:12px;line-height:1.5;color:var(--text-muted);margin:-4px 0 0">Use 8+ characters with a mix of letters and numbers. By creating an account you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
+          <button type="submit" style="{{ submitStyle }}">
+            <sc-if value="{{ submitting }}" hint-placeholder-val="{{ false }}"><span style="width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .8s linear infinite"></span></sc-if>
+            {{ submitLabel }}
+          </button>
+        </form>
+        <p style="text-align:center;font-size:14px;color:var(--text-muted);margin:24px 0 0">Already have an account? <a href="Login Page.dc.html" style="font-weight:700">Sign in</a></p>
       </div>
-      <div style="flex:1;overflow-y:auto;padding:12px 10px 20px">
-        <a href="user.dashboard.dc.html" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:var(--radius-lg);background:var(--iris-50);margin:0 4px 6px">
-          <span style="width:42px;height:42px;border-radius:50%;background:var(--color-primary);display:grid;place-items:center;color:#fff;font-weight:700">T</span>
-          <span style="flex:1;min-width:0"><span style="display:block;font-size:12px;color:var(--text-muted)">Hello, Test</span><span style="display:block;font-size:15px;font-weight:700;color:var(--text-strong)">My Dashboard</span></span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-        </a>
-        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-subtle);margin:18px 14px 6px">Shop</div>
-        <a href="Sundry Home.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home</a>
-        <a href="Category Page.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8zM7 7h.01"/></svg>Brands</a>
-        <a href="Category Page.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11 3 5V3h2l6 6M9 3h12v12M13 21l-4-4 8-8"/></svg>Offers</a>
-        <a href="All Vendor Page.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M15 9h.01M10 21v-4h4v4"/></svg>All Vendors</a>
-        <a href="vendordashboard.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M4 9h16"/></svg>Vendor Zone</a>
-        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-subtle);margin:18px 14px 6px">My Account</div>
-        <a href="userOrder.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>My Orders</a>
-        <a href="userwishlist.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l9 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg>Wish List</a>
-        <a href="usertrackorder.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7M5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>Track Order</a>
-        <a href="userchat.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Inbox</a>
-        <a href="supportticket.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9a2 2 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a2 2 0 0 0 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1z"/></svg>Support Ticket</a>
-        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-subtle);margin:18px 14px 6px">More</div>
-        <a href="supportticket.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>Help Center</a>
-        <a href="Register Page.dc.html" onClick="{{ closeDrawer }}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-md);font-size:15px;font-weight:600;color:var(--text-body);transition:background var(--dur-fast) var(--ease-out)" style-hover="background:var(--iris-50);color:var(--color-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M4 9h16"/></svg>Become a Seller</a>
-      </div>
-      <div style="padding:14px 16px;border-top:1px solid var(--border-subtle);background:var(--saffron-50);display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--saffron-700)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8zM7 7h.01"/></svg>15% off your first order — code SUNDRY15</div>
-    </aside>
-  </sc-if>
-
-  <!-- Auth -->
-  <section style="max-width:var(--container-max);margin:0 auto;padding:56px var(--container-pad) 0">
-    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted);margin-bottom:24px">
-      <a href="Sundry Home.dc.html" style="color:var(--text-muted)">Home</a><span>/</span>
-      <span style="color:var(--text-strong);font-weight:600">Create Account</span>
-    </div>
-    <div style="max-width:520px;margin:0 auto;background:var(--surface-card);border-radius:var(--radius-xl);box-shadow:var(--shadow-md);padding:clamp(28px,4vw,44px)">
-      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:28px">
-        <span style="width:56px;height:56px;border-radius:16px;background:var(--color-primary);box-shadow:var(--shadow-primary);display:grid;place-items:center;margin-bottom:18px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM19 8v6M22 11h-6"/></svg></span>
-        <h1 style="font-family:var(--font-display);font-size:30px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong);margin:0">Create your account</h1>
-        <p style="font-size:15px;color:var(--text-muted);margin:8px 0 0;max-width:360px;text-wrap:pretty">Join Sundry to shop thousands of independent sellers with one checkout.</p>
-      </div>
-
-
-      <sc-if value="{{ formError }}" hint-placeholder-val="{{ false }}">
-        <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--radius-md);background:var(--error-50);color:var(--error-600);font-size:13px;font-weight:600;margin-bottom:18px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>{{ formError }}</div>
-      </sc-if>
-      <sc-if value="{{ doneMsg }}" hint-placeholder-val="{{ false }}">
-        <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--radius-md);background:var(--success-50);color:var(--success-600);font-size:13px;font-weight:600;margin-bottom:18px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{{ doneMsg }}</div>
-      </sc-if>
-
-      <form onSubmit="{{ submit }}" novalidate style="display:flex;flex-direction:column;gap:18px">
-
-            <label style="display:flex;flex-direction:column;gap:7px">
-              <span style="font-size:13px;font-weight:600;color:var(--text-body)">Full Name <span style="color:var(--error-500)">*</span></span>
-              <div style="{{ f_name.wrap }}">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="{{ f_name.glyph }}"/></svg>
-                <input type="{{ f_name.type }}" value="{{ f_name.value }}" onInput="{{ f_name.onInput }}" placeholder="Test Khan" autocomplete="name" style="flex:1;min-width:0;height:100%;border:none;outline:none;background:transparent;padding:0 10px;font-size:14px;color:var(--text-strong);font-family:var(--font-sans)">
-                
-              </div>
-              <sc-if value="{{ f_name.hasErr }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--error-600)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>{{ f_name.err }}</span></sc-if>
-            </label>
-            <label style="display:flex;flex-direction:column;gap:7px">
-              <span style="font-size:13px;font-weight:600;color:var(--text-body)">Email <span style="color:var(--error-500)">*</span></span>
-              <div style="{{ f_email.wrap }}">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="{{ f_email.glyph }}"/></svg>
-                <input type="{{ f_email.type }}" value="{{ f_email.value }}" onInput="{{ f_email.onInput }}" placeholder="you@example.com" autocomplete="email" style="flex:1;min-width:0;height:100%;border:none;outline:none;background:transparent;padding:0 10px;font-size:14px;color:var(--text-strong);font-family:var(--font-sans)">
-                
-              </div>
-              <sc-if value="{{ f_email.hasErr }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--error-600)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>{{ f_email.err }}</span></sc-if>
-            </label>
-            <label style="display:flex;flex-direction:column;gap:7px">
-              <span style="font-size:13px;font-weight:600;color:var(--text-body)">Password <span style="color:var(--error-500)">*</span></span>
-              <div style="{{ f_password.wrap }}">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="{{ f_password.glyph }}"/></svg>
-                <input type="{{ f_password.type }}" value="{{ f_password.value }}" onInput="{{ f_password.onInput }}" placeholder="At least 8 characters" autocomplete="current-password" style="flex:1;min-width:0;height:100%;border:none;outline:none;background:transparent;padding:0 10px;font-size:14px;color:var(--text-strong);font-family:var(--font-sans)">
-                <button type="button" onClick="{{ togglePw }}" aria-label="Show password" style="width:36px;height:36px;flex-shrink:0;display:grid;place-items:center;border:none;background:none;cursor:pointer;color:var(--text-muted)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ pwEye }}"/></svg></button>
-              </div>
-              <sc-if value="{{ f_password.hasErr }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--error-600)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>{{ f_password.err }}</span></sc-if>
-            </label>
-        <p style="font-size:12px;line-height:1.5;color:var(--text-muted);margin:-4px 0 0">Use 8+ characters with a mix of letters and numbers. By creating an account you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
-        <button type="submit" style="{{ submitStyle }}">
-          <sc-if value="{{ submitting }}" hint-placeholder-val="{{ false }}"><span style="width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .8s linear infinite"></span></sc-if>
-          {{ submitLabel }}
-        </button>
-      </form>
-
-      <div style="display:flex;align-items:center;gap:14px;margin:26px 0 18px"><span style="flex:1;height:1px;background:var(--border-subtle)"></span><span style="font-size:12px;font-weight:600;color:var(--text-subtle)">or continue with</span><span style="flex:1;height:1px;background:var(--border-subtle)"></span></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:0">
-        <button type="button" onClick="{{ socialGoogle }}" style="display:flex;align-items:center;justify-content:center;gap:10px;height:48px;border-radius:var(--radius-md);border:1px solid var(--border-subtle);background:var(--surface-card);cursor:pointer;font-size:14px;font-weight:600;color:var(--text-strong);font-family:var(--font-sans);transition:all var(--dur-fast) var(--ease-out)" style-hover="border-color:var(--iris-200);box-shadow:var(--shadow-sm)"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>Sign up with Google</button>
-        <button type="button" onClick="{{ socialApple }}" style="display:flex;align-items:center;justify-content:center;gap:10px;height:48px;border-radius:var(--radius-md);border:1px solid var(--border-subtle);background:var(--surface-card);cursor:pointer;font-size:14px;font-weight:600;color:var(--text-strong);font-family:var(--font-sans);transition:all var(--dur-fast) var(--ease-out)" style-hover="border-color:var(--iris-200);box-shadow:var(--shadow-sm)"><svg width="18" height="18" viewBox="0 0 24 24" fill="var(--text-strong)"><path d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8s2 .8 3.3.8c1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.7-1-2.7-4zM13.9 5c.7-.9 1.2-2 1-3.2-1 .1-2.3.7-3 1.6-.7.8-1.2 2-1.1 3.1 1.2.1 2.3-.6 3.1-1.5z"/></svg>Sign up with Apple</button>
-      </div>
-      <div style="height:24px"></div>
-      <p style="text-align:center;font-size:14px;color:var(--text-muted);margin:0">Already have an account? <a href="Login Page.dc.html" style="font-weight:700">Sign in</a></p>
     </div>
   </section>
-
-  <!-- Footer -->
-  <footer style="margin-top:56px;background:var(--surface-inverse);color:var(--neutral-300)">
-    <div style="max-width:var(--container-max);margin:0 auto;padding:56px var(--container-pad);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:32px">
-      <div style="min-width:0">
-        <a href="Sundry Home.dc.html" style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-          <span style="width:34px;height:34px;background:var(--color-primary);border-radius:10px;display:grid;place-items:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg></span>
-          <span style="font-family:var(--font-display);font-size:20px;font-weight:800;color:#fff">Sundry</span>
-        </a>
-        <p style="font-size:14px;line-height:1.6;color:var(--neutral-400);margin:0 0 16px">One marketplace for thousands of independent sellers. Curated, verified, delivered.</p>
-        <div style="display:flex;gap:8px">
-          <a href="#" style="width:36px;height:36px;border-radius:var(--radius-md);display:grid;place-items:center;background:rgba(255,255,255,.08);color:var(--neutral-300)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
-          <a href="#" style="width:36px;height:36px;border-radius:var(--radius-md);display:grid;place-items:center;background:rgba(255,255,255,.08);color:var(--neutral-300)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
-          <a href="#" style="width:36px;height:36px;border-radius:var(--radius-md);display:grid;place-items:center;background:rgba(255,255,255,.08);color:var(--neutral-300)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l16 16M20 4 4 20"/></svg></a>
-        </div>
-      </div>
-      <div><h4 style="color:#fff;font-weight:700;font-size:14px;margin:0 0 16px">Quick Links</h4><div style="display:flex;flex-direction:column;gap:10px;font-size:14px"><a href="user.dashboard.dc.html" style="color:var(--neutral-400)">Profile Info</a><a href="Category Page.dc.html" style="color:var(--neutral-400)">Flash Deals</a><a href="Category Page.dc.html" style="color:var(--neutral-400)">Featured Products</a><a href="Category Page.dc.html" style="color:var(--neutral-400)">Best Selling</a><a href="Category Page.dc.html" style="color:var(--neutral-400)">Latest Products</a><a href="usertrackorder.dc.html" style="color:var(--neutral-400)">Track Order</a></div></div>
-      <div><h4 style="color:#fff;font-weight:700;font-size:14px;margin:0 0 16px">Other</h4><div style="display:flex;flex-direction:column;gap:10px;font-size:14px"><a href="#" style="color:var(--neutral-400)">About Us</a><a href="#" style="color:var(--neutral-400)">Terms &amp; Conditions</a><a href="#" style="color:var(--neutral-400)">Privacy Policy</a><a href="supportticket.dc.html" style="color:var(--neutral-400)">Refund Policy</a><a href="supportticket.dc.html" style="color:var(--neutral-400)">Return Policy</a><a href="supportticket.dc.html" style="color:var(--neutral-400)">Cancellation Policy</a></div></div>
-      <div style="min-width:0">
-        <h4 style="color:#fff;font-weight:700;font-size:14px;margin:0 0 16px">Newsletter</h4>
-        <p style="font-size:14px;color:var(--neutral-400);margin:0 0 12px">Subscribe to get the latest updates and deals.</p>
-        <div style="display:flex;border-radius:var(--radius-full);overflow:hidden;background:rgba(255,255,255,.08)">
-          <input placeholder="Your email address" style="flex:1;min-width:0;background:transparent;border:none;outline:none;padding:0 16px;font-size:14px;color:#fff;font-family:var(--font-sans)">
-          <button style="padding:12px 18px;background:var(--color-primary);color:#fff;border:none;font-weight:600;font-size:13px;cursor:pointer">Subscribe</button>
-        </div>
-      </div>
-    </div>
-    <div style="border-top:1px solid rgba(255,255,255,.08)">
-      <div style="max-width:var(--container-max);margin:0 auto;padding:20px var(--container-pad);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;font-size:12px;color:var(--neutral-500)">
-        <span>© 2026 Sundry Marketplace. All rights reserved.</span>
-        <span style="display:flex;align-items:center;gap:8px">Kingston, New York 12401, United States</span>
-      </div>
-    </div>
-  <!-- Quick View modal -->
-  <sc-if value="{{ quickOpen }}" hint-placeholder-val="{{ false }}">
-    <div onClick="{{ closeQuick }}" style="position:fixed;inset:0;z-index:90;background:rgba(26,26,35,.55);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:24px">
-      <div onClick="{{ stop }}" style="position:relative;width:min(920px,100%);max-height:90vh;overflow:auto;background:var(--surface-card);border-radius:var(--radius-xl);box-shadow:var(--shadow-xl);display:flex;flex-wrap:wrap">
-        <button onClick="{{ closeQuick }}" aria-label="Close" style="position:absolute;top:16px;right:16px;z-index:2;width:36px;height:36px;border-radius:var(--radius-full);border:1px solid var(--border-subtle);background:var(--surface-card);cursor:pointer;color:var(--text-muted);display:grid;place-items:center;transition:all var(--dur-fast)" style-hover="background:var(--error-50);color:var(--error-500);border-color:var(--error-50)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-        <div style="flex:1 1 360px;min-width:0;padding:28px">
-          <div style="position:relative;aspect-ratio:1/1;border-radius:var(--radius-lg);display:grid;place-items:center;background:{{ quickTint }};overflow:hidden">
-            <svg width="45%" height="45%" viewBox="0 0 24 24" fill="none" stroke="{{ quickIconColor }}" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><path d="{{ quickGlyph }}"/></svg>
-          </div>
-        </div>
-        <div style="flex:1 1 360px;min-width:0;padding:40px 32px 32px;display:flex;flex-direction:column">
-          <a href="Vendor Details Page.dc.html" style="font-size:14px;font-weight:600;color:var(--color-primary)">{{ quickSeller }}</a>
-          <h2 style="font-family:var(--font-display);font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--text-strong);margin:8px 0 12px;text-wrap:pretty">{{ quickTitle }}</h2>
-          <div style="display:flex;align-items:center;gap:14px;font-size:14px;color:var(--text-muted);padding-bottom:16px;border-bottom:1px solid var(--border-subtle)">
-            <span><b style="color:var(--text-strong)">0</b> Orders</span><span style="width:1px;height:14px;background:var(--border-default)"></span><span><b style="color:var(--text-strong)">0</b> Wish Listed</span>
-          </div>
-          <div style="display:flex;align-items:baseline;gap:12px;margin:18px 0;font-variant-numeric:tabular-nums">
-            <span style="font-family:var(--font-display);font-size:32px;font-weight:800;color:var(--color-primary)">{{ quickPriceStr }}</span>
-            <sc-if value="{{ quickHasCompare }}" hint-placeholder-val="{{ false }}"><span style="font-size:18px;text-decoration:line-through;color:var(--text-compare)">{{ quickCompareStr }}</span></sc-if>
-          </div>
-          <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
-            <span style="font-size:14px;font-weight:600;color:var(--text-body)">Qty</span>
-            <div style="display:inline-flex;align-items:center;border:1.5px solid var(--border-subtle);border-radius:var(--radius-md);overflow:hidden">
-              <button onClick="{{ qDec }}" aria-label="Decrease" style="width:42px;height:42px;background:var(--surface-card);border:none;cursor:pointer;display:grid;place-items:center;color:var(--text-body)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
-              <span style="min-width:44px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text-strong)">{{ quickQty }}</span>
-              <button onClick="{{ qInc }}" aria-label="Increase" style="width:42px;height:42px;background:var(--surface-card);border:none;cursor:pointer;display:grid;place-items:center;color:var(--text-body)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
-            </div>
-          </div>
-          <div style="font-size:16px;color:var(--text-body);margin-bottom:24px">Total Price : <b style="color:var(--color-primary);font-size:19px;font-variant-numeric:tabular-nums">{{ quickTotalStr }}</b></div>
-          <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:auto">
-            <x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="accent" size="lg" hint-size="auto,52px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>Buy now</x-import>
-            <x-import component-from-global-scope="DesignSystem_cd889a.Button" variant="primary" size="lg" onClick="{{ quickAdd }}" hint-size="auto,52px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>Add to cart</x-import>
-          </div>
-        </div>
-      </div>
-    </div>
-  </sc-if>
-
-  <sc-if value="{{ toastOpen }}" hint-placeholder-val="{{ false }}">
-    <div style="position:fixed;bottom:24px;right:24px;z-index:95;display:flex;align-items:center;gap:12px;background:var(--surface-inverse);color:#fff;padding:14px 18px;border-radius:var(--radius-lg);box-shadow:var(--shadow-xl)">
-      <span style="width:28px;height:28px;flex-shrink:0;border-radius:var(--radius-full);background:var(--success-500);display:grid;place-items:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
-      <span style="font-size:14px;font-weight:600">{{ toast }}</span>
-    </div>
-  </sc-if>
-
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:1500}}">
