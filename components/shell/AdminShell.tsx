@@ -1,97 +1,78 @@
 "use client";
 
-import { BarChart3, House, Package, ShoppingCart, Store, Users } from "lucide-react";
+import {
+  BarChart3,
+  Boxes,
+  ChartLine,
+  CircleDollarSign,
+  ClipboardList,
+  FolderTree,
+  LayoutDashboard,
+  Package,
+  PackagePlus,
+  Receipt,
+  ShoppingCart,
+  Star,
+  Store,
+  Tag,
+  Users,
+} from "lucide-react";
 import type { ReactNode } from "react";
-import { DashShell, type NavSection } from "./DashShell";
+import { DashShell, type NavGroup } from "./DashShell";
+import type { SetupStep } from "./SetupGuide";
 
-/** Admin sidebar: sections from admindashboard, limited to routes in CLAUDE.md §5. */
-function adminSections(counts: { orders: number; customers: number; stores: number }): NavSection[] {
-  const status = (label: string, key: string, tone: NonNullable<NavSection["groups"][0]["items"][0]["tone"]>) => ({
-    label,
-    href: `/admin/orders?status=${key}`,
-    count: 0,
-    tone,
-    dot: true,
-  });
+/** Admin sidebar (admindashboard design), limited to routes in CLAUDE.md §5. */
+function adminNav(counts: { orders: number; customers: number; pendingVendors: number }): NavGroup[] {
   return [
+    { title: "Overview", items: [{ label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard }] },
     {
-      key: "home",
-      label: "Home",
-      icon: House,
-      groups: [{ title: "Overview", items: [{ label: "Dashboard", href: "/admin/dashboard" }] }],
-    },
-    {
-      key: "orders",
-      label: "Orders",
-      icon: ShoppingCart,
-      groups: [
+      title: "Catalog",
+      items: [
+        { label: "Brands", href: "/admin/brands", icon: Tag },
         {
-          title: "All Stores",
-          items: [
-            { label: "All Orders", href: "/admin/orders", count: counts.orders, tone: "iris" },
-            status("Pending", "pending", "info"),
-            status("Confirmed", "confirmed", "iris"),
-            status("Packaging", "packaging", "warning"),
-            status("Out for Delivery", "out_for_delivery", "iris"),
-            status("Delivered", "delivered", "success"),
-            status("Returned", "returned", "neutral"),
-            status("Failed to Deliver", "failed", "error"),
-            status("Canceled", "canceled", "error"),
+          label: "Category Setup",
+          icon: FolderTree,
+          children: [
+            { label: "Categories", href: "/admin/categories" },
+            { label: "Sub-Categories", href: "/admin/categories/sub" },
+            { label: "Sub-Sub-Categories", href: "/admin/categories/sub-sub" },
           ],
         },
+        {
+          label: "Vendor Manage",
+          icon: Store,
+          count: counts.pendingVendors, // vendors waiting for approval
+          tone: "saffron",
+          children: [
+            { label: "Vendor Approval", href: "/admin/vendors/approval" },
+            { label: "Add New Vendor", href: "/admin/vendors/add" },
+            { label: "Vendor List", href: "/admin/vendors" },
+          ],
+        },
+        { label: "Product List", href: "/admin/products", icon: Package },
+        { label: "Add New Product", href: "/admin/products/new", icon: PackagePlus },
+        { label: "Limited Stock", href: "/admin/products/stock", icon: Boxes },
+        { label: "New Product Requests", href: "/admin/products/requests", icon: ClipboardList },
       ],
     },
     {
-      key: "catalog",
-      label: "Catalog",
-      icon: Package,
-      groups: [
-        {
-          title: "In-house Products",
-          items: [
-            { label: "Product List", href: "/admin/products" },
-            { label: "Add New Product", href: "/admin/products/new" },
-            { label: "Limited Stock", href: "/admin/products/stock" },
-          ],
-        },
-        { title: "Vendor Products", items: [{ label: "New Product Requests", href: "/admin/products/requests" }] },
+      title: "Orders",
+      items: [{ label: "All Orders", href: "/admin/orders", icon: ShoppingCart, count: counts.orders, tone: "iris" }],
+    },
+    {
+      title: "Reports",
+      items: [
+        { label: "Earning Report", href: "/admin/reports/earnings", icon: CircleDollarSign },
+        { label: "Order Report", href: "/admin/reports/orders", icon: ChartLine },
+        { label: "Product Report", href: "/admin/reports/products", icon: BarChart3 },
+        { label: "Transaction Report", href: "/admin/reports/transactions", icon: Receipt },
       ],
     },
     {
-      key: "reports",
-      label: "Reports",
-      icon: BarChart3,
-      groups: [
-        {
-          title: "Reports & Analytics",
-          items: [
-            { label: "Earning Report", href: "/admin/reports/earnings" },
-            { label: "Order Report", href: "/admin/reports/orders" },
-            { label: "Product Report", href: "/admin/reports/products" },
-            { label: "Transaction Report", href: "/admin/reports/transactions" },
-          ],
-        },
-      ],
-    },
-    {
-      key: "people",
-      label: "People",
-      icon: Users,
-      groups: [
-        {
-          title: "Customers",
-          items: [
-            { label: "Customer List", href: "/admin/customers", count: counts.customers, tone: "iris" },
-            { label: "Customer Reviews", href: "/admin/customers/reviews" },
-          ],
-        },
-        {
-          title: "Vendors",
-          items: [
-            { label: "Add New Vendor", href: "/admin/vendors/new" },
-            { label: "Vendor List", href: "/admin/vendors", count: counts.stores, tone: "saffron" },
-          ],
-        },
+      title: "People",
+      items: [
+        { label: "Customer List", href: "/admin/customers", icon: Users, count: counts.customers, tone: "iris" },
+        { label: "Customer Reviews", href: "/admin/customers/reviews", icon: Star },
       ],
     },
   ];
@@ -100,16 +81,19 @@ function adminSections(counts: { orders: number; customers: number; stores: numb
 export function AdminShell({
   user,
   counts,
+  setupSteps,
   children,
 }: {
   user: { name: string; email: string };
-  counts: { orders: number; customers: number; stores: number };
+  counts: { orders: number; customers: number; pendingVendors: number };
+  setupSteps: SetupStep[];
   children: ReactNode;
 }) {
   return (
     <DashShell
       badge="Admin"
-      sections={adminSections(counts)}
+      nav={adminNav(counts)}
+      setupSteps={setupSteps}
       crumb="Dashboard"
       user={{ ...user, subtitle: "Sundry HQ · Administrator" }}
       profileLinks={{ settings: "/admin/profile", password: "/admin/change-password" }}

@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { AuthField, PasswordField } from "./AuthField";
 import { FormAlert } from "./FormAlert";
 import { SubmitButton } from "./SubmitButton";
+import { PasswordMatchHint } from "./PasswordMatchHint";
 import { useAuthForm } from "./useAuthForm";
 
 const COUNTRY_CODES = [
@@ -156,6 +157,7 @@ export function VendorRegisterForm() {
               placeholder="Re-enter password"
               visible={showPw}
               onToggleVisible={togglePw}
+              hint={<PasswordMatchHint password={values.password} confirm={values.confirmPassword} />}
             />
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">

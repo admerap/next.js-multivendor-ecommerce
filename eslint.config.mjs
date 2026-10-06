@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Approved design mockups (read-only reference, not app code).
+    "designs/**",
   ]),
 ]);
 

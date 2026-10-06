@@ -2,6 +2,7 @@
 
 import { Check, User } from "lucide-react";
 import { AuthField, PasswordField } from "@/components/auth/AuthField";
+import { PasswordMatchHint } from "@/components/auth/PasswordMatchHint";
 import { FormAlert } from "@/components/auth/FormAlert";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 import { useAuthForm } from "@/components/auth/useAuthForm";
@@ -65,6 +66,7 @@ export function ProfileForm({ initial }: { initial: Initial }) {
             label="Confirm Password"
             autoComplete="new-password"
             placeholder="Minimum 8 characters long"
+            hint={<PasswordMatchHint password={values.newPassword} confirm={values.confirmPassword} />}
           />
           {values.newPassword && (
             <PasswordField

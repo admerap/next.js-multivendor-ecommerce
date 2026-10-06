@@ -97,7 +97,7 @@ Priority: **P0** = MVP must-have · **P1** = MVP should-have · **P2** = post-MV
 ### 6.1 Global header, navigation & footer (P0)
 - **FR-S1** Utility bar: support phone, Track order, Help Center, Become a Seller.
 - **FR-S2** Header: logo, pill search with an **All Categories** scope dropdown, wishlist (with count), account (menu), cart chip (item count and total).
-- **FR-S3** Category nav: **All Categories** button opens a two-pane mega-menu (categories → sub-category groups), with links Home, Brands, Offers, All Vendors, Vendor Zone and the promo message.
+- **FR-S3** Category nav: **All Categories** button opens a two-pane mega-menu (categories → sub-category groups → sub-sub-category links), with links Home, Brands, Offers, All Vendors, Vendor Zone and the promo message.
 - **FR-S4** Mega-menu opens on hover (desktop pointer) and on tap (touch), with no dead zone between trigger and panel.
 - **FR-S5** ≤1024px: compact header (☰ · search icon · wishlist · cart), a floating category panel, and a drawer with Shop / My Account / More. Logo hidden ≤720px.
 - **FR-S6** **MiniCart** from the cart chip: items **grouped by seller**, qty stepper, remove, free-shipping progress (turns green at the threshold), subtotal, Expand cart, Proceed to checkout.
@@ -201,7 +201,7 @@ Shell: 68px top bar (brand, sidebar toggle, breadcrumbs, messages, orders, profi
 - **FR-V5 Change password (P0):** current password, new password, confirm. Strength meter and rules.
 - **FR-V6 Product list (P0):** table with image, name, SKU, price, stock, **approval status** (Pending / Approved / Denied), active toggle, and actions (view, edit, delete). Search, filters, export CSV. Becomes cards at ≤1200px.
 - **FR-V7 Add product / Edit product (P0):**
-  - Basic info: name, description, category/sub-category, brand, unit, tags.
+  - Basic info: name, description, category → sub-category → sub-sub-category (3 levels), brand, unit, tags.
   - Pricing: price, compare-at, discount, tax.
   - Stock: quantity, SKU, minimum order.
   - Variants: color, size.
@@ -237,7 +237,8 @@ Shell: same frame as Vendor, plus a header search (⌘K / Ctrl K) and a **theme 
   - Most popular and top-selling stores, top delivery men.
 - **FR-D2 All orders (P0):** every order across stores. Filter by status, store, customer, date, payment method. Status tabs with counts. Table: ID, date, customer, **store**, total, payment status, order status, actions. Export.
 - **FR-D3 Product list (P0):** in-house and vendor products with search, filters (store, category, brand, status), featured toggle, active toggle, and actions.
-- **FR-D4 Add product (P0):** the same form as the vendor form, for in-house products.
+- **FR-D4 Add product (P0):** the same form as the vendor form, for in-house products (including the 3-level category picker).
+- **FR-D4a Category setup (P0):** manage the 3-level category tree — Categories, Subcategories (each under a category) and Sub-subcategories (each under a subcategory) — from the sidebar's *Category Setup* group. Products, storefront filters and the mega-menu read from this tree.
 - **FR-D5 New product requests (P0):** vendor products in **Pending review**, with Approve / Deny (deny requires a reason, sent to the vendor).
 - **FR-D6 Product details (P0):**
   - Full product view: store, stats (sold, reviews, rating), variants, stock.

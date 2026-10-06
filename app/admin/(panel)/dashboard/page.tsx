@@ -17,7 +17,7 @@ const emptyState = (
     title="No marketplace activity yet"
     description="When customers start ordering and vendors open their stores, marketplace analytics, earnings and top stores appear here."
   >
-    <Link href="/admin/vendors/new" className={buttonClasses.primary}>
+    <Link href="/admin/vendors/add" className={buttonClasses.primary}>
       <Send aria-hidden className="size-4" strokeWidth={2} />
       Invite vendors
     </Link>

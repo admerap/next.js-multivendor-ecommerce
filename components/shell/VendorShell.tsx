@@ -1,94 +1,48 @@
 "use client";
 
-import { BarChart3, House, Package, Settings, ShoppingCart, Store, TicketPercent } from "lucide-react";
+import {
+  BarChart3,
+  ChartLine,
+  KeyRound,
+  LayoutDashboard,
+  Package,
+  PackagePlus,
+  Receipt,
+  Settings,
+  ShoppingCart,
+  Star,
+  Store,
+  TicketPercent,
+} from "lucide-react";
 import type { ReactNode } from "react";
-import { DashShell, type NavSection } from "./DashShell";
+import { DashShell, type NavGroup } from "./DashShell";
 
-/** Seller Center sidebar: sections from vendordashboard, limited to routes in CLAUDE.md §5. */
-const status = (label: string, key: string, tone: NonNullable<NavSection["groups"][0]["items"][0]["tone"]>) => ({
-  label,
-  href: `/vendor/orders?status=${key}`,
-  count: 0,
-  tone,
-  dot: true,
-});
-
-const SECTIONS: NavSection[] = [
+/** Seller Center sidebar (vendordashboard design), limited to routes in CLAUDE.md §5. */
+const NAV: NavGroup[] = [
+  { title: "Overview", items: [{ label: "Dashboard", href: "/vendor/dashboard", icon: LayoutDashboard }] },
   {
-    key: "home",
-    label: "Home",
-    icon: House,
-    groups: [{ title: "Overview", items: [{ label: "Dashboard", href: "/vendor/dashboard" }] }],
+    title: "Catalog",
+    items: [
+      { label: "Product List", href: "/vendor/products", icon: Package },
+      { label: "Add New Product", href: "/vendor/products/new", icon: PackagePlus },
+      { label: "Product Reviews", href: "/vendor/reviews", icon: Star },
+    ],
   },
+  { title: "Orders", items: [{ label: "All Orders", href: "/vendor/orders", icon: ShoppingCart, count: 0, tone: "iris" }] },
+  { title: "Promotions", items: [{ label: "Coupons", href: "/vendor/coupons", icon: TicketPercent }] },
   {
-    key: "catalog",
-    label: "Catalog",
-    icon: Package,
-    groups: [
-      {
-        title: "Products",
-        items: [
-          { label: "Product List", href: "/vendor/products" },
-          { label: "Add New Product", href: "/vendor/products/new" },
-        ],
-      },
-      { title: "Product Reviews", items: [{ label: "Product Reviews", href: "/vendor/reviews" }] },
+    title: "Reports",
+    items: [
+      { label: "Transactions Report", href: "/vendor/reports/transactions", icon: Receipt },
+      { label: "Product Report", href: "/vendor/reports/products", icon: BarChart3 },
+      { label: "Order Report", href: "/vendor/reports/orders", icon: ChartLine },
     ],
   },
   {
-    key: "orders",
-    label: "Orders",
-    icon: ShoppingCart,
-    groups: [
-      {
-        title: "Sales",
-        items: [
-          { label: "All Orders", href: "/vendor/orders", count: 0, tone: "iris" },
-          status("Pending", "pending", "info"),
-          status("Confirmed", "confirmed", "iris"),
-          status("Packaging", "packaging", "warning"),
-          status("Out for Delivery", "out_for_delivery", "iris"),
-          status("Delivered", "delivered", "success"),
-          status("Returned", "returned", "neutral"),
-          status("Failed to Deliver", "failed", "error"),
-          status("Canceled", "canceled", "error"),
-        ],
-      },
-    ],
-  },
-  {
-    key: "promotions",
-    label: "Promotions",
-    icon: TicketPercent,
-    groups: [{ title: "Promotion Management", items: [{ label: "Coupons", href: "/vendor/coupons" }] }],
-  },
-  {
-    key: "reports",
-    label: "Reports",
-    icon: BarChart3,
-    groups: [
-      {
-        title: "Reports & Analytics",
-        items: [
-          { label: "Transactions Report", href: "/vendor/reports/transactions" },
-          { label: "Product Report", href: "/vendor/reports/products" },
-          { label: "Order Report", href: "/vendor/reports/orders" },
-        ],
-      },
-    ],
-  },
-  {
-    key: "settings",
-    label: "Settings",
-    icon: Settings,
-    groups: [
-      {
-        title: "Store",
-        items: [
-          { label: "Shop settings", href: "/vendor/profile" },
-          { label: "Change Password", href: "/vendor/change-password" },
-        ],
-      },
+    title: "Settings",
+    items: [
+      { label: "Shop Settings", href: "/vendor/profile", icon: Settings },
+      { label: "Change Password", href: "/vendor/change-password", icon: KeyRound },
     ],
   },
 ];
@@ -105,7 +59,7 @@ export function VendorShell({
   return (
     <DashShell
       badge="Seller"
-      sections={SECTIONS}
+      nav={NAV}
       crumb="Dashboard"
       user={{ ...user, subtitle: storeName }}
       profileLinks={{ settings: "/vendor/profile", password: "/vendor/change-password" }}

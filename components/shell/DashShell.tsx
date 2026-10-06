@@ -22,10 +22,19 @@ import { useBodyScrollLock, useMediaQuery } from "@/lib/hooks";
 import { toneClasses, type Tone } from "@/lib/tones";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
+import { BreadcrumbProvider, useBreadcrumbs } from "./Breadcrumbs";
+import { SetupGuide, type SetupStep } from "./SetupGuide";
 import { THEMES, ThemeMenu } from "./ThemeMenu";
 
-export type NavItem = { label: string; href: string; count?: number; tone?: Tone; dot?: boolean };
-export type NavSection = { key: string; label: string; icon: LucideIcon; groups: { title: string; items: NavItem[] }[] };
+export type NavChild = { label: string; href: string };
+export type NavItem = {
+  label: string;
+  icon: LucideIcon;
+  count?: number;
+  tone?: Tone;
+} & ({ href: string; children?: never } | { href?: never; children: NavChild[] });
+/** A titled block of sidebar links (e.g. OVERVIEW, CATALOG). */
+export type NavGroup = { title: string; items: NavItem[] };
 const TONE = toneClasses;
 
 type Overlay = null | "drawer" | "profile" | "theme" | "more" | "search";
@@ -42,14 +51,28 @@ function initials(name: string) {
     .join("");
 }
 
-function isActive(pathname: string, href: string) {
-  const path = href.split("?")[0];
-  return pathname === path;
+const pathOf = (href: string) => href.split("?")[0]!;
+
+/** The nav href that best matches the current path (exact, else longest parent), so detail pages keep their section lit. */
+function activeHref(pathname: string, nav: NavGroup[]) {
+  const paths = nav.flatMap((g) => g.items.flatMap((i) => (i.children ? i.children.map((c) => pathOf(c.href)) : [pathOf(i.href)])));
+  return paths
+    .filter((p) => pathname === p || pathname.startsWith(`${p}/`))
+    .sort((a, b) => b.length - a.length)[0];
 }
 
-export function DashShell({
+export function DashShell(props: Parameters<typeof DashShellFrame>[0]) {
+  return (
+    <BreadcrumbProvider>
+      <DashShellFrame {...props} />
+    </BreadcrumbProvider>
+  );
+}
+
+function DashShellFrame({
   badge,
-  sections,
+  nav,
+  setupSteps,
   crumb,
   user,
   profileLinks,
@@ -61,7 +84,9 @@ export function DashShell({
 }: {
   /** Pill next to the wordmark: "Admin" / "Seller". */
   badge: string;
-  sections: NavSection[];
+  nav: NavGroup[];
+  /** Admin launch checklist shown as the pinned "Setup Guide" at the bottom of the sidebar. */
+  setupSteps?: SetupStep[];
   crumb: string;
   user: { name: string; email: string; subtitle: string };
   profileLinks: { settings: string; password: string };
@@ -73,13 +98,17 @@ export function DashShell({
   children: ReactNode;
 }) {
   const pathname = usePathname();
+  const trail = useBreadcrumbs();
+  const current = activeHref(pathname, nav);
+  const parentOfCurrent = nav
+    .flatMap((g) => g.items)
+    .find((i) => i.children?.some((c) => pathOf(c.href) === current))?.label;
+  // Accordion: only one collapsible group is open at a time; opening one closes the others.
+  const [openParent, setOpenParent] = useState<string | null>(parentOfCurrent ?? null);
+  const toggleParent = (label: string) => setOpenParent((o) => (o === label ? null : label));
   const desktop = useMediaQuery("(min-width: 1201px)");
   const [sideOpen, setSideOpen] = useState(true);
   const [overlay, setOverlay] = useState<Overlay>(null);
-  const initialSection =
-    sections.find((s) => s.groups.some((g) => g.items.some((i) => isActive(pathname, i.href))))?.key ?? sections[0]!.key;
-  const [railKey, setRailKey] = useState(initialSection);
-  const section = sections.find((s) => s.key === railKey) ?? sections[0]!;
   const searchRef = useRef<HTMLInputElement>(null);
   const mobileSearchRef = useRef<HTMLInputElement>(null);
   const kbd = useSyncExternalStore(
@@ -93,6 +122,8 @@ export function DashShell({
   if (lastPath !== pathname) {
     setLastPath(pathname);
     setOverlay(null);
+    // The group of the new page opens (closing any other); a page outside a group closes them all.
+    setOpenParent(parentOfCurrent ?? null);
   }
 
   const drawerOpen = overlay === "drawer" && !desktop;
@@ -116,7 +147,6 @@ export function DashShell({
     if (overlay === "search") mobileSearchRef.current?.focus();
   }, [overlay]);
 
-  const panelVisible = desktop ? sideOpen : drawerOpen;
   const toggleSidebar = () => (desktop ? setSideOpen((v) => !v) : toggle("drawer"));
   const sidebarExpanded = desktop ? sideOpen : drawerOpen;
 
@@ -125,79 +155,115 @@ export function DashShell({
     else void document.documentElement.requestFullscreen?.();
   };
 
-  const rail = (
-    <div className="flex w-16 shrink-0 flex-col items-center gap-1.5 border-r border-line py-4">
-      {sections.map(({ key, label, icon: Icon }) => {
-        const on = key === section.key;
-        return (
-          <button
-            key={key}
-            type="button"
-            onClick={() => {
-              setRailKey(key);
-              if (desktop && !sideOpen) setSideOpen(true);
-              if (!desktop && overlay !== "drawer") setOverlay("drawer");
-            }}
-            aria-label={label}
-            aria-pressed={on}
-            title={label}
-            className={cn(
-              "grid size-11 place-items-center rounded-md transition-colors duration-(--dur-fast)",
-              on ? "bg-primary text-on-primary shadow-primary" : "text-fg-muted hover:bg-hover hover:text-primary",
+  const sidebar = (collapsed: boolean) => (
+    <div className="flex h-full min-h-0 w-full flex-col">
+      <nav aria-label="Sidebar" className={cn("min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain py-4", collapsed ? "px-2.5" : "px-3.5")}>
+        {nav.map((g, gi) => (
+          <div key={g.title} className="mb-2">
+            {collapsed ? (
+              gi > 0 && <div aria-hidden className="mx-auto my-2.5 h-px w-7 bg-line" />
+            ) : (
+              <div className="mx-2.5 mt-2 mb-1.5 text-[0.65rem] font-bold tracking-[0.08em] text-fg-subtle uppercase">{g.title}</div>
             )}
-          >
-            <Icon aria-hidden className="size-5" strokeWidth={1.8} />
-          </button>
-        );
-      })}
-    </div>
-  );
-
-  const panel = (
-    <nav aria-label={section.label} className="flex min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain px-3.5 py-5">
-      <h2 className="mx-1.5 mb-4.5 font-display text-lg font-extrabold tracking-[-0.01em] text-fg-strong">
-        {section.label}
-      </h2>
-      {section.groups.map((g) => (
-        <div key={g.title} className="mb-3.5">
-          <div className="mx-2.5 mb-2 text-[0.65rem] font-bold tracking-[0.08em] text-fg-subtle uppercase">{g.title}</div>
-          <ul className="flex flex-col gap-0.5">
-            {g.items.map((it) => {
-              const on = isActive(pathname, it.href);
-              const tone = it.tone ? TONE[it.tone] : null;
-              return (
-                <li key={it.href + it.label}>
-                  <Link
-                    href={it.href}
-                    aria-current={on ? "page" : undefined}
-                    className={cn(
-                      "flex min-h-11 items-center justify-between gap-2 rounded-md px-3 text-sm font-semibold transition-colors duration-(--dur-fast)",
-                      on ? "bg-iris-50 !text-primary" : "!text-fg hover:bg-hover",
-                    )}
-                  >
-                    <span className="flex min-w-0 items-center gap-2.5">
-                      {it.dot && tone && <span aria-hidden className={cn("size-[7px] shrink-0 rounded-full", tone.dot)} />}
-                      <span className="truncate">{it.label}</span>
-                    </span>
-                    {it.count !== undefined && tone && (
-                      <span
+            <ul className="flex flex-col gap-0.5">
+              {g.items.map(({ label, href, icon: Icon, count, tone, children }) => {
+                if (children) {
+                  const childOn = children.some((c) => pathOf(c.href) === current);
+                  const open = !collapsed && openParent === label;
+                  const pt = tone ? TONE[tone] : null;
+                  return (
+                    <li key={label}>
+                      <button
+                        type="button"
+                        aria-expanded={collapsed ? undefined : open}
+                        aria-label={collapsed ? label : undefined}
+                        title={collapsed ? label : undefined}
+                        onClick={() => {
+                          if (!collapsed) return toggleParent(label);
+                          // Icons-only: expand the sidebar (or open the drawer) with this group open.
+                          setOpenParent(label);
+                          if (desktop) setSideOpen(true);
+                          else setOverlay("drawer");
+                        }}
                         className={cn(
-                          "inline-grid h-5.5 min-w-6 shrink-0 place-items-center rounded-full px-1.5 text-[0.68rem] font-bold tabular-nums",
-                          tone.bg,
-                          tone.fg,
+                          "flex min-h-11 w-full items-center gap-3 rounded-md text-left text-sm font-semibold transition-colors duration-(--dur-fast)",
+                          collapsed ? "mx-auto size-11 justify-center" : "px-3",
+                          collapsed && childOn ? "bg-iris-50 text-primary" : childOn ? "text-primary" : "text-fg hover:bg-hover hover:text-primary",
                         )}
                       >
-                        {it.count.toLocaleString("en-US")}
-                      </span>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+                        <Icon aria-hidden className="size-5 shrink-0" strokeWidth={1.8} />
+                        {!collapsed && (
+                          <>
+                            <span className="min-w-0 flex-1 truncate">{label}</span>
+                            {count !== undefined && pt && (
+                              <span className={cn("inline-grid h-5.5 min-w-6 shrink-0 place-items-center rounded-full px-1.5 text-[0.68rem] font-bold tabular-nums", pt.bg, pt.fg)}>
+                                {count.toLocaleString("en-US")}
+                              </span>
+                            )}
+                            <ChevronDown aria-hidden className={cn("size-4 shrink-0 transition-transform duration-(--dur-fast)", open && "rotate-180")} />
+                          </>
+                        )}
+                      </button>
+                      {open && (
+                        <ul className="mt-0.5 mb-1 ml-5.5 flex flex-col gap-0.5 border-l border-line pl-2.5">
+                          {children.map((c) => {
+                            const on = pathOf(c.href) === current;
+                            return (
+                              <li key={c.href}>
+                                <Link
+                                  href={c.href}
+                                  aria-current={on ? "page" : undefined}
+                                  className={cn(
+                                    "flex min-h-10 items-center rounded-md px-3 text-[0.82rem] font-semibold transition-colors duration-(--dur-fast)",
+                                    on ? "bg-iris-50 !text-primary" : "!text-fg-muted hover:bg-hover hover:!text-primary",
+                                  )}
+                                >
+                                  <span className="truncate">{c.label}</span>
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </li>
+                  );
+                }
+                const on = pathOf(href) === current;
+                const t = tone ? TONE[tone] : null;
+                return (
+                  <li key={href + label}>
+                    <Link
+                      href={href}
+                      aria-current={on ? "page" : undefined}
+                      aria-label={collapsed ? label : undefined}
+                      title={collapsed ? label : undefined}
+                      className={cn(
+                        "flex min-h-11 items-center gap-3 rounded-md text-sm font-semibold transition-colors duration-(--dur-fast)",
+                        collapsed ? "mx-auto size-11 justify-center" : "px-3",
+                        on ? "bg-iris-50 !text-primary" : "!text-fg hover:bg-hover hover:!text-primary",
+                      )}
+                    >
+                      <Icon aria-hidden className="size-5 shrink-0" strokeWidth={1.8} />
+                      {!collapsed && <span className="min-w-0 flex-1 truncate">{label}</span>}
+                      {!collapsed && count !== undefined && t && (
+                        <span className={cn("inline-grid h-5.5 min-w-6 shrink-0 place-items-center rounded-full px-1.5 text-[0.68rem] font-bold tabular-nums", t.bg, t.fg)}>
+                          {count.toLocaleString("en-US")}
+                        </span>
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </nav>
+      {setupSteps && (
+        <div className={cn("shrink-0 border-t border-line", collapsed ? "py-3" : "p-3.5")}>
+          <SetupGuide steps={setupSteps} collapsed={collapsed} />
         </div>
-      ))}
-    </nav>
+      )}
+    </div>
   );
 
   return (
@@ -207,7 +273,7 @@ export function DashShell({
         <div
           className={cn(
             "flex h-full shrink-0 items-center gap-2.5 overflow-hidden pl-4 transition-[width,padding] duration-(--dur-med) ease-out sm:border-r sm:border-line sm:px-3.5",
-            desktop && sideOpen ? "sm:w-70 sm:px-5" : "sm:w-16",
+            desktop && sideOpen ? "sm:w-70 sm:px-5" : "sm:w-17",
           )}
         >
           <Link href="/" aria-label="Sundry storefront" className="grid size-9 shrink-0 place-items-center rounded-md bg-primary shadow-primary">
@@ -237,13 +303,20 @@ export function DashShell({
 
         <div className="flex min-w-0 flex-1 items-center gap-2 px-3 sm:gap-4 sm:pr-7 sm:pl-4">
           <nav aria-label="Breadcrumb" className="hidden items-center gap-2 text-caption text-fg-muted md:flex">
-            <Link href="/" className="font-semibold">
-              Home
-            </Link>
-            <ChevronRight aria-hidden className="size-3.5" />
-            <span aria-current="page" className="font-semibold text-fg-strong">
-              {crumb}
-            </span>
+            {(trail ?? [{ label: "Home", href: "/" }, { label: crumb }]).map((c, i, all) => (
+              <span key={`${i}-${c.label}`} className="flex min-w-0 items-center gap-2">
+                {i > 0 && <ChevronRight aria-hidden className="size-3.5 shrink-0" />}
+                {c.href && i < all.length - 1 ? (
+                  <Link href={c.href} className="font-semibold whitespace-nowrap">
+                    {c.label}
+                  </Link>
+                ) : (
+                  <span aria-current="page" className="max-w-60 truncate font-semibold text-fg-strong">
+                    {c.label}
+                  </span>
+                )}
+              </span>
+            ))}
           </nav>
 
           {withSearch && (
@@ -394,15 +467,14 @@ export function DashShell({
       )}
 
       <div className="flex flex-1 items-stretch">
-        {/* Docked sidebar: full ≥1201, rail-only 721–1200, hidden ≤720 */}
+        {/* Docked sidebar: expanded or icons-only ≥1201 (toggle), icons-only 721–1200, hidden ≤720 */}
         <aside
           className={cn(
             "sticky top-17 hidden h-[calc(100dvh-68px)] shrink-0 overflow-hidden border-r border-line bg-card transition-[width] duration-(--dur-med) ease-out sm:flex",
-            desktop && sideOpen ? "w-70" : "w-16",
+            desktop && sideOpen ? "w-70" : "w-17",
           )}
         >
-          {rail}
-          {desktop && panelVisible && panel}
+          {sidebar(!(desktop && sideOpen))}
         </aside>
 
         {/* Floating drawer ≤1200 */}
@@ -415,8 +487,7 @@ export function DashShell({
               aria-label="Navigation"
               className="fixed top-17 bottom-0 left-0 z-45 flex w-[min(320px,86vw)] bg-card shadow-xl sm:w-75"
             >
-              {rail}
-              {panel}
+              {sidebar(false)}
             </aside>
           </>
         )}

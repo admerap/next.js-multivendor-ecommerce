@@ -18,6 +18,8 @@ type FieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, "size"> & {
   trailing?: ReactNode;
   /** Show the circle-alert glyph before error text (storefront style). */
   errorIcon?: boolean;
+  /** Live helper under the input (e.g. "Passwords match"); hidden while an error is shown. */
+  hint?: ReactNode;
 };
 
 export function AuthField({
@@ -29,6 +31,7 @@ export function AuthField({
   leading,
   trailing,
   errorIcon = true,
+  hint,
   required,
   id,
   className,
@@ -82,6 +85,7 @@ export function AuthField({
           {error}
         </span>
       )}
+      {!error && hint}
     </div>
   );
 }

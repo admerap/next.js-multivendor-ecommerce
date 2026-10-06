@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# user uploads (dev-only local storage; production uses S3/R2)
+/public/uploads/
+
+# database dumps (CLAUDE.md — Database safety)
+/backups/
+
+# private uploads (TIN certificates) — never commit
+/storage/

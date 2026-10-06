@@ -209,7 +209,7 @@ Tailwind is mobile-first. The design's max-width tiers map onto these `min-width
 4. **Touch:** hit targets ≥ 44×44px. Anything revealed on hover must also be reachable on touch devices. Under `@media (hover: none)` these are always visible: quick-view eye, add-to-cart, row actions.
 5. **One overlay at a time.** Opening the drawer, mini-cart, account menu, category panel, search or a modal closes the others. `Escape` closes everything. Body scroll is locked while a modal or drawer is open.
 6. **Resize is instant.** Transitions are disabled during window resize (debounced class on `<html>`), so layout never lags.
-7. **Mobile patterns:** modals become bottom sheets (≤720), toasts span the full width at the bottom and respect `env(safe-area-inset-bottom)`, and drawer lists use `overscroll-behavior: contain`.
+7. **Mobile patterns:** modals become bottom sheets (≤720), toasts span the full width at the top, and drawer lists use `overscroll-behavior: contain`.
 
 ### 4.4 Shells (four distinct frames)
 
@@ -243,7 +243,7 @@ All components are built on shadcn/ui primitives and styled with these tokens. T
 | **Avatar** | Avatar | Circle, initials on `--iris-50` / iris text when no image. |
 | **Dropdown / Popover** | DropdownMenu, Popover | Radius lg, `--shadow-xl`, hairline border, 6–8px inner padding, items 40–44px, hover `--surface-hover`. Hover-open on desktop pointers; tap-open on touch. No dead zone between trigger and panel (padding bridge). |
 | **Dialog / Sheet** | Dialog, Sheet | Overlay `rgba(26,26,35,.55)` plus 2px blur. Panel radius xl, `--shadow-xl`, close X top-right (36px circle). ≤720 becomes a bottom sheet. |
-| **Toast** | Sonner | `--surface-inverse` bg, white text, radius md, bottom-right (full-width bottom on mobile), 3s. |
+| **Toast** | react-hot-toast (`components/ui/AppToaster.tsx`) | `--surface-card` card, hairline border, radius lg, `--shadow-xl`; 36px tinted status circle (success-50/600 · error-50/600 · iris-50/primary) + 14px/600 message + dismiss ×. Top-right below the 68px top bar (full-width top on mobile). 3.5s, errors 5s. |
 | **Skeleton** | Skeleton | `--neutral-100 → --neutral-150` shimmer (1.4s). Mirrors the exact shape of the loaded component. |
 | **EmptyState** | — | 72–76px circle (iris-50 bg, iris-400 icon) · H3 20px · 14px muted copy (max 380px) · primary Button with icon. |
 | **ErrorState** | — | Same as EmptyState with error-50 / error-500 icon (triangle alert) and a "Retry" button (rotate-ccw icon). |

@@ -2,6 +2,34 @@
 
 Read this file and `DESIGN_SYSTEM.md` before every task. `DESIGN_SYSTEM.md` is the single source of truth for visuals.
 
+## DATABASE SAFETY — CRITICAL, NEVER VIOLATE
+The development database contains real data I need to keep. Data loss is unacceptable.
+
+- NEVER run `prisma migrate reset`, `prisma db push --force-reset`, or any command
+  that drops, resets, or recreates the database or its tables.
+- To change the schema (add/modify a field, table, or relation), use ONLY:
+    npx prisma migrate dev --name <descriptive_name>
+  This alters tables in place and PRESERVES existing data.
+- If you believe a migration cannot be done without data loss, STOP. Do not run it.
+  Explain the conflict to me and wait for my decision. I will decide, not you.
+- Never edit or delete files in prisma/migrations/ that are already applied.
+- Never run raw SQL that DROPs or TRUNCATEs tables without asking me first.
+- Before any migration, tell me in one line what it will change.
+- Back up first: before applying any migration, run
+    mysqldump -u root -p sundryecom > backups/sundryecom-YYYY-MM-DD.sql
+  (`backups/` is git-ignored — never commit dumps).
+- Review the SQL before applying: generate with
+    npx prisma migrate dev --create-only --name <descriptive_name>
+  then read `migration.sql`. If it contains `DROP`, `DROP COLUMN`, a column type change,
+  a rename (Prisma does drop + create), or a required column without a default on a table
+  with rows, STOP and ask me. Only if it's safe, apply it with `npx prisma migrate dev`.
+- If `migrate dev` reports drift or asks to reset the database, STOP and tell me.
+  Never accept the "All data will be lost" prompt.
+- Data, not just schema: only delete records you created yourself in this session for
+  testing. Never run `deleteMany`/`updateMany` without a filter, and never modify or
+  delete existing data without asking — this includes seed scripts.
+
+
 ## 1. Project
 
 **Sundry** is a premium multi-vendor e-commerce marketplace: many independent sellers, one storefront, one checkout. Four areas:
@@ -72,7 +100,7 @@ design/          # the approved .dc.html design files (read-only reference)
 
 **Vendor** — `vendorLogin` → `/vendor/login` · `vendorregister` → `/vendor/register` · `vendordashboard` → `/vendor/dashboard` · `vendorProfile` → `/vendor/profile` · `vendorchangepassword` → `/vendor/change-password` · `vendorproductlist` → `/vendor/products` · `vendoraddproduct` → `/vendor/products/new` · `vendoreditproduct` → `/vendor/products/[id]/edit` · `vendorproductreview` → `/vendor/reviews` · `vendororderlist` → `/vendor/orders` · `vendororderdetails` → `/vendor/orders/[id]` · `vendorcoupon` → `/vendor/coupons` · `vendorproductreport` / `vendororderreport` / `vendortransactionreport` → `/vendor/reports/{products|orders|transactions}`
 
-**Admin** — `admindashboard` → `/admin/dashboard` · `adminallorders` → `/admin/orders` · `adminproductlist` → `/admin/products` · `adminproductadd` → `/admin/products/new` · `adminvendorproductlist` → `/admin/products/requests` · `adminproductdetail` → `/admin/products/[id]` · `adminproductstock` → `/admin/products/stock` · `adminvendorlist` → `/admin/vendors` · `adminaddvendor` → `/admin/vendors/new` · `admincustomerlist` → `/admin/customers` · `admincustomerreview` → `/admin/customers/reviews` · `adminearningreports` / `adminorderreport` / `adminproductreport` / `admintransactionreport` → `/admin/reports/{earnings|orders|products|transactions}`
+**Admin** — `admindashboard` → `/admin/dashboard` · `adminallorders` → `/admin/orders` · `adminproductlist` → `/admin/products` · `adminproductadd` → `/admin/products/new` · Brands → `/admin/brands` (+ `/admin/brands/[id]`) · Category Setup → `/admin/categories` · `/admin/categories/sub` · `/admin/categories/sub-sub` · `adminvendorproductlist` → `/admin/products/requests` · `adminproductdetail` → `/admin/products/[id]` · `adminproductstock` → `/admin/products/stock` · Vendor Manage → Vendor Approval `/admin/vendors/approval` · `adminaddvendor` → `/admin/vendors/add` · `adminvendorlist` → `/admin/vendors` · vendor details `/admin/vendors/[id]` · `admincustomerlist` → `/admin/customers` · `admincustomerreview` → `/admin/customers/reviews` · `adminearningreports` / `adminorderreport` / `adminproductreport` / `admintransactionreport` → `/admin/reports/{earnings|orders|products|transactions}`
 
 Reference only (not routes): `Design System`, `Component States`, `Mobile Layout`, `Canvas`.
 

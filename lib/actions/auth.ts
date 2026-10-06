@@ -8,6 +8,7 @@ import type { z } from "zod";
 import { auth, signIn, signOut } from "@/auth";
 import { LOGIN_PATH, safeCallbackUrl } from "@/lib/auth-routes";
 import { prisma } from "@/lib/db";
+import { nextFreeSlug, slugify } from "@/lib/slug";
 import {
   customerRegisterSchema,
   loginSchema,
@@ -85,28 +86,10 @@ export async function registerCustomerAction(input: unknown): Promise<ActionResu
   return redirectHome(email);
 }
 
-function slugify(value: string) {
-  const slug = value
-    .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60);
-  return slug || "store";
-}
-
 async function uniqueVendorSlug(tx: Prisma.TransactionClient, storeName: string) {
-  const base = slugify(storeName);
-  const taken = await tx.vendor.findMany({
-    where: { slug: { startsWith: base } },
-    select: { slug: true },
-  });
-  const used = new Set(taken.map((v) => v.slug));
-  if (!used.has(base)) return base;
-  let n = 2;
-  while (used.has(`${base}-${n}`)) n++;
-  return `${base}-${n}`;
+  const base = slugify(storeName, "store");
+  const taken = await tx.vendor.findMany({ where: { slug: { startsWith: base } }, select: { slug: true } });
+  return nextFreeSlug(base, taken.map((v) => v.slug));
 }
 
 export async function registerVendorAction(input: unknown): Promise<ActionResult> {
