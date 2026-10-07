@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { COUNTRY_CODES, VENDOR_IMAGE_TYPES } from "./admin-vendor";
-import { passwordRules } from "./auth";
 
 /** Seller Center › Profile Settings (vendorProfile design). Shared by the form and the server actions. */
 
@@ -99,15 +98,49 @@ export const vendorProfileUpdateSchema = z
 
 export type VendorProfileUpdateInput = z.infer<typeof vendorProfileUpdateSchema>;
 
-// ── Change password (vendorchangepassword design + current password for safety) ──
+// ── Change password (vendorchangepassword design + old password for safety) ──
+// Shared by the form (instant feedback) and the server action (the real check).
+// bcrypt only reads the first 72 bytes, so every field is capped at 72.
+
+export const PASSWORD_MIN = 8;
+export const PASSWORD_MAX = 72;
+
+/** True when every listed field is a non-empty string — gates the cross-field checks below. */
+const filled =
+  (...keys: string[]) =>
+  (payload: { value: unknown }) => {
+    const v = payload.value as Record<string, unknown> | null;
+    return !!v && keys.every((k) => typeof v[k] === "string" && v[k] !== "");
+  };
 
 export const vendorPasswordSchema = z
   .object({
-    currentPassword: z.string("Enter your current password").min(1, "Enter your current password").max(72),
-    newPassword: passwordRules,
-    confirmPassword: z.string("Please confirm your password").min(1, "Please confirm your password"),
+    oldPassword: z
+      .string("Enter your old password")
+      .min(1, "Enter your old password")
+      .max(PASSWORD_MAX, `Passwords are at most ${PASSWORD_MAX} characters`),
+    newPassword: z
+      .string("Enter a new password")
+      .min(1, "Enter a new password")
+      .min(PASSWORD_MIN, `New password must be at least ${PASSWORD_MIN} characters`)
+      .max(PASSWORD_MAX, `New password must be at most ${PASSWORD_MAX} characters`)
+      .regex(/[A-Za-z]/, "New password must include at least one letter")
+      .regex(/[0-9]/, "New password must include at least one number"),
+    confirmPassword: z
+      .string("Confirm your new password")
+      .min(1, "Confirm your new password")
+      .max(PASSWORD_MAX, `Passwords are at most ${PASSWORD_MAX} characters`),
   })
-  .refine((d) => d.newPassword === d.confirmPassword, { path: ["confirmPassword"], message: "Passwords don't match" })
-  .refine((d) => d.newPassword !== d.currentPassword, { path: ["newPassword"], message: "Choose a password different from your current one" });
+  // `when` lets these run even if another field failed, so every problem is reported at once.
+  .refine((d) => d.newPassword === d.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "New password and confirmation don't match",
+    when: filled("newPassword", "confirmPassword"),
+  })
+  .refine((d) => d.newPassword !== d.oldPassword, {
+    path: ["newPassword"],
+    message: "New password must be different from your old password",
+    when: filled("oldPassword", "newPassword"),
+  });
 
 export type VendorPasswordInput = z.infer<typeof vendorPasswordSchema>;

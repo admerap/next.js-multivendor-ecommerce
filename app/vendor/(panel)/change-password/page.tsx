@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Change Password" };
 const skeleton = (
   <section role="status" aria-label="Loading password settings" className="overflow-hidden rounded-lg bg-card shadow-sm">
     <Skeleton className="h-15 rounded-none" />
-    <div className="grid gap-4.5 px-4 py-6 sm:px-6 md:grid-cols-2">
+    <div className="grid gap-4.5 px-4 py-6 sm:px-6 sm:grid-cols-2">
       {Array.from({ length: 3 }, (_, i) => (
         <Skeleton key={i} className="h-12 rounded-md" />
       ))}
