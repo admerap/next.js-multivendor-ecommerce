@@ -20,7 +20,7 @@ const OTHER_LINKS = [
   { label: "Cancellation Policy", href: "/account/support" },
 ];
 
-const link = "text-sm !text-fg-subtle transition-colors duration-(--dur-fast) hover:!text-on-primary";
+const link = "inline-flex items-center text-sm !text-fg-subtle transition-colors duration-(--dur-fast) hover:!text-on-primary max-lg:min-h-11";
 
 /** Storefront footer (brand · Quick Links · Other · Newsletter · legal row). Always dark: inverse surface. */
 export function StorefrontFooter() {
@@ -28,7 +28,7 @@ export function StorefrontFooter() {
     <footer className="mt-14 bg-inverse text-fg-subtle">
       <div className="mx-auto grid max-w-[var(--container-max)] grid-cols-[repeat(auto-fit,minmax(min(220px,100%),1fr))] gap-8 px-[var(--container-pad)] py-14">
         <div className="min-w-0">
-          <Link href="/" className="mb-4 flex items-center gap-2.5">
+          <Link href="/" className="mb-4 flex items-center gap-2.5 max-lg:min-h-11">
             <span className="grid size-8.5 place-items-center rounded-md bg-primary">
               <ShoppingBag aria-hidden className="size-4.5 text-on-primary" strokeWidth={2} />
             </span>
@@ -40,7 +40,7 @@ export function StorefrontFooter() {
         </div>
         <nav aria-label="Quick links">
           <h4 className="mb-4 text-sm font-bold text-on-primary">Quick Links</h4>
-          <ul className="flex flex-col gap-2.5">
+          <ul className="flex flex-col gap-2.5 max-lg:gap-0">
             {QUICK_LINKS.map((l) => (
               <li key={l.label}>
                 <Link href={l.href} className={link}>
@@ -52,7 +52,7 @@ export function StorefrontFooter() {
         </nav>
         <nav aria-label="Other">
           <h4 className="mb-4 text-sm font-bold text-on-primary">Other</h4>
-          <ul className="flex flex-col gap-2.5">
+          <ul className="flex flex-col gap-2.5 max-lg:gap-0">
             {OTHER_LINKS.map((l) => (
               <li key={l.label}>
                 <Link href={l.href} className={link}>

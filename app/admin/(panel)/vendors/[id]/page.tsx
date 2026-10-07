@@ -152,7 +152,7 @@ export default async function VendorDetailPage({ params }: PageProps<"/admin/ven
                 label: "Certificate",
                 value: v.hasTinCertificate ? (
                   // Private file, streamed only to admins by the authorized route handler.
-                  <a href={`/admin/vendors/${v.id}/tin-certificate`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 font-semibold">
+                  <a href={`/admin/vendors/${v.id}/tin-certificate`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 font-semibold max-lg:min-h-11">
                     <ExternalLink aria-hidden className="size-3.5" strokeWidth={2} />
                     View certificate
                   </a>

@@ -74,7 +74,7 @@ export default function VendorRegisterPage() {
         {/* Registration */}
         <section className={`${container} pt-8`}>
           <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-2 text-caption text-fg-muted">
-            <Link href="/" className="!text-fg-muted hover:!text-primary">
+            <Link href="/" className="inline-flex items-center !text-fg-muted hover:!text-primary max-lg:min-h-11">
               Home
             </Link>
             <span aria-hidden>/</span>

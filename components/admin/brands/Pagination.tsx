@@ -31,7 +31,7 @@ export function Pagination({
   const start = Math.max(1, Math.min(page - 2, pageCount - 4));
   const pages = Array.from({ length: Math.min(5, pageCount) }, (_, i) => start + i);
 
-  const box = "grid h-10 min-w-10 place-items-center rounded-md px-2.5 text-caption font-bold tabular-nums transition-colors duration-(--dur-fast)";
+  const box = "grid h-10 min-w-10 place-items-center rounded-md px-2.5 max-lg:h-11 max-lg:min-w-11 text-caption font-bold tabular-nums transition-colors duration-(--dur-fast)";
 
   return (
     <nav aria-label="Pagination" className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-4 text-caption text-fg-muted sm:px-6">

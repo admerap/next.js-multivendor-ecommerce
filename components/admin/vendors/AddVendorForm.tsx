@@ -192,7 +192,7 @@ export function AddVendorForm() {
           type="button"
           onClick={() => setShow((s) => ({ ...s, [toggle]: !s[toggle] }))}
           aria-label={show[toggle] ? "Hide password" : "Show password"}
-          className="absolute top-1/2 right-1.5 grid size-9 -translate-y-1/2 place-items-center rounded-sm text-fg-muted hover:text-fg-strong"
+          className="absolute top-1/2 right-1 grid size-9 -translate-y-1/2 place-items-center rounded-sm text-fg-muted hover:text-fg-strong max-lg:size-11"
         >
           {show[toggle] ? <EyeOff aria-hidden className="size-4.5" /> : <Eye aria-hidden className="size-4.5" />}
         </button>

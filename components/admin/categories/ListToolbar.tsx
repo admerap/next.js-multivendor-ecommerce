@@ -111,7 +111,7 @@ export function ListToolbar({
         ))}
         {statuses && (
           <Select value={params.get("status") ?? "ALL"} onValueChange={(v) => update({ status: v })}>
-            <SelectTrigger aria-label="Filter by status" className="min-w-0 flex-1 sm:w-40">
+            <SelectTrigger aria-label="Filter by status" className="min-w-0 flex-[1_1_8.5rem] sm:w-40 sm:flex-none">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -126,7 +126,7 @@ export function ListToolbar({
         )}
         {sorts && sorts.length > 0 && (
           <Select value={params.get("sort") ?? sorts[0].value} onValueChange={(v) => update({ sort: v === sorts[0].value ? null : v })}>
-            <SelectTrigger aria-label="Sort by" className="min-w-0 flex-1 sm:w-44 [&>span]:truncate">
+            <SelectTrigger aria-label="Sort by" className="min-w-0 flex-[1_1_8.5rem] sm:w-44 sm:flex-none [&>span]:truncate">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -139,7 +139,7 @@ export function ListToolbar({
           </Select>
         )}
         <Select value={params.get("pageSize") ?? "10"} onValueChange={(v) => update({ pageSize: v })}>
-          <SelectTrigger aria-label="Rows per page" className="min-w-0 flex-1 sm:w-34">
+          <SelectTrigger aria-label="Rows per page" className="min-w-0 flex-[1_1_8.5rem] sm:w-34 sm:flex-none">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -150,7 +150,7 @@ export function ListToolbar({
             ))}
           </SelectContent>
         </Select>
-        {actions}
+        {actions && <div className="flex w-full sm:w-auto [&>*]:flex-1 sm:[&>*]:flex-none">{actions}</div>}
       </div>
     </div>
   );

@@ -142,7 +142,7 @@ export function FileDrop({
             <FileCheck2 aria-hidden className="size-3.5" strokeWidth={2} />
             {file ? "On file — will be replaced when you save" : "On file"}
           </span>
-          <a href={currentHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-6 items-center gap-1 font-semibold">
+          <a href={currentHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-6 items-center gap-1 font-semibold max-lg:min-h-11">
             <ExternalLink aria-hidden className="size-3.5" strokeWidth={2} />
             View
           </a>

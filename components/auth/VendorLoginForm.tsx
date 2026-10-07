@@ -51,7 +51,7 @@ export function VendorLoginForm({ callbackUrl }: { callbackUrl?: string }) {
           error={errors.password}
         />
         <div className="flex flex-wrap items-center justify-end gap-3">
-          <Link href="/vendor/register" className="text-sm font-semibold">
+          <Link href="/vendor/register" className="inline-flex items-center text-sm font-semibold max-lg:min-h-11">
             Register New Account
           </Link>
         </div>

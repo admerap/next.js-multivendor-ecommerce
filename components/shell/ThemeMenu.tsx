@@ -35,7 +35,7 @@ export function ThemeMenu({ open, onOpenChange }: { open: boolean; onOpenChange:
         aria-label={`Theme: ${current.label}`}
         title={`Theme: ${current.label}`}
         className={cn(
-          "inline-flex h-10 items-center gap-1 rounded-md border pr-2 pl-2.5 transition-colors duration-(--dur-fast)",
+          "inline-flex h-10 items-center gap-1 rounded-md border pr-2 pl-2.5 transition-colors duration-(--dur-fast) max-lg:h-11",
           open ? "border-iris-200 bg-iris-50 text-primary" : "border-line bg-card text-fg hover:text-primary",
         )}
       >

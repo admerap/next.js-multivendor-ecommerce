@@ -40,7 +40,7 @@ const TONE = toneClasses;
 type Overlay = null | "drawer" | "profile" | "theme" | "more" | "search";
 
 const iconBtn =
-  "grid size-10 place-items-center rounded-md text-fg transition-colors duration-(--dur-fast) hover:bg-hover hover:text-primary";
+  "grid size-10 place-items-center rounded-md text-fg transition-colors duration-(--dur-fast) hover:bg-hover hover:text-primary max-lg:size-11";
 
 function initials(name: string) {
   return name
@@ -276,7 +276,7 @@ function DashShellFrame({
             desktop && sideOpen ? "sm:w-70 sm:px-5" : "sm:w-17",
           )}
         >
-          <Link href="/" aria-label="Sundry storefront" className="grid size-9 shrink-0 place-items-center rounded-md bg-primary shadow-primary">
+          <Link href="/" aria-label="Sundry storefront" className="grid size-9 shrink-0 place-items-center rounded-md bg-primary shadow-primary max-lg:size-11">
             <ShoppingBag aria-hidden className="size-5 text-on-primary" strokeWidth={2} />
           </Link>
           {desktop && sideOpen && (
@@ -292,7 +292,7 @@ function DashShellFrame({
           aria-label={sidebarExpanded ? "Hide sidebar" : "Open menu"}
           aria-expanded={sidebarExpanded}
           title={sidebarExpanded ? "Hide sidebar" : "Open menu"}
-          className="ml-2.5 grid size-10 shrink-0 place-items-center rounded-md border border-line bg-card text-fg transition-colors duration-(--dur-fast) hover:border-iris-200 hover:bg-iris-50 hover:text-primary sm:ml-4"
+          className="ml-2.5 grid size-10 shrink-0 place-items-center rounded-md border border-line bg-card max-lg:size-11 text-fg transition-colors duration-(--dur-fast) hover:border-iris-200 hover:bg-iris-50 hover:text-primary sm:ml-4"
         >
           {sidebarExpanded ? (
             <ChevronsLeft aria-hidden className="size-[18px]" strokeWidth={2} />
@@ -307,7 +307,7 @@ function DashShellFrame({
               <span key={`${i}-${c.label}`} className="flex min-w-0 items-center gap-2">
                 {i > 0 && <ChevronRight aria-hidden className="size-3.5 shrink-0" />}
                 {c.href && i < all.length - 1 ? (
-                  <Link href={c.href} className="font-semibold whitespace-nowrap">
+                  <Link href={c.href} className="inline-flex items-center font-semibold whitespace-nowrap max-lg:min-h-11">
                     {c.label}
                   </Link>
                 ) : (
@@ -497,10 +497,10 @@ function DashShellFrame({
           <footer className="mt-2 flex flex-wrap justify-between gap-3 border-t border-line pt-5 text-caption text-fg-subtle">
             <span>{footer}</span>
             <span className="flex gap-4">
-              <Link href="#" className="!text-fg-muted hover:!text-primary">
+              <Link href="#" className="inline-flex items-center !text-fg-muted hover:!text-primary max-lg:min-h-11">
                 Platform policies
               </Link>
-              <Link href="#" className="!text-fg-muted hover:!text-primary">
+              <Link href="#" className="inline-flex items-center !text-fg-muted hover:!text-primary max-lg:min-h-11">
                 Help center
               </Link>
             </span>

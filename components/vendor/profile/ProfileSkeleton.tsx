@@ -9,7 +9,7 @@ export function ProfileSkeleton() {
         <div className="-mt-14 flex justify-center sm:-mt-17.5">
           <Skeleton className="size-28 rounded-full sm:size-35" />
         </div>
-        <div className="grid gap-4.5 px-4 py-6 sm:px-6 md:grid-cols-2">
+        <div className="grid gap-4.5 px-4 py-6 sm:px-6 sm:grid-cols-2">
           {Array.from({ length: 3 }, (_, i) => (
             <Skeleton key={i} className="h-12 rounded-md" />
           ))}
@@ -17,11 +17,11 @@ export function ProfileSkeleton() {
       </section>
       <section className="overflow-hidden rounded-lg bg-card p-4 shadow-sm sm:p-6">
         <Skeleton className="h-6 w-48 rounded-sm" />
-        <div className="mt-5 grid gap-4.5 md:grid-cols-2">
+        <div className="mt-5 grid gap-4.5 sm:grid-cols-2">
           <Skeleton className="h-12 rounded-md" />
           <Skeleton className="h-12 rounded-md" />
         </div>
-        <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+        <div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
           <Skeleton className="h-56 rounded-lg" />
           <Skeleton className="h-56 rounded-lg" />
         </div>

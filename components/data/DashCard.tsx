@@ -116,7 +116,7 @@ export function Segmented<K extends string>({
           aria-checked={value === o.key}
           onClick={() => onChange(o.key)}
           className={cn(
-            "h-9 min-w-0 flex-1 rounded-sm px-2.5 text-caption font-semibold whitespace-nowrap transition-colors duration-(--dur-fast) sm:px-3.5",
+            "h-9 min-w-0 flex-1 rounded-sm px-2.5 text-caption font-semibold whitespace-nowrap max-lg:h-11 transition-colors duration-(--dur-fast) sm:px-3.5",
             value === o.key ? "bg-card text-fg-strong shadow-xs" : "text-fg-muted hover:text-fg-strong",
           )}
         >

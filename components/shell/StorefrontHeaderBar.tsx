@@ -123,19 +123,19 @@ export function StorefrontHeaderBar({ user }: { user: HeaderUser }) {
     <>
       {/* Utility bar */}
       <div className="bg-inverse text-caption text-fg-subtle">
-        <div className="mx-auto flex h-10 max-w-[var(--container-max)] items-center justify-center gap-5 px-[var(--container-pad)] sm:justify-between">
+        <div className="mx-auto flex h-10 max-w-[var(--container-max)] items-center justify-center gap-5 px-[var(--container-pad)] max-lg:h-11 sm:justify-between">
           <span className="hidden items-center gap-2 sm:flex">
             <Phone aria-hidden className="size-3.5" strokeWidth={2} />
             +1 (800) 555-0142
           </span>
           <div className="flex items-center gap-5">
-            <Link href="/account/track-order" className="!text-fg-subtle hover:!text-on-primary">
+            <Link href="/account/track-order" className="inline-flex h-full items-center !text-fg-subtle hover:!text-on-primary max-lg:min-h-11">
               Track order
             </Link>
-            <Link href="/account/support" className="!text-fg-subtle hover:!text-on-primary">
+            <Link href="/account/support" className="inline-flex h-full items-center !text-fg-subtle hover:!text-on-primary max-lg:min-h-11">
               Help Center
             </Link>
-            <Link href="/vendor/login" className="flex items-center gap-1.5 font-semibold !text-accent hover:!text-saffron-50">
+            <Link href="/vendor/login" className="flex items-center gap-1.5 font-semibold !text-accent hover:!text-saffron-50 max-lg:min-h-11">
               <Store aria-hidden className="size-3.5" strokeWidth={2} />
               Become a Seller
             </Link>
@@ -155,7 +155,7 @@ export function StorefrontHeaderBar({ user }: { user: HeaderUser }) {
             <Menu aria-hidden className="size-5" strokeWidth={2} />
           </button>
 
-          <Link href="/" className="hidden shrink-0 items-center gap-2.5 sm:flex" aria-label="Sundry home">
+          <Link href="/" className="hidden shrink-0 items-center gap-2.5 max-lg:min-h-11 sm:flex" aria-label="Sundry home">
             <span className="grid size-9.5 place-items-center rounded-md bg-primary shadow-primary">
               <ShoppingBag aria-hidden className="size-5 text-on-primary" strokeWidth={2} />
             </span>
@@ -400,7 +400,7 @@ export function StorefrontHeaderBar({ user }: { user: HeaderUser }) {
             className="fixed top-0 bottom-0 left-0 z-101 flex w-[min(340px,88vw)] flex-col overscroll-contain bg-card shadow-xl"
           >
             <div className="flex items-center justify-between border-b border-line p-4">
-              <Link href="/" className="flex items-center gap-2.5">
+              <Link href="/" className="flex items-center gap-2.5 max-lg:min-h-11">
                 <span className="grid size-9 place-items-center rounded-md bg-primary">
                   <ShoppingBag aria-hidden className="size-5 text-on-primary" strokeWidth={2} />
                 </span>
