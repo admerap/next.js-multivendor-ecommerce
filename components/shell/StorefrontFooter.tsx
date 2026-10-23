@@ -2,12 +2,14 @@ import { MapPin, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { NewsletterForm } from "./NewsletterForm";
 
+/** Product shortcuts point at the home page sections (their listing pages come later). */
 const QUICK_LINKS = [
   { label: "Profile Info", href: "/dashboard" },
-  { label: "Flash Deals", href: "/offers" },
-  { label: "Featured Products", href: "/category/featured" },
-  { label: "Best Selling", href: "/category/best-selling" },
-  { label: "Latest Products", href: "/category/latest" },
+  { label: "Flash Deal", href: "/#flash-deal" },
+  { label: "Featured Products", href: "/#featured-products" },
+  { label: "Best Selling Product", href: "/#best-selling" },
+  { label: "Latest Products", href: "/#latest-products" },
+  { label: "Top Rated Product", href: "/#top-rated" },
   { label: "Track Order", href: "/account/track-order" },
 ];
 
@@ -64,7 +66,7 @@ export function StorefrontFooter() {
         </nav>
         <div className="min-w-0">
           <h4 className="mb-4 text-sm font-bold text-on-primary">Newsletter</h4>
-          <p className="mb-3 text-sm">Subscribe to get the latest updates and deals.</p>
+          <p className="mb-3 text-sm">Subscribe to our newsletter to get the latest updates.</p>
           <NewsletterForm />
         </div>
       </div>

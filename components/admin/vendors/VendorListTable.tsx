@@ -26,17 +26,18 @@ export function VendorListTable({ items, offset }: { items: VendorRow[]; offset:
   return (
     <>
       <div className="hidden xl:block">
-        <Table>
+        {/* Fixed layout with proportional columns so the actions never get clipped at 1201–1440px. */}
+        <Table className="table-fixed [&_td]:px-3 [&_th]:px-3">
           <TableHeader>
             <tr>
               <TableHead className="w-14">SL</TableHead>
               <TableHead>Shop</TableHead>
-              <TableHead>Vendor</TableHead>
-              <TableHead>Contact info</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Products</TableHead>
-              <TableHead className="text-right">Orders</TableHead>
-              <TableHead className="text-center">Action</TableHead>
+              <TableHead className="w-[14%]">Vendor</TableHead>
+              <TableHead className="w-[22%]">Contact info</TableHead>
+              <TableHead className="w-[12%]">Status</TableHead>
+              <TableHead className="w-[10%] text-right">Products</TableHead>
+              <TableHead className="w-[9%] text-right">Orders</TableHead>
+              <TableHead className="w-20 text-center">Action</TableHead>
             </tr>
           </TableHeader>
           <TableBody>
@@ -44,18 +45,18 @@ export function VendorListTable({ items, offset }: { items: VendorRow[]; offset:
               <TableRow key={v.id}>
                 <TableCell className="text-fg-muted tabular-nums">{offset + i + 1}</TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
                     <StoreAvatar name={v.storeName} src={v.logo} />
-                    <Link href={`/admin/vendors/${v.id}`} className="font-bold !text-fg-strong hover:!text-primary">
+                    <Link href={`/admin/vendors/${v.id}`} title={v.storeName} className="min-w-0 truncate font-bold !text-fg-strong hover:!text-primary">
                       {v.storeName}
                     </Link>
                   </div>
                 </TableCell>
-                <TableCell className="text-fg">{v.ownerName}</TableCell>
+                <TableCell className="truncate text-fg" title={v.ownerName}>{v.ownerName}</TableCell>
                 <TableCell>
-                  <div className="flex flex-col">
-                    <span className="text-fg">{v.email}</span>
-                    <span className="text-caption text-fg-muted tabular-nums">{v.phone}</span>
+                  <div className="flex min-w-0 flex-col">
+                    <span className="truncate text-fg" title={v.email}>{v.email}</span>
+                    <span className="truncate text-caption text-fg-muted tabular-nums">{v.phone}</span>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -80,7 +81,7 @@ export function VendorListTable({ items, offset }: { items: VendorRow[]; offset:
             <div className="flex items-center gap-3.5">
               <StoreAvatar name={v.storeName} src={v.logo} />
               <div className="min-w-0 flex-1">
-                <Link href={`/admin/vendors/${v.id}`} className="block truncate font-bold !text-fg-strong">
+                <Link href={`/admin/vendors/${v.id}`} className="block truncate leading-11 font-bold !text-fg-strong">
                   {v.storeName}
                 </Link>
                 <p className="truncate text-caption text-fg-muted">{v.ownerName}</p>

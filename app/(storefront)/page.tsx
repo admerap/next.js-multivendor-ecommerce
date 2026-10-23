@@ -1,61 +1,72 @@
-import { ArrowRight, LayoutDashboard, Store, UserPlus } from "lucide-react";
-import Link from "next/link";
-import { auth } from "@/auth";
-import { buttonClasses } from "@/components/ui/button-classes";
-import { homeFor } from "@/lib/auth-routes";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { CategoryRails } from "@/components/home/CategoryRails";
+import { FeaturedDeals, FeaturedDealsSkeleton } from "@/components/home/FeaturedDeals";
+import { FeaturedProducts } from "@/components/home/FeaturedProducts";
+import { FlashDeal } from "@/components/home/FlashDeal";
+import { HomeHero } from "@/components/home/HomeHero";
+import { ProductGridSkeleton } from "@/components/home/HomeSection";
+import { LatestProducts } from "@/components/home/LatestProducts";
+import { NewArrivals } from "@/components/home/NewArrivals";
+import { PopularProducts } from "@/components/home/PopularProducts";
+import { ShopByBrand } from "@/components/home/ShopByBrand";
+import { ShopByCategory, ShopByCategorySkeleton } from "@/components/home/ShopByCategory";
+import { TopSellers } from "@/components/home/TopSellers";
+import { TrustBadges } from "@/components/home/TrustBadges";
+import { Skeleton } from "@/components/states/Skeleton";
+import { getCategoryTree } from "@/lib/catalog.server";
 
-/** Temporary landing until the `Sundry Home` design is built. Header comes from (storefront)/layout. */
-export default async function HomePage() {
-  const session = await auth();
-  const user = session?.user;
-  const home = user ? homeFor(user.role, user.vendorStatus) : null;
+export const metadata: Metadata = { title: "Sundry — One marketplace. Every seller you love." };
 
+function BlockSkeleton({ label, height }: { label: string; height: string }) {
   return (
-    <main className="relative flex flex-1 items-center justify-center overflow-hidden bg-linear-180 from-card to-page px-[var(--container-pad)] py-20">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,var(--iris-50),transparent_60%)]"
-      />
-      <div className="relative flex max-w-[880px] flex-col items-center text-center">
-        <span className="rounded-full bg-primary-subtle px-3 py-1 text-caption font-bold uppercase tracking-[0.08em] text-primary">
-          Multi-vendor marketplace
-        </span>
-        <h1 className="mt-5 font-display text-[clamp(2rem,6vw,3.5rem)] leading-[1.1] font-extrabold tracking-[-0.02em] text-fg-strong">
-          One storefront, one checkout, <span className="text-primary">thousands of sellers.</span>
-        </h1>
-        <p className="mt-5 max-w-[520px] text-base text-pretty text-fg-muted">
-          Sundry brings independent sellers and beloved brands under one trusted checkout. Sign in to shop, or open a
-          store and start selling today.
-        </p>
+    <div role="status" aria-label={label} className="mx-auto w-full max-w-[var(--container-max)] px-[var(--container-pad)] pt-[clamp(32px,6vw,56px)]">
+      <Skeleton className={`${height} w-full rounded-xl`} />
+    </div>
+  );
+}
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          {home ? (
-            <Link href={home} className={buttonClasses.primary}>
-              <LayoutDashboard aria-hidden className="size-4" strokeWidth={2} />
-              Go to dashboard
-            </Link>
-          ) : (
-            <Link href="/register" className={buttonClasses.primary}>
-              <UserPlus aria-hidden className="size-4" strokeWidth={2} />
-              Start shopping
-            </Link>
-          )}
-          <Link href="/vendor/login" className={buttonClasses.secondary}>
-            <Store aria-hidden className="size-4" strokeWidth={2} />
-            Sell on Sundry
-            <ArrowRight aria-hidden className="size-4" strokeWidth={2} />
-          </Link>
-        </div>
-
-        {!user && (
-          <p className="mt-6 text-caption text-fg-muted">
-            Administrator?{" "}
-            <Link href="/admin/login" className="font-semibold">
-              Admin sign in
-            </Link>
-          </p>
-        )}
-      </div>
+/**
+ * Storefront home (Sundry Home design), in the design's section order. Each section streams on its own
+ * (Suspense + skeleton) and shows an empty state when the catalog has nothing for it yet.
+ * Header/footer come from (storefront)/layout.
+ */
+export default async function HomePage() {
+  const tree = await getCategoryTree();
+  return (
+    <main className="flex flex-col pb-4">
+      <HomeHero tree={tree} />
+      <Suspense fallback={<BlockSkeleton label="Loading flash deals" height="h-[clamp(320px,40vw,460px)]" />}>
+        <FlashDeal />
+      </Suspense>
+      <Suspense fallback={<ProductGridSkeleton label="Loading featured products" />}>
+        <FeaturedProducts />
+      </Suspense>
+      <Suspense fallback={<ShopByCategorySkeleton />}>
+        <ShopByCategory />
+      </Suspense>
+      <Suspense fallback={<FeaturedDealsSkeleton />}>
+        <FeaturedDeals />
+      </Suspense>
+      <Suspense fallback={<BlockSkeleton label="Loading top sellers" height="h-56" />}>
+        <TopSellers />
+      </Suspense>
+      <Suspense fallback={<BlockSkeleton label="Loading latest products" height="h-[560px]" />}>
+        <LatestProducts />
+      </Suspense>
+      <Suspense fallback={<ProductGridSkeleton label="Loading new arrivals" />}>
+        <NewArrivals />
+      </Suspense>
+      <Suspense fallback={<ProductGridSkeleton label="Loading popular products" />}>
+        <PopularProducts />
+      </Suspense>
+      <Suspense fallback={<BlockSkeleton label="Loading brands" height="h-44" />}>
+        <ShopByBrand />
+      </Suspense>
+      <Suspense fallback={<ProductGridSkeleton label="Loading category products" />}>
+        <CategoryRails />
+      </Suspense>
+      <TrustBadges />
     </main>
   );
 }

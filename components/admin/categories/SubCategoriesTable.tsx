@@ -31,26 +31,27 @@ export function SubCategoriesTable({ items, offset, categories }: { items: SubCa
     <>
       {/* ≥1201px: table */}
       <div className="hidden xl:block">
-        <Table>
+        {/* Fixed layout with proportional columns so the actions never get clipped at 1201–1440px. */}
+        <Table className="table-fixed [&_td]:px-3 [&_th]:px-3">
           <TableHeader>
             <tr>
               <TableHead className="w-14">#</TableHead>
               <TableHead>Sub-category name</TableHead>
-              <TableHead>Slug</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead className="text-right">Sub-sub-categories</TableHead>
-              <TableHead className="text-right">Products</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-center">Actions</TableHead>
+              <TableHead className="w-[16%]">Slug</TableHead>
+              <TableHead className="w-[14%]">Category</TableHead>
+              <TableHead className="w-[11%] text-right whitespace-normal">Sub-sub-categories</TableHead>
+              <TableHead className="w-[9%] text-right">Products</TableHead>
+              <TableHead className="w-[14%]">Status</TableHead>
+              <TableHead className="w-28 text-center">Actions</TableHead>
             </tr>
           </TableHeader>
           <TableBody>
             {items.map((s, i) => (
               <TableRow key={s.id}>
                 <TableCell className="text-fg-muted tabular-nums">{offset + i + 1}</TableCell>
-                <TableCell className="font-bold text-fg-strong">{s.name}</TableCell>
-                <TableCell className="text-fg-muted">{s.slug}</TableCell>
-                <TableCell className="text-fg">{s.categoryName}</TableCell>
+                <TableCell className="truncate font-bold text-fg-strong" title={s.name}>{s.name}</TableCell>
+                <TableCell className="truncate text-fg-muted" title={s.slug}>{s.slug}</TableCell>
+                <TableCell className="truncate text-fg" title={s.categoryName}>{s.categoryName}</TableCell>
                 <TableCell className="text-right font-semibold text-fg-strong tabular-nums">{s.subSubCategoriesCount}</TableCell>
                 <TableCell className="text-right font-semibold text-fg-strong tabular-nums">{s.productsCount}</TableCell>
                 <TableCell>

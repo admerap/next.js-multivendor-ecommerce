@@ -72,7 +72,7 @@ export function VendorApprovalTable({ items, offset }: { items: VendorRow[]; off
             <div className="flex items-center gap-3.5">
               <StoreAvatar name={v.storeName} src={v.logo} />
               <div className="min-w-0 flex-1">
-                <Link href={`/admin/vendors/${v.id}`} className="block truncate font-bold !text-fg-strong">
+                <Link href={`/admin/vendors/${v.id}`} className="block truncate leading-11 font-bold !text-fg-strong">
                   {v.storeName}
                 </Link>
                 <p className="truncate text-caption text-fg-muted">{v.ownerName}</p>

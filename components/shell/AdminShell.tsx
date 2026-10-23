@@ -2,27 +2,35 @@
 
 import {
   BarChart3,
-  Boxes,
   ChartLine,
   CircleDollarSign,
-  ClipboardList,
   FolderTree,
   LayoutDashboard,
   Package,
-  PackagePlus,
   Receipt,
   ShoppingCart,
   Star,
   Store,
   Tag,
+  TicketPercent,
   Users,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { DashShell, type NavGroup } from "./DashShell";
 import type { SetupStep } from "./SetupGuide";
 
+export type AdminCounts = {
+  orders: number;
+  customers: number;
+  pendingVendors: number;
+  /** Size of each Product Manage list (the same filters as the list pages). */
+  products: { pending: number; approved: number; denied: number; featured: number; popular: number };
+  /** Size of each Coupon Manage list. */
+  coupons: { pending: number; approved: number; denied: number };
+};
+
 /** Admin sidebar (admindashboard design), limited to routes in CLAUDE.md §5. */
-function adminNav(counts: { orders: number; customers: number; pendingVendors: number }): NavGroup[] {
+function adminNav(counts: AdminCounts): NavGroup[] {
   return [
     { title: "Overview", items: [{ label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard }] },
     {
@@ -49,10 +57,31 @@ function adminNav(counts: { orders: number; customers: number; pendingVendors: n
             { label: "Vendor List", href: "/admin/vendors" },
           ],
         },
-        { label: "Product List", href: "/admin/products", icon: Package },
-        { label: "Add New Product", href: "/admin/products/new", icon: PackagePlus },
-        { label: "Limited Stock", href: "/admin/products/stock", icon: Boxes },
-        { label: "New Product Requests", href: "/admin/products/requests", icon: ClipboardList },
+        {
+          label: "Product Manage",
+          icon: Package,
+          count: counts.products.pending, // vendor products waiting for review
+          tone: "saffron",
+          // Every list shows its size; only Pending (needs action) is saffron.
+          children: [
+            { label: "Pending Product", href: "/admin/products/pending", count: counts.products.pending, tone: "saffron" },
+            { label: "Approved Product", href: "/admin/products/approved", count: counts.products.approved, tone: "iris" },
+            { label: "Denied Product", href: "/admin/products/denied", count: counts.products.denied, tone: "iris" },
+            { label: "Featured Product", href: "/admin/products/featured", count: counts.products.featured, tone: "iris" },
+            { label: "Popular Product", href: "/admin/products/popular", count: counts.products.popular, tone: "iris" },
+          ],
+        },
+        {
+          label: "Coupon Manage",
+          icon: TicketPercent,
+          count: counts.coupons.pending, // vendor coupons waiting for review
+          tone: "saffron",
+          children: [
+            { label: "Pending Coupon", href: "/admin/coupons/pending", count: counts.coupons.pending, tone: "saffron" },
+            { label: "Approved Coupon", href: "/admin/coupons/approved", count: counts.coupons.approved, tone: "iris" },
+            { label: "Denied Coupon", href: "/admin/coupons/denied", count: counts.coupons.denied, tone: "iris" },
+          ],
+        },
       ],
     },
     {
@@ -85,7 +114,7 @@ export function AdminShell({
   children,
 }: {
   user: { name: string; email: string };
-  counts: { orders: number; customers: number; pendingVendors: number };
+  counts: AdminCounts;
   setupSteps: SetupStep[];
   children: ReactNode;
 }) {

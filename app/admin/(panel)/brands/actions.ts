@@ -3,7 +3,7 @@
 import { Prisma, type BrandStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import type { z } from "zod";
-import { auth } from "@/auth";
+import { forbiddenResult, isAdmin } from "@/lib/admin-auth";
 import { prisma } from "@/lib/db";
 import { nextFreeSlug, slugify } from "@/lib/slug";
 import { deleteBrandImage, saveBrandImage, UploadError } from "@/lib/uploads";
@@ -39,12 +39,7 @@ export type BrandDetail = BrandRow & {
 const DUPLICATE = "A brand with this name already exists";
 const LIST_PATH = "/admin/brands";
 
-/** Every action re-checks the role on the server; the page guard is not a security boundary. */
-async function isAdmin() {
-  const session = await auth();
-  return session?.user.role === "ADMIN";
-}
-const forbidden = <T>(): ActionResult<T> => ({ success: false, error: "You don't have permission to manage brands." });
+const forbidden = <T>(): ActionResult<T> => forbiddenResult("brands");
 
 function invalid<T>(error: z.ZodError): ActionResult<T> {
   const fieldErrors: Record<string, string> = {};

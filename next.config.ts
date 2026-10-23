@@ -5,8 +5,9 @@ const nextConfig: NextConfig = {
   devIndicators: { position: "bottom-right" },
   experimental: {
     serverActions: {
-      // Brand images are capped at 2 MB (lib/validations/brand.ts); leave headroom for the other form fields.
-      bodySizeLimit: "3mb",
+      // Product saves carry up to 10 MB of images (lib/validations/product.ts PRODUCT_LIMITS.uploadBytes,
+      // each image ≤ 1 MB); leave headroom for the other form fields. Every action still checks its own limits.
+      bodySizeLimit: "12mb",
     },
   },
 };

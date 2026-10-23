@@ -45,17 +45,18 @@ export function CategoriesTable({ items, offset }: { items: CategoryRow[]; offse
     <>
       {/* ≥1201px: table */}
       <div className="hidden xl:block">
-        <Table>
+        {/* Fixed layout with proportional columns so the actions never get clipped at 1201–1440px. */}
+        <Table className="table-fixed [&_td]:px-3 [&_th]:px-3">
           <TableHeader>
             <tr>
               <TableHead className="w-14">#</TableHead>
               <TableHead className="w-20">Image</TableHead>
               <TableHead>Category name</TableHead>
-              <TableHead>Slug</TableHead>
-              <TableHead className="text-right">Sub-categories</TableHead>
-              <TableHead className="text-right">Products</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-center">Actions</TableHead>
+              <TableHead className="w-[18%]">Slug</TableHead>
+              <TableHead className="w-[12%] text-right whitespace-normal">Sub-categories</TableHead>
+              <TableHead className="w-[10%] text-right">Products</TableHead>
+              <TableHead className="w-[15%]">Status</TableHead>
+              <TableHead className="w-28 text-center">Actions</TableHead>
             </tr>
           </TableHeader>
           <TableBody>
@@ -65,8 +66,8 @@ export function CategoriesTable({ items, offset }: { items: CategoryRow[]; offse
                 <TableCell>
                   <CategoryThumb src={c.image} name={c.name} size={52} />
                 </TableCell>
-                <TableCell className="font-bold text-fg-strong">{c.name}</TableCell>
-                <TableCell className="text-fg-muted">{c.slug}</TableCell>
+                <TableCell className="truncate font-bold text-fg-strong" title={c.name}>{c.name}</TableCell>
+                <TableCell className="truncate text-fg-muted" title={c.slug}>{c.slug}</TableCell>
                 <TableCell className="text-right font-semibold text-fg-strong tabular-nums">{c.subCategoriesCount}</TableCell>
                 <TableCell className="text-right font-semibold text-fg-strong tabular-nums">{c.productsCount}</TableCell>
                 <TableCell>

@@ -1,11 +1,11 @@
 import { ClipboardCheck } from "lucide-react";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Pagination } from "@/components/admin/brands/Pagination";
-import { ListPageHeading } from "@/components/admin/categories/ListPageHeading";
-import { ListSkeleton } from "@/components/admin/categories/ListSkeleton";
-import { ListToolbar } from "@/components/admin/categories/ListToolbar";
-import { NoMatches } from "@/components/admin/categories/NoMatches";
+import { Pagination } from "@/components/data/Pagination";
+import { ListPageHeading } from "@/components/data/ListPageHeading";
+import { ListSkeleton } from "@/components/data/ListSkeleton";
+import { ListToolbar } from "@/components/data/ListToolbar";
+import { NoMatches } from "@/components/data/NoMatches";
 import { VendorApprovalTable } from "@/components/admin/vendors/VendorApprovalTable";
 import { EmptyState } from "@/components/data/DashCard";
 import { SetBreadcrumbs } from "@/components/shell/Breadcrumbs";
@@ -13,6 +13,7 @@ import { PreviewStateFrame } from "@/components/states/PreviewState";
 import { requireArea } from "@/lib/auth-guard";
 import { vendorListSchema } from "@/lib/validations/admin-vendor";
 import { getVendors } from "../actions";
+import { firstParams } from "@/lib/list-params";
 
 export const metadata: Metadata = { title: "Vendor Approval" };
 
@@ -38,8 +39,7 @@ function ListCard({ children }: { children: ReactNode }) {
 export default async function VendorApprovalPage({ searchParams }: PageProps<"/admin/vendors/approval">) {
   await requireArea("ADMIN");
   const sp = await searchParams;
-  const raw = Object.fromEntries(Object.entries(sp).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]));
-  const params = vendorListSchema.parse(raw);
+  const params = vendorListSchema.parse(firstParams(sp));
 
   const res = await getVendors(params, "PENDING");
   if (!res.success || !res.data) throw new Error(res.error ?? "Couldn't load pending vendors"); // → error.tsx (Retry)

@@ -57,7 +57,9 @@ model Vendor {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products Product[]
+  coupons  Coupon[]
 }
 
 enum BrandStatus {
@@ -75,8 +77,7 @@ model Brand {
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 
-  // TODO(catalog): add `products Product[]` once the Product model exists
-  // (Product gets `brandId String?` + `brand Brand? @relation(fields: [brandId], references: [id])`).
+  products Product[]
 }
 
 // ── Auth.js adapter models (unused with JWT sessions, kept so the adapter is satisfied) ──
@@ -137,8 +138,7 @@ model Category {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
-  // TODO(catalog): add `products Product[]` once the Product model exists, so product counts
-  // come from `_count` (computed, never stored).
+  products Product[]
 }
 
 /// Level 2. Name is unique within its category.
@@ -153,7 +153,7 @@ model SubCategory {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
-  // TODO(catalog): add `products Product[]` once the Product model exists.
+  products Product[]
 
   @@unique([categoryId, name])
 }
@@ -171,8 +171,224 @@ model SubSubCategory {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
-  // TODO(catalog): add `products Product[]` once the Product model exists.
+  products Product[]
 
   @@unique([subCategoryId, name])
   @@index([categoryId])
+}
+
+// ── Products (vendor catalog) ──
+// Money is integer cents (CLAUDE.md §6): price 115900 = $1,159.00. Never Float.
+// Two independent statuses: approvalStatus is the admin's review; isActive is the vendor's
+// own show/hide switch. The storefront shows a product only when APPROVED and active.
+
+enum ProductApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ProductType {
+  PHYSICAL
+  DIGITAL
+}
+
+enum ProductUnit {
+  PC
+  KG
+  G
+  BOX
+  PAIR
+}
+
+enum DiscountType {
+  FLAT // discountValue in cents
+  PERCENT // discountValue in whole percent (0–100)
+}
+
+model Product {
+  id       String @id @default(cuid())
+  vendorId String
+  // Vendor delete (only via account delete) removes their catalog; order history will keep its
+  // own snapshot of items, so it never depends on this row.
+  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  name             String      @db.VarChar(200)
+  slug             String      @unique @db.VarChar(220)
+  sku              String      @db.VarChar(64)
+  productType      ProductType @default(PHYSICAL)
+  unit             ProductUnit @default(PC)
+  shortDescription String?     @db.VarChar(500)
+  description      String      @db.Text
+  /// Search tags: string[]
+  tags             Json?
+
+  // Catalog links: Restrict, so deleting a category/brand can never wipe products by accident.
+  categoryId       String
+  category         Category        @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  subCategoryId    String?
+  subCategory      SubCategory?    @relation(fields: [subCategoryId], references: [id], onDelete: Restrict)
+  subSubCategoryId String?
+  subSubCategory   SubSubCategory? @relation(fields: [subSubCategoryId], references: [id], onDelete: Restrict)
+  brandId          String?
+  brand            Brand?          @relation(fields: [brandId], references: [id], onDelete: Restrict)
+
+  // Pricing (cents)
+  price           Int
+  compareAtPrice  Int?
+  discountType    DiscountType @default(FLAT)
+  discountValue   Int          @default(0)
+  /// Basis points: 825 = 8.25%
+  taxRate         Int?
+  shippingCost    Int          @default(0)
+  shippingPerUnit Boolean      @default(false)
+
+  // Stock: used only when the product has no variations (then each variation's stock counts).
+  stock       Int @default(0)
+  minOrderQty Int @default(1)
+
+  thumbnail      String?
+  videoUrl       String? @db.VarChar(255)
+  /// Variation options the vendor entered, e.g. [{"name":"Color","values":["Red","Blue"]}].
+  /// Kept so the edit form can rebuild the generator; the rows themselves live in ProductVariation.
+  variantOptions Json?
+
+  metaTitle       String? @db.VarChar(120)
+  metaDescription String? @db.VarChar(320)
+
+  approvalStatus  ProductApprovalStatus @default(PENDING)
+  /// When it last entered PENDING (created, resubmitted after a deny, or re-review) — orders the admin queue.
+  submittedAt     DateTime              @default(now())
+  isActive        Boolean               @default(true)
+  /// Admin's note to the vendor when the product is denied (REJECTED); cleared on approval.
+  rejectionReason String?               @db.VarChar(500)
+
+  // Admin merchandising flags. The storefront honours them only for APPROVED + active products.
+  isFeatured Boolean @default(false)
+  isPopular  Boolean @default(false)
+
+  images      ProductImage[]
+  variations  ProductVariation[]
+  couponLinks CouponProduct[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@unique([vendorId, sku])
+  @@index([vendorId, approvalStatus])
+  @@index([approvalStatus, isActive])
+  @@index([approvalStatus, submittedAt])
+  @@index([categoryId])
+  @@index([subCategoryId])
+  @@index([subSubCategoryId])
+  @@index([brandId])
+}
+
+/// Gallery ("Product Additional Images"); the thumbnail lives on Product.
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([productId, position])
+}
+
+/// One row per sold combination, e.g. "Red / M". Price and stock are per row.
+model ProductVariation {
+  id         String   @id @default(cuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  /// "Red / M" — stable key for the combination within its product
+  name       String   @db.VarChar(160)
+  /// {"Color":"Red","Size":"M"}
+  attributes Json
+  sku        String?  @db.VarChar(64)
+  price      Int
+  stock      Int      @default(0)
+  image      String?
+  position   Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([productId, name])
+}
+
+// ── Coupons (vendor promotions, vendorcoupon design) ──
+// A vendor coupon only ever discounts that vendor's own items (enforced in lib/coupons).
+// Money is integer cents (CLAUDE.md §6). Dates are calendar days, both inclusive.
+
+enum CouponType {
+  DISCOUNT // "Discount on Purchase"
+  FREE_DELIVERY // waives this store's shipping
+  FIRST_ORDER // discount valid on the customer's first order from this store
+}
+
+enum CouponDiscountType {
+  AMOUNT // discountValue in cents
+  PERCENTAGE // discountValue in whole percent (1–100)
+}
+
+enum CouponScope {
+  STORE_WIDE
+  SPECIFIC_PRODUCTS
+}
+
+enum CouponApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Coupon {
+  id       String @id @default(cuid())
+  vendorId String
+  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  /// Unique per vendor (two stores can both have SAVE10); stored upper-case.
+  code            String               @db.VarChar(32)
+  title           String               @db.VarChar(100)
+  type            CouponType           @default(DISCOUNT)
+  discountType    CouponDiscountType   @default(AMOUNT)
+  /// cents (AMOUNT) or whole percent (PERCENTAGE); 0 for FREE_DELIVERY
+  discountValue   Int                  @default(0)
+  scope           CouponScope          @default(STORE_WIDE)
+  /// cents; checked against this vendor's subtotal only
+  minPurchase     Int                  @default(0)
+  /// cents; cap for PERCENTAGE coupons
+  maxDiscount     Int?
+  /// total redemptions allowed (null = unlimited)
+  usageLimit      Int?
+  /// redemptions per customer (null = unlimited)
+  limitPerUser    Int?
+  usedCount       Int                  @default(0)
+  startsAt        DateTime             @db.Date
+  expiresAt       DateTime             @db.Date
+  isActive        Boolean              @default(true)
+  /// Admin review: new vendor coupons start PENDING and only APPROVED ones apply at checkout.
+  approvalStatus  CouponApprovalStatus @default(PENDING)
+  /// When it last entered PENDING (created, resubmitted after a deny, or terms changed) — orders the admin queue.
+  submittedAt     DateTime             @default(now())
+  /// Admin's note to the vendor when the coupon is denied (REJECTED); cleared on approval.
+  rejectionReason String?              @db.VarChar(500)
+
+  products  CouponProduct[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@unique([vendorId, code])
+  @@index([vendorId, isActive])
+  @@index([approvalStatus, submittedAt])
+}
+
+/// Products a SPECIFIC_PRODUCTS coupon applies to (always the coupon vendor's own products).
+model CouponProduct {
+  couponId  String
+  coupon    Coupon  @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([couponId, productId])
+  @@index([productId])
 }

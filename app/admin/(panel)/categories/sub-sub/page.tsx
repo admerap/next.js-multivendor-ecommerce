@@ -1,13 +1,13 @@
 import { Folder } from "lucide-react";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Pagination } from "@/components/admin/brands/Pagination";
+import { Pagination } from "@/components/data/Pagination";
 import { AddSubSubCategoryButton } from "@/components/admin/categories/AddSubSubCategoryButton";
-import { ListPageHeading } from "@/components/admin/categories/ListPageHeading";
-import { ListSkeleton } from "@/components/admin/categories/ListSkeleton";
-import { ListToolbar } from "@/components/admin/categories/ListToolbar";
+import { ListPageHeading } from "@/components/data/ListPageHeading";
+import { ListSkeleton } from "@/components/data/ListSkeleton";
+import { ListToolbar } from "@/components/data/ListToolbar";
 import { MissingParentState } from "@/components/admin/categories/MissingParentState";
-import { NoMatches } from "@/components/admin/categories/NoMatches";
+import { NoMatches } from "@/components/data/NoMatches";
 import { SubSubCategoriesTable } from "@/components/admin/categories/SubSubCategoriesTable";
 import { EmptyState } from "@/components/data/DashCard";
 import { SetBreadcrumbs } from "@/components/shell/Breadcrumbs";
@@ -18,14 +18,14 @@ import { subSubCategoryListSchema } from "@/lib/validations/category";
 import { getCategoryOptions } from "../actions";
 import { getSubCategories, getSubCategoriesByCategory } from "../sub/actions";
 import { getSubSubCategories } from "./actions";
+import { firstParams } from "@/lib/list-params";
 
 export const metadata: Metadata = { title: "Sub-Sub-Categories" };
 
 export default async function SubSubCategoriesPage({ searchParams }: PageProps<"/admin/categories/sub-sub">) {
   await requireArea("ADMIN");
   const sp = await searchParams;
-  const raw = Object.fromEntries(Object.entries(sp).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]));
-  const params = subSubCategoryListSchema.parse(raw);
+  const params = subSubCategoryListSchema.parse(firstParams(sp));
 
   const [res, catRes, subsRes, filterSubsRes] = await Promise.all([
     getSubSubCategories(params),

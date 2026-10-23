@@ -89,20 +89,6 @@ export async function getSubCategories(
   }
 }
 
-export async function getSubCategory(id: unknown): Promise<ActionResult<SubCategoryRow | null>> {
-  if (!(await isAdmin())) return forbidden();
-  const parsed = categoryIdSchema.safeParse({ id });
-  if (!parsed.success) return { success: true, data: null };
-  try {
-    const row = await prisma.subCategory.findUnique({ where: { id: parsed.data.id }, select: ROW_SELECT });
-    if (!row) return { success: true, data: null };
-    return { success: true, data: toRow(row, (await productCounts([row.id])).get(row.id) ?? 0) };
-  } catch (error) {
-    console.error("[sub-categories] get failed", error);
-    return { success: false, error: "We couldn't load this sub-category. Please try again." };
-  }
-}
-
 /** The dependent dropdown: only the chosen category's sub-categories, A→Z. */
 export async function getSubCategoriesByCategory(categoryId: unknown): Promise<ActionResult<SubCategoryOption[]>> {
   if (!(await isAdmin())) return forbidden();

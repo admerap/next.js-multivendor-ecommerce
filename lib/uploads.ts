@@ -5,6 +5,7 @@ import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { BRAND_IMAGE_MAX_BYTES } from "@/lib/validations/brand";
 import { VENDOR_FILE_MAX_BYTES } from "@/lib/validations/admin-vendor";
+import { PRODUCT_IMAGE_MAX_BYTES } from "@/lib/validations/product";
 
 /*
  * TODO(storage): DEVELOPMENT-ONLY local storage. Before production, move uploads to cloud object
@@ -14,7 +15,7 @@ import { VENDOR_FILE_MAX_BYTES } from "@/lib/validations/admin-vendor";
  */
 
 const PUBLIC_DIR = path.join(process.cwd(), "public");
-type Folder = "brands" | "categories" | "vendors";
+type Folder = "brands" | "categories" | "vendors" | "products";
 const dirOf = (folder: Folder) => path.join(PUBLIC_DIR, "uploads", folder);
 const prefixOf = (folder: Folder) => `/uploads/${folder}/`;
 const STORED_NAME = /^[0-9a-f-]{36}\.(jpg|png|webp)$/;
@@ -90,6 +91,10 @@ export const deleteCategoryImage = (publicPath: string | null | undefined) => de
 /** Vendor images: 1 MB by default (Add New Vendor); the vendor profile passes its own 2 MB limit. */
 export const saveVendorImage = (file: File, maxBytes = VENDOR_FILE_MAX_BYTES) => saveImage(file, "vendors", maxBytes);
 export const deleteVendorImage = (publicPath: string | null | undefined) => deleteImage(publicPath, "vendors");
+
+/** Product thumbnail, gallery and variation images (vendoraddproduct design: max 1 MB). */
+export const saveProductImage = (file: File) => saveImage(file, "products", PRODUCT_IMAGE_MAX_BYTES);
+export const deleteProductImage = (publicPath: string | null | undefined) => deleteImage(publicPath, "products");
 
 const ADMIN_DOC_KINDS: DocKind[] = ["pdf", "doc", "docx", "jpg"];
 const KIND_LABEL: Record<DocKind, string> = { pdf: "PDF", doc: "DOC", docx: "DOCX", jpg: "JPG", png: "PNG", webp: "WebP" };

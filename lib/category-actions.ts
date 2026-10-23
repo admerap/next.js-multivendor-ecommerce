@@ -3,9 +3,10 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import type { z } from "zod";
-import { auth } from "@/auth";
+import { forbiddenResult } from "@/lib/admin-auth";
 import { CATEGORY_PATHS } from "@/lib/categories";
 import { nextFreeSlug, slugify } from "@/lib/slug";
+import { fieldErrorsOf } from "@/lib/form-errors";
 
 /** Helpers shared by the Category / Sub-Category / Sub-Sub-Category server actions. */
 
@@ -17,17 +18,12 @@ export type ActionResult<T = undefined> = {
 };
 
 /** Every action re-checks the role on the server; the page guard is not a security boundary. */
-export async function isAdmin() {
-  const session = await auth();
-  return session?.user.role === "ADMIN";
-}
+export { isAdmin } from "@/lib/admin-auth";
 
-export const forbidden = <T>(): ActionResult<T> => ({ success: false, error: "You don't have permission to manage categories." });
+export const forbidden = <T>(): ActionResult<T> => forbiddenResult("categories");
 
 export function invalid<T>(error: z.ZodError): ActionResult<T> {
-  const fieldErrors: Record<string, string> = {};
-  for (const issue of error.issues) fieldErrors[String(issue.path[0] ?? "form")] ??= issue.message;
-  return { success: false, error: "Please fix the highlighted fields", fieldErrors };
+  return { success: false, error: "Please fix the highlighted fields", fieldErrors: fieldErrorsOf(error.issues) };
 }
 
 export const duplicate = <T>(message: string): ActionResult<T> => ({ success: false, error: message, fieldErrors: { name: message } });

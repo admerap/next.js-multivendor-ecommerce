@@ -126,7 +126,7 @@ export function BrandsTable({ items, offset }: { items: BrandRow[]; offset: numb
             <div className="flex items-center gap-3.5">
               <BrandThumb src={b.image} name={b.name} size={56} />
               <div className="min-w-0 flex-1">
-                <Link href={`/admin/brands/${b.id}`} className="block truncate font-bold !text-fg-strong">
+                <Link href={`/admin/brands/${b.id}`} className="block truncate leading-11 font-bold !text-fg-strong">
                   {b.name}
                 </Link>
                 <p className="truncate text-caption text-fg-muted">{b.slug}</p>

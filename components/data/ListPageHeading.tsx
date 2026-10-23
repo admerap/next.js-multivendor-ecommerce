@@ -8,7 +8,7 @@ export function ListPageHeading({ icon: Icon, title, total, noun }: { icon: Luci
         <Icon aria-hidden className="size-5" strokeWidth={1.9} />
       </span>
       {title}
-      <span className="rounded-full bg-sunken px-2.5 py-0.5 font-sans text-sm font-bold text-fg-muted tabular-nums" aria-label={`${total} ${noun}`}>
+      <span className="rounded-full bg-card px-2.5 py-0.5 font-sans text-sm font-bold text-fg-muted tabular-nums shadow-xs" aria-label={`${total} ${noun}`}>
         {total}
       </span>
     </h1>

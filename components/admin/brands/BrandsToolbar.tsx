@@ -4,6 +4,7 @@ import { Search, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import type { BrandOption } from "@/app/admin/(panel)/brands/actions";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
@@ -41,7 +42,7 @@ export function BrandsToolbar({ brands }: { brands: BrandOption[] }) {
 
   return (
     <div className={cn("flex flex-wrap items-center gap-3 px-4 py-4 sm:px-6 sm:py-5", pending && "opacity-80")}>
-      <div className="flex h-11.5 min-w-0 flex-[1_1_320px] items-center rounded-md border border-line bg-card transition-[border-color,box-shadow] duration-(--dur-fast) focus-within:border-primary focus-within:shadow-[0_0_0_3px_var(--iris-50)] sm:max-w-105">
+      <div className="flex h-11.5 min-w-0 flex-[1_1_240px] items-center rounded-md border border-line bg-card transition-[border-color,box-shadow] duration-(--dur-fast) focus-within:border-primary focus-within:shadow-[0_0_0_3px_var(--iris-50)]">
         <Search aria-hidden className="ml-3.5 size-4.5 shrink-0 text-fg-muted" strokeWidth={1.9} />
         <input
           type="search"
@@ -52,28 +53,25 @@ export function BrandsToolbar({ brands }: { brands: BrandOption[] }) {
           className="h-full min-w-0 flex-1 bg-transparent px-2.5 text-sm text-fg-strong outline-none placeholder:text-fg-subtle [&::-webkit-search-cancel-button]:hidden"
         />
         {q && (
-          <button type="button" onClick={() => setQ("")} aria-label="Clear search" className="mr-1 grid size-9 place-items-center rounded-md text-fg-muted hover:text-fg-strong">
+          <button type="button" onClick={() => setQ("")} aria-label="Clear search" className="mr-1 grid size-9 place-items-center rounded-md text-fg-muted hover:text-fg-strong max-lg:mr-0 max-lg:size-11">
             <X aria-hidden className="size-4" />
           </button>
         )}
       </div>
 
-      <div className="flex flex-[1_1_100%] flex-wrap gap-3 sm:ml-auto sm:flex-none sm:flex-nowrap">
-        <Select value={params.get("brand") ?? "ALL"} onValueChange={(v) => update({ brand: v })}>
-          <SelectTrigger aria-label="Filter by brand" className="min-w-0 flex-[1_1_100%] sm:w-44 sm:flex-none [&>span]:truncate">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">All brands</SelectItem>
-            {brands.map((b) => (
-              <SelectItem key={b.id} value={b.id}>
-                {b.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="flex min-w-0 flex-[1_1_100%] flex-wrap justify-end gap-3 sm:ml-auto sm:flex-[0_1_auto]">
+        <SearchableSelect
+          value={params.get("brand") ?? "ALL"}
+          onValueChange={(v) => update({ brand: v })}
+          options={[{ value: "ALL", label: "All brands" }, ...brands.map((b) => ({ value: b.id, label: b.name }))]}
+          placeholder="All brands"
+          searchPlaceholder="Search brands…"
+          emptyText="No brand matches"
+          ariaLabel="Filter by brand"
+          className="min-w-0 flex-[1_1_100%] sm:w-44 sm:flex-none"
+        />
         <Select value={params.get("status") ?? "ALL"} onValueChange={(v) => update({ status: v })}>
-          <SelectTrigger aria-label="Filter by status" className="min-w-0 flex-1 sm:w-40">
+          <SelectTrigger aria-label="Filter by status" className="min-w-0 flex-[1_1_8.5rem] sm:w-40 sm:flex-none">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -83,13 +81,13 @@ export function BrandsToolbar({ brands }: { brands: BrandOption[] }) {
           </SelectContent>
         </Select>
         <Select value={params.get("pageSize") ?? "10"} onValueChange={(v) => update({ pageSize: v })}>
-          <SelectTrigger aria-label="Rows per page" className="min-w-0 flex-1 sm:w-34">
+          <SelectTrigger aria-label="Rows per page" className="min-w-0 flex-[1_1_8.5rem] sm:w-34 sm:flex-none">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {["10", "20", "50"].map((n) => (
               <SelectItem key={n} value={n}>
-                {n} per page
+                {n} / page
               </SelectItem>
             ))}
           </SelectContent>

@@ -90,20 +90,6 @@ export async function getCategories(
   }
 }
 
-export async function getCategory(id: unknown): Promise<ActionResult<CategoryRow | null>> {
-  if (!(await isAdmin())) return forbidden();
-  const parsed = categoryIdSchema.safeParse({ id });
-  if (!parsed.success) return { success: true, data: null };
-  try {
-    const row = await prisma.category.findUnique({ where: { id: parsed.data.id }, select: ROW_SELECT });
-    if (!row) return { success: true, data: null };
-    return { success: true, data: toRow(row, (await productCounts([row.id])).get(row.id) ?? 0) };
-  } catch (error) {
-    console.error("[categories] get failed", error);
-    return { success: false, error: "We couldn't load this category. Please try again." };
-  }
-}
-
 /** Every category, A→Z — for the parent dropdowns and the list filters. */
 export async function getCategoryOptions(): Promise<ActionResult<CategoryOption[]>> {
   if (!(await isAdmin())) return forbidden();

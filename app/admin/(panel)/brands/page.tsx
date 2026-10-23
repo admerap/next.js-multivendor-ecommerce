@@ -5,13 +5,14 @@ import { AddBrandButton } from "@/components/admin/brands/AddBrandButton";
 import { BrandsSkeleton } from "@/components/admin/brands/BrandsSkeleton";
 import { BrandsTable } from "@/components/admin/brands/BrandsTable";
 import { BrandsToolbar } from "@/components/admin/brands/BrandsToolbar";
-import { Pagination } from "@/components/admin/brands/Pagination";
+import { Pagination } from "@/components/data/Pagination";
 import { EmptyState } from "@/components/data/DashCard";
 import { SetBreadcrumbs } from "@/components/shell/Breadcrumbs";
 import { PreviewStateFrame } from "@/components/states/PreviewState";
 import { requireArea } from "@/lib/auth-guard";
 import { brandListSchema } from "@/lib/validations/brand";
 import { getBrandOptions, getBrands, type BrandOption } from "./actions";
+import { firstParams } from "@/lib/list-params";
 
 export const metadata: Metadata = { title: "Brands" };
 
@@ -34,8 +35,7 @@ function BrandsCard({ brands, children }: { brands: BrandOption[]; children: Rea
 export default async function BrandsPage({ searchParams }: PageProps<"/admin/brands">) {
   await requireArea("ADMIN");
   const sp = await searchParams;
-  const raw = Object.fromEntries(Object.entries(sp).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]));
-  const params = brandListSchema.parse(raw);
+  const params = brandListSchema.parse(firstParams(sp));
 
   const [res, optRes] = await Promise.all([getBrands(params), getBrandOptions()]);
   if (!res.success || !res.data) throw new Error(res.error ?? "Couldn't load brands"); // → error.tsx (Retry)
@@ -55,7 +55,7 @@ export default async function BrandsPage({ searchParams }: PageProps<"/admin/bra
               <Tag aria-hidden className="size-5" strokeWidth={1.9} />
             </span>
             Brands
-            <span className="rounded-full bg-sunken px-2.5 py-0.5 font-sans text-sm font-bold text-fg-muted tabular-nums" aria-label={`${total} brands`}>
+            <span className="rounded-full bg-card px-2.5 py-0.5 font-sans text-sm font-bold text-fg-muted tabular-nums shadow-xs" aria-label={`${total} brands`}>
               {total}
             </span>
           </h1>

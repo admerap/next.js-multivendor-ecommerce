@@ -75,6 +75,7 @@ All tokens are CSS custom properties defined in `app/globals.css` (full file in 
 | `--text-subtle` | neutral-400 | Placeholders, timestamps |
 | `--text-compare` | neutral-400 | Struck-through compare-at price |
 | `--surface-page` | neutral-50 | App canvas |
+| `--surface-app` | neutral-100 (dark: neutral-950) | Admin & seller panel canvas (DashShell) — a step deeper than the white cards so they stand out |
 | `--surface-card` | neutral-0 | Cards, header, panels |
 | `--surface-sunken` | neutral-100 | Inputs on cards, table headers, tracks |
 | `--surface-hover` | neutral-100 | Row/item hover |
@@ -341,6 +342,7 @@ Ticket priority: Low → neutral · Medium → info · High → warning · Urgen
   --text-strong:var(--neutral-900); --text-body:var(--neutral-700); --text-muted:var(--neutral-500);
   --text-subtle:var(--neutral-400); --text-compare:var(--neutral-400); --text-on-dark:var(--neutral-0);
   --surface-page:var(--neutral-50); --surface-card:var(--neutral-0); --surface-sunken:var(--neutral-100);
+  --surface-app:var(--neutral-100); /* admin + seller panel canvas: one step deeper so white cards stand out */
   --surface-hover:var(--neutral-100); --surface-inverse:var(--neutral-900);
   --border-subtle:var(--neutral-200); --border-default:var(--neutral-300); --border-strong:var(--neutral-400);
 
@@ -399,6 +401,7 @@ Ticket priority: Low → neutral · Medium → info · High → warning · Urgen
 /* Semantic surfaces/text/borders exposed as utilities (distinct names → no self-reference) */
 @theme inline {
   --color-page:var(--surface-page);
+  --color-app:var(--surface-app);
   --color-card:var(--surface-card);
   --color-sunken:var(--surface-sunken);
   --color-hover:var(--surface-hover);
@@ -425,6 +428,7 @@ Ticket priority: Low → neutral · Medium → info · High → warning · Urgen
 html[data-theme="dark"] {
   color-scheme:dark;
   --surface-page:var(--neutral-950); --surface-card:var(--neutral-900); --surface-sunken:var(--neutral-800);
+  --surface-app:var(--neutral-950); /* stays darker than cards in dark mode */
   --surface-hover:var(--neutral-800); --surface-inverse:var(--neutral-800);
   --text-strong:var(--neutral-50); --text-body:var(--neutral-300); --text-muted:var(--neutral-400);
   --text-subtle:var(--neutral-500); --text-compare:var(--neutral-500);

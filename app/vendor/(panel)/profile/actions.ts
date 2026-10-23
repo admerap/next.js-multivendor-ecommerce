@@ -11,6 +11,7 @@ import {
   TIN_CERT_MAX_BYTES,
   vendorProfileUpdateSchema,
 } from "@/lib/validations/vendor-profile";
+import { fieldErrorsOf } from "@/lib/form-errors";
 
 // ── Full profile save: Basic Information (User) + Store Information (Vendor) in ONE transaction ──
 
@@ -39,12 +40,6 @@ const EMAIL_TAKEN = "An account with this email already exists";
 const TEXT_KEYS = ["name", "email", "currentPassword", "countryCode", "phone", "storeName", "storeAddress", "tinNumber", "tinExpiresAt", "removeLogo", "removeCover"] as const;
 const FILE_KEYS = ["photo", "logo", "coverImage", "tinCertificate"] as const;
 const isoDate = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : null);
-
-function fieldErrorsOf(issues: { path: PropertyKey[]; message: string }[]) {
-  const out: Record<string, string> = {};
-  for (const issue of issues) out[String(issue.path[0] ?? "form")] ??= issue.message;
-  return out;
-}
 
 /**
  * Saves the signed-in vendor's profile. Rules:

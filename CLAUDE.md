@@ -49,9 +49,9 @@ The development database contains real data I need to keep. Data loss is unaccep
 - **lucide-react** icons · **next/font/google** (Bricolage Grotesque + Manrope) · **next/image**.
 - **next-themes** (`attribute="data-theme"`, `defaultTheme="system"`, `enableSystem`, `disableTransitionOnChange`).
 - **Chart.js + react-chartjs-2** for charts.
-- **react-hook-form + zod** for forms · **Sonner** for toasts.
+- **zod** for every form and Server Action (forms are controlled components; react-hook-form isn't used) · **react-hot-toast** for toasts.
 - **Stripe** (Checkout/Payment Element + Stripe Connect for seller payouts).
-- Data layer: Prisma + PostgreSQL · Auth: Auth.js (NextAuth) with roles. (Change here if the team picks otherwise.)
+- Data layer: Prisma + **MySQL** (database `sundryecom`) · Auth: Auth.js (NextAuth) with roles.
 
 Commands: `npm run dev` · `npm run build` · `npm run lint` · `npm run typecheck` (add `"typecheck": "tsc --noEmit"`).
 
@@ -86,9 +86,14 @@ components/
   ui/            # shadcn primitives (button, badge, card, input, dialog, …)
   commerce/      # ProductCard, SellerCard, MiniCart, QuickViewModal, CategoryMegaMenu, CheckoutStepper
   shell/         # StorefrontHeader, MobileDrawer, AccountSidebar, DashShell, DashSidebar, ThemeMenu
-  data/          # DataTable (table→cards), StatCard, WalletCard, Chart, StatusBadge
+  data/          # DashCard, Chart, list kit: ListToolbar, ListPageHeading, ListSkeleton, NoMatches, Pagination, list-classes
   states/        # Skeletons, EmptyState, ErrorState, PreviewState
-lib/             # db, auth, stripe, money(), format(), zod schemas, permissions
+  products/      # shared by vendor + admin: ApprovalBadge, ProductThumb, StockText, DeleteProductButton, detail/ sections
+  coupons/       # shared by vendor + admin: CouponBits, DeleteCouponButton, CouponFormSkeleton
+  forms/         # FormBits (Field, FieldError, labels)
+  admin/ vendor/ # area-only components (admin/review = Approve/Deny kit for products + coupons)
+lib/             # db, auth, admin-auth (isAdmin), vendor-auth (currentVendorId), money(), list-params, form-errors, zod schemas
+                 # A component used by more than one area lives in a shared folder, never inside another area's folder.
 design/          # the approved .dc.html design files (read-only reference)
 ```
 
@@ -98,9 +103,9 @@ design/          # the approved .dc.html design files (read-only reference)
 
 **Account** — `user.dashboard` → `/dashboard` · `userOrder` → `/account/orders` · `userorderdetails` → `/account/orders/[id]` · `usertrackorder` → `/account/track-order` · `userwishlist` → `/account/wishlist` · `useraddress` → `/account/addresses` · `userchat` → `/account/inbox` (tabs: Support = Sundry AI Support, Deliveryman) · `supportticket` → `/account/support`
 
-**Vendor** — `vendorLogin` → `/vendor/login` · `vendorregister` → `/vendor/register` · `vendordashboard` → `/vendor/dashboard` · `vendorProfile` → `/vendor/profile` · `vendorchangepassword` → `/vendor/change-password` · `vendorproductlist` → `/vendor/products` · `vendoraddproduct` → `/vendor/products/new` · `vendoreditproduct` → `/vendor/products/[id]/edit` · `vendorproductreview` → `/vendor/reviews` · `vendororderlist` → `/vendor/orders` · `vendororderdetails` → `/vendor/orders/[id]` · `vendorcoupon` → `/vendor/coupons` · `vendorproductreport` / `vendororderreport` / `vendortransactionreport` → `/vendor/reports/{products|orders|transactions}`
+**Vendor** — `vendorLogin` → `/vendor/login` · `vendorregister` → `/vendor/register` · `vendordashboard` → `/vendor/dashboard` · `vendorProfile` → `/vendor/profile` · `vendorchangepassword` → `/vendor/change-password` · `vendorproductlist` → `/vendor/products` · `vendoraddproduct` → `/vendor/products/add` · `vendoreditproduct` → `/vendor/products/[id]/edit` · product details → `/vendor/products/[id]` · `vendorproductreview` → `/vendor/reviews` · `vendororderlist` → `/vendor/orders` · `vendororderdetails` → `/vendor/orders/[id]` · `vendorcoupon` → `/vendor/coupons` · `vendorproductreport` / `vendororderreport` / `vendortransactionreport` → `/vendor/reports/{products|orders|transactions}`
 
-**Admin** — `admindashboard` → `/admin/dashboard` · `adminallorders` → `/admin/orders` · `adminproductlist` → `/admin/products` · `adminproductadd` → `/admin/products/new` · Brands → `/admin/brands` (+ `/admin/brands/[id]`) · Category Setup → `/admin/categories` · `/admin/categories/sub` · `/admin/categories/sub-sub` · `adminvendorproductlist` → `/admin/products/requests` · `adminproductdetail` → `/admin/products/[id]` · `adminproductstock` → `/admin/products/stock` · Vendor Manage → Vendor Approval `/admin/vendors/approval` · `adminaddvendor` → `/admin/vendors/add` · `adminvendorlist` → `/admin/vendors` · vendor details `/admin/vendors/[id]` · `admincustomerlist` → `/admin/customers` · `admincustomerreview` → `/admin/customers/reviews` · `adminearningreports` / `adminorderreport` / `adminproductreport` / `admintransactionreport` → `/admin/reports/{earnings|orders|products|transactions}`
+**Admin** — `admindashboard` → `/admin/dashboard` · `adminallorders` → `/admin/orders` · `adminproductlist` → `/admin/products` · `adminproductadd` → `/admin/products/new` · Brands → `/admin/brands` (+ `/admin/brands/[id]`) · Category Setup → `/admin/categories` · `/admin/categories/sub` · `/admin/categories/sub-sub` · Product Manage → `/admin/products/{pending|approved|denied|featured|popular}` (`adminvendorproductlist` design) · Coupon Manage → `/admin/coupons/{pending|approved|denied}` + details `/admin/coupons/[id]` · `adminproductdetail` → `/admin/products/[id]` · `adminproductstock` → `/admin/products/stock` · Vendor Manage → Vendor Approval `/admin/vendors/approval` · `adminaddvendor` → `/admin/vendors/add` · `adminvendorlist` → `/admin/vendors` · vendor details `/admin/vendors/[id]` · `admincustomerlist` → `/admin/customers` · `admincustomerreview` → `/admin/customers/reviews` · `adminearningreports` / `adminorderreport` / `adminproductreport` / `admintransactionreport` → `/admin/reports/{earnings|orders|products|transactions}`
 
 Reference only (not routes): `Design System`, `Component States`, `Mobile Layout`, `Canvas`.
 
@@ -108,11 +113,12 @@ Reference only (not routes): `Design System`, `Component States`, `Mobile Layout
 
 - **User** — `role: CUSTOMER | VENDOR | ADMIN`; a VENDOR owns exactly one **Store**.
 - **Store** — name, slug, logo, banner, tagline, status (`PENDING | ACTIVE | SUSPENDED`), `isOpen`, rating, `stripeAccountId` (Stripe Connect), commission rate.
-- **Product** — `storeId` (required), name, slug, category, brand, price, compareAt, stock, SKU, images, variants, status (`DRAFT | PENDING_REVIEW | APPROVED | DENIED`). Vendor products need admin approval.
+- **Product** — `vendorId` (required), name, slug, SKU, category → sub → sub-sub, brand, price/compareAt/discount/tax (cents), stock, images (thumbnail + `ProductImage` gallery), **ProductVariation** rows (one per attribute combination, own price + stock), meta title/description. Two separate statuses: `approvalStatus` (`PENDING | APPROVED | REJECTED`, set by admin; new vendor products start `PENDING`) and `isActive` (vendor show/hide). Storefront shows a product only when `APPROVED` **and** `isActive`. `REJECTED` is labelled **"Denied"** in every UI; `rejectionReason` holds the admin's note to the vendor. `submittedAt` = when it last entered `PENDING` (created, resubmitted, or sent back for re-review); it orders the admin queue (Coupon has the same field). Admin flags `isFeatured` / `isPopular` drive storefront merchandising: they can only be checked on `APPROVED` products (always unchecked), and the storefront honours them only for `APPROVED` + `isActive` products.
 - **Cart / CartItem** — items carry `storeId`; UI groups by store.
 - **Order** (parent: customer, addresses, Stripe PaymentIntent, totals) → **StoreOrder** (one per store: items, subtotal, shipping, tax, commission, **status**) → **OrderItem**.
 - StoreOrder status: `PENDING → CONFIRMED → PACKAGING → OUT_FOR_DELIVERY → DELIVERED` · plus `RETURNED · FAILED · CANCELED`. Payment status: `UNPAID | PAID | REFUNDED`. Map to colors with `StatusBadge` (DESIGN_SYSTEM.md §6).
-- **Review**, **Coupon** (scoped to a store), **Address** (type: Home | Office | Other), **SupportTicket**, **WishlistItem**, **Payout/Transaction**.
+- **Coupon** — `vendorId` (required), `code` (unique **per vendor**: `@@unique([vendorId, code])`), title, `type` (`DISCOUNT | FREE_DELIVERY | FIRST_ORDER`), `discountType` (`AMOUNT | PERCENTAGE`), `discountValue` (cents or whole %), `scope` (`STORE_WIDE | SPECIFIC_PRODUCTS` via **CouponProduct**), `minPurchase` / `maxDiscount` (cents), `usageLimit`, `limitPerUser`, `usedCount`, `startsAt` / `expiresAt` (dates, inclusive), `isActive`, `approvalStatus` (`PENDING | APPROVED | REJECTED`, set by admin; new coupons start `PENDING`, shown as "Denied" when `REJECTED`) + `rejectionReason`. Only `APPROVED` coupons apply at checkout. Editing an approved coupon's terms (code, type, value, min/max, dates, scope, products) sends it back to `PENDING`; title, usage limits and the on/off switch don't. **A vendor coupon only ever discounts that vendor's own items** — in a multi-seller cart, never another store's lines.
+- **Review**, **Address** (type: Home | Office | Other), **SupportTicket**, **WishlistItem**, **Payout/Transaction**.
 - Money is stored as **integer cents**; format with `money()` (`$1,159.00`, tabular-nums). Discounts render as `−35%` (true minus).
 
 ## 7. Security & permissions

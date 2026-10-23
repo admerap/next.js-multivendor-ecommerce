@@ -4,7 +4,7 @@ import { Prisma, type VendorStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import type { z } from "zod";
-import { auth } from "@/auth";
+import { forbiddenResult, isAdmin } from "@/lib/admin-auth";
 import { prisma } from "@/lib/db";
 import { nextFreeSlug, slugify } from "@/lib/slug";
 import { deleteVendorDocument, deleteVendorImage, saveVendorDocument, saveVendorImage, UploadError } from "@/lib/uploads";
@@ -48,12 +48,7 @@ export type VendorDetail = VendorRow & {
   // Extension point: per-vendor analytics (orders, revenue, ratings…) are added here later.
 };
 
-/** Every action re-checks the role on the server; the page guard is not a security boundary. */
-async function isAdmin() {
-  const session = await auth();
-  return session?.user.role === "ADMIN";
-}
-const forbidden = <T>(): ActionResult<T> => ({ success: false, error: "You don't have permission to manage vendors." });
+const forbidden = <T>(): ActionResult<T> => forbiddenResult("vendors");
 
 /** Only real vendor accounts: the linked user must have the VENDOR role. */
 const VENDOR_ACCOUNT: Prisma.VendorWhereInput = { user: { role: "VENDOR" } };

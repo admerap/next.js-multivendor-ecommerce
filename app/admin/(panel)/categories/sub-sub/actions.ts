@@ -96,20 +96,6 @@ export async function getSubSubCategories(
   }
 }
 
-export async function getSubSubCategory(id: unknown): Promise<ActionResult<SubSubCategoryRow | null>> {
-  if (!(await isAdmin())) return forbidden();
-  const parsed = categoryIdSchema.safeParse({ id });
-  if (!parsed.success) return { success: true, data: null };
-  try {
-    const row = await prisma.subSubCategory.findUnique({ where: { id: parsed.data.id }, select: ROW_SELECT });
-    if (!row) return { success: true, data: null };
-    return { success: true, data: toRow(row, (await productCounts([row.id])).get(row.id) ?? 0) };
-  } catch (error) {
-    console.error("[sub-sub-categories] get failed", error);
-    return { success: false, error: "We couldn't load this sub-sub-category. Please try again." };
-  }
-}
-
 // ── Mutations ────────────────────────────────────────────────────────────────
 
 export async function createSubSubCategory(formData: FormData): Promise<ActionResult<{ id: string }>> {

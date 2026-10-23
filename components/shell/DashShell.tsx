@@ -26,7 +26,7 @@ import { BreadcrumbProvider, useBreadcrumbs } from "./Breadcrumbs";
 import { SetupGuide, type SetupStep } from "./SetupGuide";
 import { THEMES, ThemeMenu } from "./ThemeMenu";
 
-export type NavChild = { label: string; href: string };
+export type NavChild = { label: string; href: string; count?: number; tone?: Tone };
 export type NavItem = {
   label: string;
   icon: LucideIcon;
@@ -36,6 +36,41 @@ export type NavItem = {
 /** A titled block of sidebar links (e.g. OVERVIEW, CATALOG). */
 export type NavGroup = { title: string; items: NavItem[] };
 const TONE = toneClasses;
+
+/** Saffron/warning/error counts mean "needs action": hidden at 0, and a dot on the rail icon otherwise. */
+const ALERT_TONES: Tone[] = ["saffron", "warning", "error"];
+const isAlert = (count: number | undefined, tone: Tone | undefined) => !!tone && ALERT_TONES.includes(tone) && (count ?? 0) > 0;
+
+/**
+ * Sidebar count pill. Alert counts only show when there is something to act on; informational
+ * counts (iris) always show, a 0 in muted grey so the real numbers stand out. On the active row the
+ * pill turns white so it doesn't vanish into the iris highlight.
+ */
+function NavCount({ count, tone, onActive = false }: { count?: number; tone?: Tone; onActive?: boolean }) {
+  if (count === undefined || !tone) return null;
+  const alert = ALERT_TONES.includes(tone);
+  if (alert && count === 0) return null;
+  const t = TONE[count === 0 ? "neutral" : tone];
+  return (
+    <span
+      className={cn(
+        "inline-grid h-5.5 min-w-6 shrink-0 place-items-center rounded-full px-1.5 text-[0.68rem] font-bold tabular-nums",
+        onActive && !alert ? "bg-card text-primary shadow-xs" : [t.bg, t.fg],
+      )}
+    >
+      {count.toLocaleString("en-US")}
+    </span>
+  );
+}
+
+/** Icons-only rail: a small dot on the icon when that section has something waiting. */
+function AlertDot({ count, tone }: { count?: number; tone?: Tone }) {
+  if (!isAlert(count, tone)) return null;
+  return <span aria-hidden className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-accent ring-2 ring-card" />;
+}
+
+/** Accessible name in the icons-only rail, which hides the count text. */
+const railLabel = (label: string, count?: number, tone?: Tone) => (isAlert(count, tone) ? `${label}, ${count} pending` : label);
 
 type Overlay = null | "drawer" | "profile" | "theme" | "more" | "search";
 
@@ -135,7 +170,7 @@ function DashShellFrame({
       if (e.key === "Escape") setOverlay(null);
       if (withSearch && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        if (window.innerWidth <= 1100) setOverlay("search");
+        if (window.innerWidth <= 1440) setOverlay("search"); // the inline pill only exists from 2xl (1441px)
         else searchRef.current?.focus();
       }
     };
@@ -170,14 +205,13 @@ function DashShellFrame({
                 if (children) {
                   const childOn = children.some((c) => pathOf(c.href) === current);
                   const open = !collapsed && openParent === label;
-                  const pt = tone ? TONE[tone] : null;
                   return (
                     <li key={label}>
                       <button
                         type="button"
                         aria-expanded={collapsed ? undefined : open}
-                        aria-label={collapsed ? label : undefined}
-                        title={collapsed ? label : undefined}
+                        aria-label={collapsed ? railLabel(label, count, tone) : undefined}
+                        title={collapsed ? railLabel(label, count, tone) : undefined}
                         onClick={() => {
                           if (!collapsed) return toggleParent(label);
                           // Icons-only: expand the sidebar (or open the drawer) with this group open.
@@ -191,15 +225,14 @@ function DashShellFrame({
                           collapsed && childOn ? "bg-iris-50 text-primary" : childOn ? "text-primary" : "text-fg hover:bg-hover hover:text-primary",
                         )}
                       >
-                        <Icon aria-hidden className="size-5 shrink-0" strokeWidth={1.8} />
+                        <span className="relative shrink-0">
+                          <Icon aria-hidden className="size-5" strokeWidth={1.8} />
+                          {collapsed && <AlertDot count={count} tone={tone} />}
+                        </span>
                         {!collapsed && (
                           <>
                             <span className="min-w-0 flex-1 truncate">{label}</span>
-                            {count !== undefined && pt && (
-                              <span className={cn("inline-grid h-5.5 min-w-6 shrink-0 place-items-center rounded-full px-1.5 text-[0.68rem] font-bold tabular-nums", pt.bg, pt.fg)}>
-                                {count.toLocaleString("en-US")}
-                              </span>
-                            )}
+                            <NavCount count={count} tone={tone} />
                             <ChevronDown aria-hidden className={cn("size-4 shrink-0 transition-transform duration-(--dur-fast)", open && "rotate-180")} />
                           </>
                         )}
@@ -214,11 +247,13 @@ function DashShellFrame({
                                   href={c.href}
                                   aria-current={on ? "page" : undefined}
                                   className={cn(
-                                    "flex min-h-10 items-center rounded-md px-3 text-[0.82rem] font-semibold transition-colors duration-(--dur-fast)",
+                                    // pr-10: the count lines up with the parents' counts (which sit before the chevron).
+                                    "flex min-h-10 items-center gap-2 rounded-md pr-10 pl-3 text-[0.82rem] max-lg:min-h-11 font-semibold transition-colors duration-(--dur-fast)",
                                     on ? "bg-iris-50 !text-primary" : "!text-fg-muted hover:bg-hover hover:!text-primary",
                                   )}
                                 >
-                                  <span className="truncate">{c.label}</span>
+                                  <span className="min-w-0 flex-1 truncate">{c.label}</span>
+                                  <NavCount count={c.count} tone={c.tone} onActive={on} />
                                 </Link>
                               </li>
                             );
@@ -229,27 +264,26 @@ function DashShellFrame({
                   );
                 }
                 const on = pathOf(href) === current;
-                const t = tone ? TONE[tone] : null;
                 return (
                   <li key={href + label}>
                     <Link
                       href={href}
                       aria-current={on ? "page" : undefined}
-                      aria-label={collapsed ? label : undefined}
-                      title={collapsed ? label : undefined}
+                      aria-label={collapsed ? railLabel(label, count, tone) : undefined}
+                      title={collapsed ? railLabel(label, count, tone) : undefined}
                       className={cn(
                         "flex min-h-11 items-center gap-3 rounded-md text-sm font-semibold transition-colors duration-(--dur-fast)",
-                        collapsed ? "mx-auto size-11 justify-center" : "px-3",
+                        // pr-10: counts share one column with the collapsible parents' counts.
+                        collapsed ? "mx-auto size-11 justify-center" : "pr-10 pl-3",
                         on ? "bg-iris-50 !text-primary" : "!text-fg hover:bg-hover hover:!text-primary",
                       )}
                     >
-                      <Icon aria-hidden className="size-5 shrink-0" strokeWidth={1.8} />
+                      <span className="relative shrink-0">
+                        <Icon aria-hidden className="size-5" strokeWidth={1.8} />
+                        {collapsed && <AlertDot count={count} tone={tone} />}
+                      </span>
                       {!collapsed && <span className="min-w-0 flex-1 truncate">{label}</span>}
-                      {!collapsed && count !== undefined && t && (
-                        <span className={cn("inline-grid h-5.5 min-w-6 shrink-0 place-items-center rounded-full px-1.5 text-[0.68rem] font-bold tabular-nums", t.bg, t.fg)}>
-                          {count.toLocaleString("en-US")}
-                        </span>
-                      )}
+                      {!collapsed && <NavCount count={count} tone={tone} onActive={on} />}
                     </Link>
                   </li>
                 );
@@ -267,7 +301,7 @@ function DashShellFrame({
   );
 
   return (
-    <div className="flex min-h-dvh flex-col bg-page">
+    <div className="flex min-h-dvh flex-col bg-app">
       {/* Top bar */}
       <header className="sticky top-0 z-40 flex h-17 items-center bg-card shadow-xs">
         <div
@@ -302,16 +336,17 @@ function DashShellFrame({
         </button>
 
         <div className="flex min-w-0 flex-1 items-center gap-2 px-3 sm:gap-4 sm:pr-7 sm:pl-4">
-          <nav aria-label="Breadcrumb" className="hidden items-center gap-2 text-caption text-fg-muted md:flex">
+          {/* Parent links keep their width; only the current page truncates (after the search has shrunk), so the header icons never get pushed off-screen. */}
+          <nav aria-label="Breadcrumb" className="hidden min-w-0 items-center gap-2 text-caption text-fg-muted md:flex">
             {(trail ?? [{ label: "Home", href: "/" }, { label: crumb }]).map((c, i, all) => (
-              <span key={`${i}-${c.label}`} className="flex min-w-0 items-center gap-2">
+              <span key={`${i}-${c.label}`} className={cn("flex items-center gap-2", i < all.length - 1 ? "shrink-0" : "min-w-0")}>
                 {i > 0 && <ChevronRight aria-hidden className="size-3.5 shrink-0" />}
                 {c.href && i < all.length - 1 ? (
                   <Link href={c.href} className="inline-flex items-center font-semibold whitespace-nowrap max-lg:min-h-11">
                     {c.label}
                   </Link>
                 ) : (
-                  <span aria-current="page" className="max-w-60 truncate font-semibold text-fg-strong">
+                  <span aria-current="page" title={c.label} className="max-w-60 min-w-0 truncate font-semibold text-fg-strong">
                     {c.label}
                   </span>
                 )}
@@ -320,7 +355,7 @@ function DashShellFrame({
           </nav>
 
           {withSearch && (
-            <label className="ml-auto hidden h-10.5 min-w-0 flex-[0_1_380px] cursor-text items-center gap-2 rounded-md border border-line bg-sunken pr-2 pl-3 transition-[border-color,box-shadow] duration-(--dur-fast) focus-within:border-primary focus-within:shadow-[0_0_0_3px_var(--iris-100)] min-[1101px]:flex">
+            <label className="ml-auto hidden h-10.5 min-w-0 max-w-75 flex-1 basis-0 cursor-text items-center gap-2 rounded-md border border-line bg-sunken pr-2 pl-3 transition-[border-color,box-shadow] duration-(--dur-fast) focus-within:border-primary focus-within:shadow-[0_0_0_3px_var(--iris-100)] 2xl:flex">
               <Search aria-hidden className="size-[18px] shrink-0 text-fg-muted" strokeWidth={1.9} />
               <input
                 ref={searchRef}
@@ -335,9 +370,9 @@ function DashShellFrame({
             </label>
           )}
 
-          <div className={cn("ml-auto flex items-center gap-1.5", withSearch && "min-[1101px]:ml-0")}>
+          <div className={cn("ml-auto flex shrink-0 items-center gap-1.5", withSearch && "2xl:ml-0")}>
             {withSearch && (
-              <button type="button" onClick={() => toggle("search")} aria-label="Search" className={cn(iconBtn, "min-[1101px]:hidden", !withSearch && "hidden")}>
+              <button type="button" onClick={() => toggle("search")} aria-label="Search" className={cn(iconBtn, "2xl:hidden", !withSearch && "hidden")}>
                 <Search aria-hidden className="size-5" strokeWidth={1.9} />
               </button>
             )}
@@ -442,9 +477,9 @@ function DashShellFrame({
         </div>
       </header>
 
-      {/* Mobile search (≤1100px) */}
+      {/* Search bar under the header (≤1440px; the inline pill shows from 2xl) */}
       {withSearch && overlay === "search" && (
-        <div className="sticky top-17 z-39 flex items-center gap-2.5 border-b border-line bg-card px-4 py-2.5 shadow-sm min-[1101px]:hidden">
+        <div className="sticky top-17 z-39 flex items-center gap-2.5 border-b border-line bg-card px-4 py-2.5 shadow-sm 2xl:hidden">
           <div className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-md border border-primary bg-sunken px-3 shadow-[0_0_0_3px_var(--iris-100)]">
             <Search aria-hidden className="size-[18px] shrink-0 text-fg-muted" strokeWidth={1.9} />
             <input

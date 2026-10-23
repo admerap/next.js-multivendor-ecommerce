@@ -1,13 +1,13 @@
 import { FolderOpen } from "lucide-react";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Pagination } from "@/components/admin/brands/Pagination";
+import { Pagination } from "@/components/data/Pagination";
 import { AddSubCategoryButton } from "@/components/admin/categories/AddSubCategoryButton";
-import { ListPageHeading } from "@/components/admin/categories/ListPageHeading";
-import { ListSkeleton } from "@/components/admin/categories/ListSkeleton";
-import { ListToolbar } from "@/components/admin/categories/ListToolbar";
+import { ListPageHeading } from "@/components/data/ListPageHeading";
+import { ListSkeleton } from "@/components/data/ListSkeleton";
+import { ListToolbar } from "@/components/data/ListToolbar";
 import { MissingParentState } from "@/components/admin/categories/MissingParentState";
-import { NoMatches } from "@/components/admin/categories/NoMatches";
+import { NoMatches } from "@/components/data/NoMatches";
 import { SubCategoriesTable } from "@/components/admin/categories/SubCategoriesTable";
 import { EmptyState } from "@/components/data/DashCard";
 import { SetBreadcrumbs } from "@/components/shell/Breadcrumbs";
@@ -17,14 +17,14 @@ import { CATEGORY_ROUTES } from "@/lib/categories";
 import { subCategoryListSchema } from "@/lib/validations/category";
 import { getCategoryOptions } from "../actions";
 import { getSubCategories } from "./actions";
+import { firstParams } from "@/lib/list-params";
 
 export const metadata: Metadata = { title: "Sub-Categories" };
 
 export default async function SubCategoriesPage({ searchParams }: PageProps<"/admin/categories/sub">) {
   await requireArea("ADMIN");
   const sp = await searchParams;
-  const raw = Object.fromEntries(Object.entries(sp).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]));
-  const params = subCategoryListSchema.parse(raw);
+  const params = subCategoryListSchema.parse(firstParams(sp));
 
   const [res, catRes] = await Promise.all([getSubCategories(params), getCategoryOptions()]);
   if (!res.success || !res.data) throw new Error(res.error ?? "Couldn't load sub-categories"); // → error.tsx (Retry)

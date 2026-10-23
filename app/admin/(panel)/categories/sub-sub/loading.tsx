@@ -1,4 +1,4 @@
-import { ListSkeleton } from "@/components/admin/categories/ListSkeleton";
+import { ListSkeleton } from "@/components/data/ListSkeleton";
 import { Skeleton } from "@/components/states/Skeleton";
 
 export default function Loading() {

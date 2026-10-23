@@ -1,0 +1,3 @@
+/** Typography for description HTML — shared by the editor and the read-only views, so both look the same. */
+export const richTextClasses =
+  "text-sm leading-relaxed text-fg break-words [&_p]:my-2 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_h3]:mt-4 [&_h3]:mb-2 [&_h3]:font-display [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-fg-strong [&_h3:first-child]:mt-0 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_li>p]:my-0 [&_strong]:font-bold [&_strong]:text-fg-strong [&_a]:font-semibold [&_a]:text-primary [&_a]:underline [&_code]:rounded-sm [&_code]:bg-sunken [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em]";

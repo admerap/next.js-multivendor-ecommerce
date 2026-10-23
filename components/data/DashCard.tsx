@@ -65,7 +65,8 @@ export function SubCard({
   title: string;
   icon: LucideIcon;
   tone: Tone;
-  href: string;
+  /** "View all" target; omitted when there's no list to open yet. */
+  href?: string;
   /** Shown instead of children when set. */
   empty?: string;
   children?: ReactNode;
@@ -77,10 +78,12 @@ export function SubCard({
           <IconTile icon={icon} tone={tone} size="sm" />
           {title}
         </h3>
-        <Link href={href} className="inline-flex min-h-11 items-center gap-1 text-caption font-semibold whitespace-nowrap">
-          View all
-          <ArrowRight aria-hidden className="size-3.5" strokeWidth={2} />
-        </Link>
+        {href && (
+          <Link href={href} className="inline-flex min-h-11 items-center gap-1 text-caption font-semibold whitespace-nowrap">
+            View all
+            <ArrowRight aria-hidden className="size-3.5" strokeWidth={2} />
+          </Link>
+        )}
       </div>
       {empty ? (
         <div className="flex flex-col items-center gap-2 rounded-md bg-sunken px-4 py-8 text-center">

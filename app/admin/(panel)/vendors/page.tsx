@@ -2,11 +2,11 @@ import { Plus, Store } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Pagination } from "@/components/admin/brands/Pagination";
-import { ListPageHeading } from "@/components/admin/categories/ListPageHeading";
-import { ListSkeleton } from "@/components/admin/categories/ListSkeleton";
-import { ListToolbar } from "@/components/admin/categories/ListToolbar";
-import { NoMatches } from "@/components/admin/categories/NoMatches";
+import { Pagination } from "@/components/data/Pagination";
+import { ListPageHeading } from "@/components/data/ListPageHeading";
+import { ListSkeleton } from "@/components/data/ListSkeleton";
+import { ListToolbar } from "@/components/data/ListToolbar";
+import { NoMatches } from "@/components/data/NoMatches";
 import { VendorListTable } from "@/components/admin/vendors/VendorListTable";
 import { EmptyState } from "@/components/data/DashCard";
 import { SetBreadcrumbs } from "@/components/shell/Breadcrumbs";
@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { requireArea } from "@/lib/auth-guard";
 import { VENDOR_SORT_LABELS, VENDOR_SORTS, vendorListSchema } from "@/lib/validations/admin-vendor";
 import { getVendors } from "./actions";
+import { firstParams } from "@/lib/list-params";
 
 export const metadata: Metadata = { title: "Vendor List" };
 
@@ -40,11 +41,11 @@ const emptyState = (
   </EmptyState>
 );
 
-/** Search + status + sort + page size + "Add New Vendor", then the body (adminvendorlist design). */
+/** Search + status + sort + page size, then the body (adminvendorlist design). "Add New Vendor" sits in the heading. */
 function ListCard({ children }: { children: ReactNode }) {
   return (
     <section className="overflow-hidden rounded-lg bg-card shadow-sm">
-      <ListToolbar searchLabel="Search by shop or vendor name" statuses={STATUSES} sorts={SORTS} actions={addVendor} />
+      <ListToolbar searchLabel="Search by shop or vendor name" statuses={STATUSES} sorts={SORTS} />
       <div className="border-t border-line">{children}</div>
     </section>
   );
@@ -54,8 +55,7 @@ function ListCard({ children }: { children: ReactNode }) {
 export default async function VendorListPage({ searchParams }: PageProps<"/admin/vendors">) {
   await requireArea("ADMIN");
   const sp = await searchParams;
-  const raw = Object.fromEntries(Object.entries(sp).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]));
-  const params = vendorListSchema.parse(raw);
+  const params = vendorListSchema.parse(firstParams(sp));
 
   const res = await getVendors(params);
   if (!res.success || !res.data) throw new Error(res.error ?? "Couldn't load vendors"); // → error.tsx (Retry)
@@ -68,6 +68,7 @@ export default async function VendorListPage({ searchParams }: PageProps<"/admin
       <PreviewStateFrame
         className="flex flex-wrap items-center justify-between gap-4"
         heading={<ListPageHeading icon={Store} title="Vendor List" total={total} noun="vendors" />}
+        actions={addVendor}
         loading={<ListSkeleton label="Loading vendors" withImage />}
         empty={<ListCard>{emptyState}</ListCard>}
         error={{ title: "Couldn't load vendors", description: "Something went wrong reaching the marketplace. Check your connection and try again." }}

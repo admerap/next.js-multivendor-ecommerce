@@ -114,7 +114,7 @@ export function FileDrop({
               onRemoveCurrent();
             }}
             aria-label={`Remove current ${label.toLowerCase()}`}
-            className="absolute top-2 right-2 z-2 grid size-8 place-items-center rounded-full bg-card text-fg-strong shadow-sm hover:text-error-600"
+            className="absolute top-2 right-2 z-2 grid size-8 place-items-center rounded-full bg-card text-fg-strong shadow-sm hover:text-error-600 max-lg:size-11"
           >
             <X aria-hidden className="size-4" strokeWidth={2.2} />
           </button>
@@ -128,7 +128,7 @@ export function FileDrop({
               onChange(null);
             }}
             aria-label={`Remove ${label.toLowerCase()}`}
-            className="absolute top-2 right-2 z-2 grid size-8 place-items-center rounded-full bg-card text-fg-strong shadow-sm hover:text-error-600"
+            className="absolute top-2 right-2 z-2 grid size-8 place-items-center rounded-full bg-card text-fg-strong shadow-sm hover:text-error-600 max-lg:size-11"
           >
             <X aria-hidden className="size-4" strokeWidth={2.2} />
           </button>

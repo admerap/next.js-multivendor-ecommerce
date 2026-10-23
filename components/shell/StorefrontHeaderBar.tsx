@@ -2,7 +2,6 @@
 
 import {
   ChevronDown,
-  ChevronRight,
   Headphones,
   Heart,
   Inbox,
@@ -24,18 +23,21 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { CATEGORY_MENU, CategoryMegaMenu, MobileCategoryPanel } from "@/components/commerce/CategoryMegaMenu";
+import { CategoryLinkList, CategoryMegaMenu, MobileCategoryPanel } from "@/components/commerce/CategoryMegaMenu";
 import { useCart } from "@/components/commerce/CartProvider";
+import type { CategoryNode } from "@/lib/catalog";
 import { MiniCart } from "@/components/commerce/MiniCart";
+import { useWishlist } from "@/components/commerce/wishlist";
 import { signOutAction } from "@/lib/actions/auth";
 import { money } from "@/lib/money";
 import { useBodyScrollLock, useMediaQuery } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 
+// Brands and Offers have no page of their own yet: they jump to the home page sections.
 const NAV_LINKS = [
   { label: "Home", href: "/" },
-  { label: "Brands", href: "/brands" },
-  { label: "Offers", href: "/offers" },
+  { label: "Brands", href: "/#shop-by-brand" },
+  { label: "Offers", href: "/#flash-deal" },
   { label: "All Vendors", href: "/vendors" },
   { label: "Vendor Zone", href: "/vendor/login" },
 ];
@@ -55,33 +57,12 @@ type Overlay = null | "searchCat" | "navCat" | "account" | "cart" | "drawer";
 const menuItem =
   "flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-semibold !text-fg transition-colors duration-(--dur-fast) hover:bg-iris-50 hover:!text-primary";
 
-function CategoryList({ onPick }: { onPick?: () => void }) {
-  return (
-    <ul className="flex flex-col p-2">
-      {CATEGORY_MENU.map(({ name, slug, icon: Icon, tint }) => (
-        <li key={slug}>
-          <Link
-            href={`/category/${slug}`}
-            onClick={onPick}
-            className="flex min-h-11 items-center gap-3 rounded-md px-2.5 text-sm font-semibold !text-fg transition-colors duration-(--dur-fast) hover:bg-iris-50 hover:!text-primary"
-          >
-            <span className={cn("grid size-8 shrink-0 place-items-center rounded-sm text-fg-strong", tint)}>
-              <Icon aria-hidden className="size-4" strokeWidth={1.9} />
-            </span>
-            <span className="flex-1">{name}</span>
-            <ChevronRight aria-hidden className="size-4 text-fg-subtle" />
-          </Link>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-export function StorefrontHeaderBar({ user }: { user: HeaderUser }) {
+export function StorefrontHeaderBar({ user, categories }: { user: HeaderUser; categories: CategoryNode[] }) {
   const pathname = usePathname();
   const canHover = useMediaQuery("(hover: hover) and (pointer: fine)");
   const desktop = useMediaQuery("(min-width: 1025px)");
   const cart = useCart();
+  const wishlist = useWishlist();
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [mobileSearch, setMobileSearch] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -177,7 +158,7 @@ export function StorefrontHeaderBar({ user }: { user: HeaderUser }) {
               </button>
               {overlay === "searchCat" && (
                 <div className="absolute top-full left-0 z-60 pt-3">
-                  <CategoryMegaMenu onNavigate={() => setOverlay(null)} />
+                  <CategoryMegaMenu tree={categories} onNavigate={() => setOverlay(null)} />
                 </div>
               )}
             </div>
@@ -205,9 +186,20 @@ export function StorefrontHeaderBar({ user }: { user: HeaderUser }) {
               {mobileSearch ? <X aria-hidden className="size-5" /> : <Search aria-hidden className="size-5" strokeWidth={1.9} />}
             </button>
 
-            <Link href="/account/wishlist" className="flex min-h-11 flex-col items-center justify-center rounded-md px-2.5 !text-fg hover:!text-primary sm:px-3">
-              <Heart aria-hidden className="size-5.5" strokeWidth={1.9} />
-              <span className="mt-0.5 hidden text-[0.65rem] font-medium text-fg-muted sm:block">Wishlist</span>
+            <Link
+              href="/account/wishlist"
+              aria-label={`Wishlist, ${wishlist.count} ${wishlist.count === 1 ? "item" : "items"}`}
+              className="flex min-h-11 flex-col items-center justify-center rounded-md px-2.5 !text-fg hover:!text-primary sm:px-3"
+            >
+              <span className="relative">
+                <Heart aria-hidden className="size-5.5" strokeWidth={1.9} />
+                {wishlist.count > 0 && (
+                  <span aria-hidden className="absolute -top-2 -right-2 grid h-4 min-w-4 place-items-center rounded-full bg-error-500 px-1 text-[0.6rem] font-bold text-on-primary tabular-nums">
+                    {wishlist.count}
+                  </span>
+                )}
+              </span>
+              <span aria-hidden className="mt-0.5 hidden text-[0.65rem] font-medium text-fg-muted sm:block">Wishlist</span>
             </Link>
 
             {/* Account */}
@@ -354,7 +346,7 @@ export function StorefrontHeaderBar({ user }: { user: HeaderUser }) {
               </button>
               {overlay === "navCat" && desktop && (
                 <div className="absolute top-full left-0 z-60 pt-2">
-                  <CategoryMegaMenu onNavigate={() => setOverlay(null)} />
+                  <CategoryMegaMenu tree={categories} onNavigate={() => setOverlay(null)} />
                 </div>
               )}
             </div>
@@ -382,7 +374,7 @@ export function StorefrontHeaderBar({ user }: { user: HeaderUser }) {
             <>
               <div aria-hidden className="fixed inset-0 z-57 bg-inverse/35" onClick={() => setOverlay(null)} />
               <div className="absolute inset-x-0 top-full z-58 mx-auto max-w-[var(--container-max)] px-[var(--container-pad)] pt-2">
-                <MobileCategoryPanel onNavigate={() => setOverlay(null)} />
+                <MobileCategoryPanel tree={categories} onNavigate={() => setOverlay(null)} />
               </div>
             </>
           )}
@@ -412,7 +404,7 @@ export function StorefrontHeaderBar({ user }: { user: HeaderUser }) {
             </div>
             <div className="flex-1 overflow-y-auto overscroll-contain py-2">
               <p className="px-5 pt-3 text-[0.65rem] font-bold tracking-[0.08em] text-fg-subtle uppercase">Shop</p>
-              <CategoryList onPick={() => setOverlay(null)} />
+              <CategoryLinkList tree={categories} onPick={() => setOverlay(null)} />
               <p className="px-5 pt-3 text-[0.65rem] font-bold tracking-[0.08em] text-fg-subtle uppercase">My Account</p>
               <div className="flex flex-col p-2">
                 {user ? (

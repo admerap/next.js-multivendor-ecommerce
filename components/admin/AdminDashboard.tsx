@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowRight,
   BadgePercent,
   ChartLine,
   ChevronDown,
@@ -20,6 +21,7 @@ import {
   PieChart,
   type LucideIcon,
 } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { DashCard, IconTile, Segmented, SubCard } from "@/components/data/DashCard";
 import { DoughnutChart, LineChart } from "@/components/data/Chart";
@@ -73,7 +75,8 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
   ];
   const userTotal = sum(users.map((x) => x.value));
 
-  const bigStats: { label: string; value: string; delta: string; up: boolean; tone: Tone; icon: LucideIcon }[] = [
+  const pending = data.totals.pendingProducts;
+  const bigStats: { label: string; value: string; delta: string; up: boolean; warn?: boolean; tone: Tone; icon: LucideIcon; href?: string; hrefLabel?: string }[] = [
     { label: "Total Orders", value: totalOrders.toLocaleString("en-US"), delta: "No orders yet", up: false, tone: "iris", icon: ShoppingCart },
     {
       label: "Total Stores",
@@ -83,7 +86,21 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
       tone: "saffron",
       icon: Store,
     },
-    { label: "Total Products", value: data.totals.products.toLocaleString("en-US"), delta: "0 awaiting approval", up: false, tone: "info", icon: Package },
+    {
+      label: "Total Products",
+      value: data.totals.products.toLocaleString("en-US"),
+      delta: `${pending.toLocaleString("en-US")} awaiting approval`,
+      up: false,
+      warn: pending > 0,
+      tone: "info",
+      icon: Package,
+      // Straight to the review queue when something is waiting, else to the live catalog.
+      href: pending > 0 ? "/admin/products/pending" : "/admin/products/approved",
+      hrefLabel:
+        pending > 0
+          ? `Total products: ${data.totals.products}, ${pending} awaiting approval — review pending products`
+          : `Total products: ${data.totals.products} — view approved products`,
+    },
     {
       label: "Total Customers",
       value: data.totals.customers.toLocaleString("en-US"),
@@ -126,25 +143,35 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
         }
       >
         <div className="mt-5 mb-3.5 grid grid-cols-2 gap-2.5 sm:gap-3.5 lg:grid-cols-4">
-          {bigStats.map((b) => (
-            <div
-              key={b.label}
-              className="flex min-w-0 items-start justify-between gap-2.5 rounded-lg border border-line p-3.5 transition-shadow duration-(--dur-med) hover:shadow-md sm:p-5"
-            >
-              <div className="min-w-0">
-                <div className="text-caption font-semibold text-fg-muted sm:text-sm">{b.label}</div>
-                <div className="mt-1.5 font-display text-[1.3rem] font-extrabold tracking-[-0.01em] text-fg-strong tabular-nums sm:text-[1.75rem]">
-                  {b.value}
+          {bigStats.map((b) => {
+            const box = "flex min-w-0 items-start justify-between gap-2.5 rounded-lg border border-line p-3.5 transition-shadow duration-(--dur-med) hover:shadow-md sm:p-5";
+            const body = (
+              <>
+                <div className="min-w-0">
+                  <div className="text-caption font-semibold text-fg-muted sm:text-sm">{b.label}</div>
+                  <div className="mt-1.5 font-display text-[1.3rem] font-extrabold tracking-[-0.01em] text-fg-strong tabular-nums sm:text-[1.75rem]">
+                    {b.value}
+                  </div>
+                  <div className={cn("mt-1.5 flex items-center gap-1 text-[0.7rem] font-semibold", b.up ? "text-success-600" : b.warn ? "text-warning-600" : "text-fg-muted")}>
+                    {b.delta}
+                    {b.href && <ArrowRight aria-hidden className="size-3 shrink-0" strokeWidth={2.2} />}
+                  </div>
                 </div>
-                <div className={cn("mt-1.5 text-[0.7rem] font-semibold", b.up ? "text-success-600" : "text-fg-muted")}>
-                  {b.delta}
-                </div>
+                <span className="max-sm:hidden">
+                  <IconTile icon={b.icon} tone={b.tone} size="lg" />
+                </span>
+              </>
+            );
+            return b.href ? (
+              <Link key={b.label} href={b.href} aria-label={b.hrefLabel} className={cn(box, "!text-fg hover:border-primary")}>
+                {body}
+              </Link>
+            ) : (
+              <div key={b.label} className={box}>
+                {body}
               </div>
-              <span className="max-sm:hidden">
-                <IconTile icon={b.icon} tone={b.tone} size="lg" />
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
         <OrderStatusGrid counts={statuses} ordersHref="/admin/orders" />
       </DashCard>
@@ -300,15 +327,16 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
         }
       >
         <div className={twoCol}>
-          <SubCard title="Most Rated Products" icon={Star} tone="saffron" href="/admin/products" empty="Your best-reviewed in-house products appear here." />
-          <SubCard title="Top Selling Products" icon={ShoppingCart} tone="iris" href="/admin/products" empty="Best-selling in-house products appear here." />
+          {/* No "View all" yet: in-house (Sundry Official) products have no admin list. */}
+          <SubCard title="Most Rated Products" icon={Star} tone="saffron" empty="Your best-reviewed in-house products appear here." />
+          <SubCard title="Top Selling Products" icon={ShoppingCart} tone="iris" empty="Best-selling in-house products appear here." />
         </div>
       </DashCard>
 
       <DashCard title="Vendor Products" icon={Package}>
         <div className={twoCol}>
-          <SubCard title="Most Rated Products" icon={Star} tone="saffron" href="/admin/products" empty="Top-rated products from vendor stores appear here." />
-          <SubCard title="Top Selling Products" icon={ShoppingCart} tone="iris" href="/admin/products" empty="Best-selling vendor products appear here." />
+          <SubCard title="Most Rated Products" icon={Star} tone="saffron" href="/admin/products/approved" empty="Top-rated products from vendor stores appear here." />
+          <SubCard title="Top Selling Products" icon={ShoppingCart} tone="iris" href="/admin/products/approved" empty="Best-selling vendor products appear here." />
         </div>
       </DashCard>
     </div>

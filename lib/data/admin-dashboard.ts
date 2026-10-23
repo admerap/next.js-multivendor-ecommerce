@@ -7,7 +7,17 @@ export type Range = "year" | "month" | "week";
 export type Series = { labels: string[]; inhouse: number[]; vendor: number[]; commission?: number[] };
 
 export type AdminDashboardData = {
-  totals: { orders: number; stores: number; newStoresThisMonth: number; products: number; customers: number; newCustomersThisMonth: number };
+  totals: {
+    orders: number;
+    stores: number;
+    newStoresThisMonth: number;
+    /** Every vendor product, whatever its review status. */
+    products: number;
+    /** Vendor products waiting for admin review. */
+    pendingProducts: number;
+    customers: number;
+    newCustomersThisMonth: number;
+  };
   /** Order counts per status for the Business Analytics period select. */
   statusCounts: Record<"year" | "month" | "today", Record<OrderStatusKey, number>>;
   wallet: { inhouseEarning: number; commission: number; deliveryCharge: number; tax: number; pending: number };
@@ -41,15 +51,17 @@ function periodStart(range: Range, now = new Date()) {
 
 /**
  * Marketplace analytics for the admin dashboard. Users and stores are real counts.
- * Orders, products and earnings are zero until the Order/Product models exist (catalog + checkout milestones).
+ * Products are real counts; orders and earnings are zero until the Order model exists (checkout milestone).
  */
 export async function getAdminDashboard(): Promise<AdminDashboardData> {
   const monthStart = periodStart("month");
-  const [customers, stores, newCustomersThisMonth, newStoresThisMonth, overview] = await Promise.all([
+  const [customers, stores, newCustomersThisMonth, newStoresThisMonth, products, pendingProducts, overview] = await Promise.all([
     prisma.user.count({ where: { role: "CUSTOMER" } }),
     prisma.vendor.count(),
     prisma.user.count({ where: { role: "CUSTOMER", createdAt: { gte: monthStart } } }),
     prisma.vendor.count({ where: { createdAt: { gte: monthStart } } }),
+    prisma.product.count(),
+    prisma.product.count({ where: { approvalStatus: "PENDING" } }),
     Promise.all(
       (["year", "month", "week"] as const).map(async (range) => {
         const since = periodStart(range);
@@ -63,7 +75,7 @@ export async function getAdminDashboard(): Promise<AdminDashboardData> {
   ]);
 
   return {
-    totals: { orders: 0, stores, newStoresThisMonth, products: 0, customers, newCustomersThisMonth },
+    totals: { orders: 0, stores, newStoresThisMonth, products, pendingProducts, customers, newCustomersThisMonth },
     statusCounts: { year: noOrders(), month: noOrders(), today: noOrders() },
     wallet: { inhouseEarning: 0, commission: 0, deliveryCharge: 0, tax: 0, pending: 0 },
     orderStats: { year: emptySeries("year"), month: emptySeries("month"), week: emptySeries("week") },

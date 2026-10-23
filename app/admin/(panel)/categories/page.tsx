@@ -1,19 +1,20 @@
 import { FolderTree } from "lucide-react";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Pagination } from "@/components/admin/brands/Pagination";
+import { Pagination } from "@/components/data/Pagination";
 import { AddCategoryButton } from "@/components/admin/categories/AddCategoryButton";
 import { CategoriesTable } from "@/components/admin/categories/CategoriesTable";
-import { ListPageHeading } from "@/components/admin/categories/ListPageHeading";
-import { ListSkeleton } from "@/components/admin/categories/ListSkeleton";
-import { ListToolbar } from "@/components/admin/categories/ListToolbar";
-import { NoMatches } from "@/components/admin/categories/NoMatches";
+import { ListPageHeading } from "@/components/data/ListPageHeading";
+import { ListSkeleton } from "@/components/data/ListSkeleton";
+import { ListToolbar } from "@/components/data/ListToolbar";
+import { NoMatches } from "@/components/data/NoMatches";
 import { EmptyState } from "@/components/data/DashCard";
 import { SetBreadcrumbs } from "@/components/shell/Breadcrumbs";
 import { PreviewStateFrame } from "@/components/states/PreviewState";
 import { requireArea } from "@/lib/auth-guard";
 import { categoryListSchema } from "@/lib/validations/category";
 import { getCategories, getCategoryOptions, type CategoryOption } from "./actions";
+import { firstParams } from "@/lib/list-params";
 
 export const metadata: Metadata = { title: "Categories" };
 
@@ -39,8 +40,7 @@ function ListCard({ categories, children }: { categories: CategoryOption[]; chil
 export default async function CategoriesPage({ searchParams }: PageProps<"/admin/categories">) {
   await requireArea("ADMIN");
   const sp = await searchParams;
-  const raw = Object.fromEntries(Object.entries(sp).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]));
-  const params = categoryListSchema.parse(raw);
+  const params = categoryListSchema.parse(firstParams(sp));
 
   const [res, catRes] = await Promise.all([getCategories(params), getCategoryOptions()]);
   if (!res.success || !res.data) throw new Error(res.error ?? "Couldn't load categories"); // → error.tsx (Retry)

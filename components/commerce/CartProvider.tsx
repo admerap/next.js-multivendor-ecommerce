@@ -2,12 +2,24 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
-/** A cart line. Money in integer cents (CLAUDE.md §6); every line carries its store. */
+/**
+ * A cart line. Money in integer cents (CLAUDE.md §6); every line carries its store (marketplace rule:
+ * the cart groups by seller, and checkout will split the order per seller).
+ * `id` is the line key: the product id, or `productId:variationId` for a chosen variation.
+ */
 export type CartItem = {
   id: string;
+  productId: string;
+  variationId?: string;
+  /** "Navy / M" — shown under the title */
+  variationName?: string;
   title: string;
+  image?: string | null;
+  /** cents, per unit, as shown when it was added */
   priceCents: number;
   qty: number;
+  /** stock when it was added — the stepper's upper bound (absent = no limit, e.g. digital) */
+  maxQty?: number;
   store: { id: string; name: string; slug: string };
   href?: string;
 };
@@ -23,25 +35,30 @@ type CartContextValue = {
   remove: (id: string) => void;
 };
 
-/** Free-shipping threshold shown in the MiniCart ("Free shipping on orders over $75"). */
-export const FREE_SHIPPING_CENTS = 75_00;
 const STORAGE_KEY = "sundry-cart";
 
 const CartContext = createContext<CartContextValue | null>(null);
+
+/** Never above the stock cap; 0 or less removes the line. */
+const clampQty = (qty: number, maxQty?: number) => Math.min(Math.floor(qty), maxQty ?? Number.MAX_SAFE_INTEGER);
 
 function readStored(): CartItem[] {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     const parsed: unknown = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? (parsed as CartItem[]).filter((i) => i && typeof i.id === "string" && i.qty > 0) : [];
+    if (!Array.isArray(parsed)) return [];
+    return (parsed as CartItem[])
+      .filter((i) => i && typeof i.id === "string" && Number.isInteger(i.priceCents) && i.qty > 0 && i.store?.id)
+      .map((i) => ({ ...i, productId: i.productId ?? i.id.split(":")[0]! })); // lines saved before productId existed
   } catch {
     return [];
   }
 }
 
 /**
- * Guest cart kept in this browser until the persisted Cart/CartItem models exist
- * (then signed-in carts move server-side and the guest cart merges on login, PRD FR-S36).
+ * Guest cart kept in this browser until the persisted Cart/CartItem models exist.
+ * TODO(cart): for signed-in shoppers, sync this to the server cart and merge the guest cart on login
+ * (PRD FR-S36) — the shape above maps 1:1 to CartItem rows; prices/stock are re-checked at checkout.
  */
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -69,11 +86,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const add = useCallback<CartContextValue["add"]>((item, qty = 1) => {
     setItems((cur) => {
       const hit = cur.find((i) => i.id === item.id);
-      return hit ? cur.map((i) => (i.id === item.id ? { ...i, qty: i.qty + qty } : i)) : [...cur, { ...item, qty }];
+      if (hit) return cur.map((i) => (i.id === item.id ? { ...i, ...item, qty: clampQty(i.qty + qty, item.maxQty) } : i));
+      const first = clampQty(qty, item.maxQty);
+      return first > 0 ? [...cur, { ...item, qty: first }] : cur;
     });
   }, []);
   const setQty = useCallback((id: string, qty: number) => {
-    setItems((cur) => (qty <= 0 ? cur.filter((i) => i.id !== id) : cur.map((i) => (i.id === id ? { ...i, qty } : i))));
+    setItems((cur) => (qty <= 0 ? cur.filter((i) => i.id !== id) : cur.map((i) => (i.id === id ? { ...i, qty: Math.max(1, clampQty(qty, i.maxQty)) } : i))));
   }, []);
   const remove = useCallback((id: string) => setItems((cur) => cur.filter((i) => i.id !== id)), []);
 
@@ -87,6 +106,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return {
       items,
       count: items.reduce((n, i) => n + i.qty, 0),
+      // Integer cents × integer qty: exact, no float rounding.
       subtotalCents: items.reduce((n, i) => n + i.priceCents * i.qty, 0),
       byStore: [...groups.values()],
       add,

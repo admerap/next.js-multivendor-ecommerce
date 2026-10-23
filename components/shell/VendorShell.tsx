@@ -6,7 +6,6 @@ import {
   KeyRound,
   LayoutDashboard,
   Package,
-  PackagePlus,
   Receipt,
   Settings,
   ShoppingCart,
@@ -23,13 +22,26 @@ const NAV: NavGroup[] = [
   {
     title: "Catalog",
     items: [
-      { label: "Product List", href: "/vendor/products", icon: Package },
-      { label: "Add New Product", href: "/vendor/products/new", icon: PackagePlus },
+      {
+        label: "Product Manage",
+        icon: Package,
+        children: [
+          { label: "Product List", href: "/vendor/products" },
+          { label: "Add Product", href: "/vendor/products/add" },
+        ],
+      },
+      {
+        label: "Coupon Manage",
+        icon: TicketPercent,
+        children: [
+          { label: "Coupon List", href: "/vendor/coupons" },
+          { label: "Add Coupon", href: "/vendor/coupons/add" },
+        ],
+      },
       { label: "Product Reviews", href: "/vendor/reviews", icon: Star },
     ],
   },
   { title: "Orders", items: [{ label: "All Orders", href: "/vendor/orders", icon: ShoppingCart, count: 0, tone: "iris" }] },
-  { title: "Promotions", items: [{ label: "Coupons", href: "/vendor/coupons", icon: TicketPercent }] },
   {
     title: "Reports",
     items: [
