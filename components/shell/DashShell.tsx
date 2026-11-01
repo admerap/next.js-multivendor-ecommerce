@@ -10,7 +10,6 @@ import {
   Maximize,
   Menu,
   Search,
-  ShoppingBag,
   UserCog,
   type LucideIcon,
 } from "lucide-react";
@@ -25,6 +24,7 @@ import { useTheme } from "next-themes";
 import { BreadcrumbProvider, useBreadcrumbs } from "./Breadcrumbs";
 import { SetupGuide, type SetupStep } from "./SetupGuide";
 import { THEMES, ThemeMenu } from "./ThemeMenu";
+import { LogoMark } from "@/components/shell/LogoMark";
 
 export type NavChild = { label: string; href: string; count?: number; tone?: Tone };
 export type NavItem = {
@@ -310,8 +310,8 @@ function DashShellFrame({
             desktop && sideOpen ? "sm:w-70 sm:px-5" : "sm:w-17",
           )}
         >
-          <Link href="/" aria-label="Sundry storefront" className="grid size-9 shrink-0 place-items-center rounded-md bg-primary shadow-primary max-lg:size-11">
-            <ShoppingBag aria-hidden className="size-5 text-on-primary" strokeWidth={2} />
+          <Link href="/" aria-label="Sundry storefront" className="grid size-9 shrink-0 place-items-center max-lg:size-11">
+            <LogoMark priority className="size-9" />
           </Link>
           {desktop && sideOpen && (
             <>

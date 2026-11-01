@@ -1,19 +1,22 @@
 "use client";
 
-import { Check, User } from "lucide-react";
-import { AuthField, PasswordField } from "@/components/auth/AuthField";
-import { PasswordMatchHint } from "@/components/auth/PasswordMatchHint";
+import { Check } from "lucide-react";
+import { AvatarPicker } from "@/components/account/AvatarPicker";
+import { AuthField } from "@/components/auth/AuthField";
 import { FormAlert } from "@/components/auth/FormAlert";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 import { useAuthForm } from "@/components/auth/useAuthForm";
 import { updateProfileAction } from "@/lib/actions/account";
 import { profileSchema } from "@/lib/validations/account";
+import { COUNTRY_CODES } from "@/lib/validations/admin-vendor";
 
-type Initial = { firstName: string; lastName: string; email: string; phone: string };
+type CountryCode = (typeof COUNTRY_CODES)[number];
 
-/** Profile Info form (user.dashboard design). Blank password fields keep the current password. */
-export function ProfileForm({ initial }: { initial: Initial }) {
-  const form = useAuthForm({ ...initial, currentPassword: "", newPassword: "", confirmPassword: "" });
+type Initial = { firstName: string; lastName: string; email: string; countryCode: CountryCode; phone: string };
+
+/** Profile Info form (user.dashboard design): photo, name, phone, email. The password has its own card. */
+export function ProfileForm({ initial, image }: { initial: Initial; image: string | null }) {
+  const form = useAuthForm(initial);
   const { values, errors } = form;
   const displayName = [values.firstName, values.lastName].filter(Boolean).join(" ") || "Your name";
 
@@ -27,9 +30,7 @@ export function ProfileForm({ initial }: { initial: Initial }) {
   return (
     <>
       <div className="mt-4 mb-8 flex flex-col items-center gap-3">
-        <span className="grid size-30 place-items-center overflow-hidden rounded-full bg-iris-50">
-          <User aria-hidden className="size-16 text-iris-300" strokeWidth={1.6} />
-        </span>
+        <AvatarPicker image={image} name={displayName} />
         <span className="font-display text-h4 font-extrabold tracking-[-0.01em] text-fg-strong">{displayName}</span>
       </div>
 
@@ -40,46 +41,40 @@ export function ProfileForm({ initial }: { initial: Initial }) {
         onSubmit={(e) => {
           e.preventDefault();
           form.submit(profileSchema, async (v) => {
-            const result = await updateProfileAction(v);
-            if (result.ok) {
-              form.set("currentPassword", "");
-              form.set("newPassword", "");
-              form.set("confirmPassword", "");
-            }
-            return result;
+            return updateProfileAction(v);
           });
         }}
       >
         <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
           <AuthField {...field("firstName")} label="First Name" autoComplete="given-name" />
           <AuthField {...field("lastName")} label="Last Name" autoComplete="family-name" />
-          <AuthField {...field("phone")} label="Phone Number" type="tel" autoComplete="tel" placeholder="+1 555 555 5555" />
+          <AuthField
+            {...field("phone")}
+            label="Phone Number"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel-national"
+            placeholder="555 555 5555"
+            leading={
+              <select
+                aria-label="Country code"
+                value={values.countryCode}
+                onChange={(e) => form.set("countryCode", e.target.value as CountryCode)}
+                className="mr-3 h-8 shrink-0 cursor-pointer border-r border-line bg-transparent pr-2 text-sm font-semibold text-fg-strong outline-none"
+              >
+                {COUNTRY_CODES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            }
+          />
           <AuthField {...field("email")} label="Email" type="email" autoComplete="email" />
-          <PasswordField
-            {...field("newPassword")}
-            label="New Password"
-            autoComplete="new-password"
-            placeholder="Minimum 8 characters long"
-          />
-          <PasswordField
-            {...field("confirmPassword")}
-            label="Confirm Password"
-            autoComplete="new-password"
-            placeholder="Minimum 8 characters long"
-            hint={<PasswordMatchHint password={values.newPassword} confirm={values.confirmPassword} />}
-          />
-          {values.newPassword && (
-            <PasswordField
-              {...field("currentPassword")}
-              label="Current Password"
-              autoComplete="current-password"
-              placeholder="Needed to set a new password"
-            />
-          )}
         </div>
 
-        <div className="mt-8 flex justify-end">
-          <SubmitButton block={false} pending={form.pending} icon={Check} pendingLabel="Updating…">
+        <div className="mt-8">
+          <SubmitButton pending={form.pending} icon={Check} pendingLabel="Updating…">
             Update
           </SubmitButton>
         </div>

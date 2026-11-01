@@ -3,6 +3,7 @@ import { z } from "zod";
 /** The five admin Product Manage lists (routes /admin/products/<view>). */
 const ADMIN_PRODUCT_VIEWS = ["pending", "approved", "denied", "featured", "popular"] as const;
 export type AdminProductView = (typeof ADMIN_PRODUCT_VIEWS)[number];
+export const adminProductViewSchema = z.enum(ADMIN_PRODUCT_VIEWS);
 
 const id = z.string().trim().min(1).max(40);
 

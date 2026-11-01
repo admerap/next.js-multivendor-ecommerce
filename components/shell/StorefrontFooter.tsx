@@ -1,6 +1,7 @@
-import { MapPin, ShoppingBag } from "lucide-react";
+import { MapPin } from "lucide-react";
 import Link from "next/link";
 import { NewsletterForm } from "./NewsletterForm";
+import { LogoMark } from "@/components/shell/LogoMark";
 
 /** Product shortcuts point at the home page sections (their listing pages come later). */
 const QUICK_LINKS = [
@@ -31,9 +32,7 @@ export function StorefrontFooter() {
       <div className="mx-auto grid max-w-[var(--container-max)] grid-cols-[repeat(auto-fit,minmax(min(220px,100%),1fr))] gap-8 px-[var(--container-pad)] py-14">
         <div className="min-w-0">
           <Link href="/" className="mb-4 flex items-center gap-2.5 max-lg:min-h-11">
-            <span className="grid size-8.5 place-items-center rounded-md bg-primary">
-              <ShoppingBag aria-hidden className="size-4.5 text-on-primary" strokeWidth={2} />
-            </span>
+            <LogoMark className="size-8.5" />
             <span className="font-display text-[1.25rem] font-extrabold text-on-primary">Sundry</span>
           </Link>
           <p className="text-sm leading-relaxed">

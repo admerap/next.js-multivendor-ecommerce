@@ -5,6 +5,7 @@ import {
   Headphones,
   Heart,
   Inbox,
+  KeyRound,
   LayoutGrid,
   LogIn,
   LogOut,
@@ -32,6 +33,7 @@ import { signOutAction } from "@/lib/actions/auth";
 import { money } from "@/lib/money";
 import { useBodyScrollLock, useMediaQuery } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
+import { LogoMark } from "@/components/shell/LogoMark";
 
 // Brands and Offers have no page of their own yet: they jump to the home page sections.
 const NAV_LINKS = [
@@ -42,13 +44,25 @@ const NAV_LINKS = [
   { label: "Vendor Zone", href: "/vendor/login" },
 ];
 
+/** Mobile drawer › My Account: the full account menu (on phones it's the only way around the account). */
 const ACCOUNT_LINKS: { label: string; href: string; icon: LucideIcon }[] = [
   { label: "Profile Info", href: "/dashboard", icon: User },
+  { label: "Change Password", href: "/account/change-password", icon: KeyRound },
   { label: "My Orders", href: "/account/orders", icon: ShoppingBag },
   { label: "Wish List", href: "/account/wishlist", icon: Heart },
   { label: "Track Order", href: "/account/track-order", icon: Truck },
   { label: "Inbox", href: "/account/inbox", icon: Inbox },
   { label: "Support Ticket", href: "/account/support", icon: Headphones },
+];
+
+/**
+ * Desktop account dropdown: a short shortcut list. The card on top already opens My Dashboard (Profile
+ * Info); Wish List, Track Order and Help Center have their own header links; the rest lives in the
+ * account sidebar.
+ */
+const ACCOUNT_MENU: { label: string; href: string; icon: LucideIcon }[] = [
+  { label: "My Orders", href: "/account/orders", icon: ShoppingBag },
+  { label: "Change Password", href: "/account/change-password", icon: KeyRound },
 ];
 
 export type HeaderUser = { name: string; email: string; home: string; isCustomer: boolean } | null;
@@ -137,9 +151,7 @@ export function StorefrontHeaderBar({ user, categories }: { user: HeaderUser; ca
           </button>
 
           <Link href="/" className="hidden shrink-0 items-center gap-2.5 max-lg:min-h-11 sm:flex" aria-label="Sundry home">
-            <span className="grid size-9.5 place-items-center rounded-md bg-primary shadow-primary">
-              <ShoppingBag aria-hidden className="size-5 text-on-primary" strokeWidth={2} />
-            </span>
+            <LogoMark priority className="size-9.5" />
             <span className="font-display text-[1.5rem] font-extrabold tracking-[-0.02em] text-fg-strong">Sundry</span>
           </Link>
 
@@ -240,7 +252,7 @@ export function StorefrontHeaderBar({ user, categories }: { user: HeaderUser; ca
                         </Link>
                         {user.isCustomer && (
                           <div className="p-1.5">
-                            {ACCOUNT_LINKS.map(({ label, href, icon: Icon }) => (
+                            {ACCOUNT_MENU.map(({ label, href, icon: Icon }) => (
                               <Link key={href} href={href} role="menuitem" className={menuItem}>
                                 <Icon aria-hidden className="size-[18px]" strokeWidth={1.9} />
                                 {label}
@@ -393,9 +405,7 @@ export function StorefrontHeaderBar({ user, categories }: { user: HeaderUser; ca
           >
             <div className="flex items-center justify-between border-b border-line p-4">
               <Link href="/" className="flex items-center gap-2.5 max-lg:min-h-11">
-                <span className="grid size-9 place-items-center rounded-md bg-primary">
-                  <ShoppingBag aria-hidden className="size-5 text-on-primary" strokeWidth={2} />
-                </span>
+                <LogoMark className="size-9" />
                 <span className="font-display text-[1.3rem] font-extrabold tracking-[-0.02em] text-fg-strong">Sundry</span>
               </Link>
               <button type="button" onClick={() => setOverlay(null)} aria-label="Close menu" className="grid size-11 place-items-center rounded-full border border-line text-fg-muted">

@@ -192,7 +192,7 @@ function QuickViewBody({ p, onDone }: { p: QuickViewProduct; onDone: () => void 
             onClick={() => {
               if (!s.addToCart()) return;
               onDone();
-              router.push("/cart");
+              router.push("/checkout");
             }}
             className="inline-flex h-13 flex-1 items-center justify-center gap-2 rounded-md bg-accent px-6 text-base font-semibold text-fg-strong transition-colors duration-(--dur-fast) hover:bg-saffron-400/90 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
           >

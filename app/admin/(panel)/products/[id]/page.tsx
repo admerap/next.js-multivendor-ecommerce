@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductFlagToggle } from "@/components/admin/products/ProductFlagToggle";
 import { ProductReviewActions } from "@/components/admin/products/ProductReviewActions";
+import { ProductReviewsModeration } from "@/components/admin/products/ProductReviewsModeration";
 import { EmptyState } from "@/components/data/DashCard";
 import { SetBreadcrumbs } from "@/components/shell/Breadcrumbs";
 import { PreviewStateFrame } from "@/components/states/PreviewState";
@@ -23,6 +24,7 @@ import {
 } from "@/components/products/detail/ProductDetailSections";
 import { requireArea } from "@/lib/auth-guard";
 import { getAdminProductDetail, type ProductDetail } from "@/lib/product-detail.server";
+import { adminProductReviews } from "@/lib/reviews.server";
 import { adminProductIdSchema } from "@/lib/validations/admin-product";
 import { UNIT_LABELS, type ProductUnitValue } from "@/lib/validations/product";
 import { ReviewNote } from "@/components/admin/review/ReviewNote";
@@ -73,6 +75,10 @@ export default async function AdminProductDetailsPage({ params }: PageProps<"/ad
   const p = await getAdminProductDetail(parsed.data.id);
   if (!p) notFound();
   const list = LIST[p.approvalStatus];
+  const reviews = await adminProductReviews(p.id);
+  const pendingReviews = reviews.filter((r) => r.status === "PENDING").length;
+  const approved = reviews.filter((r) => r.status === "APPROVED");
+  const average = approved.length ? approved.reduce((n, r) => n + r.rating, 0) / approved.length : 0;
 
   return (
     <>
@@ -123,9 +129,25 @@ export default async function AdminProductDetailsPage({ params }: PageProps<"/ad
           <SeoPreview p={p} />
           <VideoCard url={p.videoUrl} emptyText="The store didn't include a YouTube link for this product." />
         </div>
-        {/* TODO(reviews): list this product's customer reviews once the Review model exists. */}
-        <DetailCard title="Product reviews" icon={MessageSquareText}>
-          <EmptyState bare icon={MessageSquareText} title="No reviews yet" description="Reviews appear here after customers receive this product." />
+        {/* Customer reviews of this product, with Approve / Deny (moderation). */}
+        <DetailCard
+          title="Product reviews"
+          icon={MessageSquareText}
+          aside={
+            reviews.length > 0 && (
+              <span className="text-caption text-fg-muted">
+                {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
+                {pendingReviews > 0 && <b className="ml-1.5 font-semibold text-warning-600">· {pendingReviews} pending</b>}
+                {approved.length > 0 && (
+                  <span className="ml-1.5">
+                    · {average.toFixed(1)} ★ from {approved.length} approved
+                  </span>
+                )}
+              </span>
+            )
+          }
+        >
+          <ProductReviewsModeration reviews={reviews} />
         </DetailCard>
         <DetailCard title="Record" icon={Boxes}>
           <dl className="grid grid-cols-1 gap-2.5 xs:grid-cols-2 lg:grid-cols-5">

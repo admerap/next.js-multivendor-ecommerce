@@ -1,6 +1,7 @@
 import { Plus, User } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AccountCard } from "@/components/account/AccountCard";
 import { ProfileForm } from "@/components/account/ProfileForm";
 import { ProfileSkeleton } from "@/components/account/ProfileSkeleton";
 import { EmptyState } from "@/components/data/DashCard";
@@ -8,6 +9,7 @@ import { PreviewStateFrame } from "@/components/states/PreviewState";
 import { buttonClasses } from "@/components/ui/button-classes";
 import { requireArea } from "@/lib/auth-guard";
 import { prisma } from "@/lib/db";
+import { splitPhone } from "@/lib/validations/vendor-profile";
 
 export const metadata: Metadata = { title: "Profile Info" };
 
@@ -15,11 +17,13 @@ export default async function DashboardPage() {
   const sessionUser = await requireArea("CUSTOMER");
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: sessionUser.id },
-    select: { name: true, email: true, phone: true },
+    select: { name: true, email: true, phone: true, image: true },
   });
   const [firstName, ...rest] = user.name.trim().split(/\s+/);
+  const { countryCode, phone } = splitPhone(user.phone);
 
   return (
+    <AccountCard>
     <PreviewStateFrame
       className="mb-2 flex flex-wrap items-center justify-between gap-3"
       errorCard={false}
@@ -44,8 +48,10 @@ export default async function DashboardPage() {
       }}
     >
       <ProfileForm
-        initial={{ firstName: firstName ?? "", lastName: rest.join(" "), email: user.email, phone: user.phone ?? "" }}
+        initial={{ firstName: firstName ?? "", lastName: rest.join(" "), email: user.email, countryCode, phone }}
+        image={user.image}
       />
     </PreviewStateFrame>
+    </AccountCard>
   );
 }

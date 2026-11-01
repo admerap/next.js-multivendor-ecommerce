@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgeCheck, ChevronRight, Minus, Package, Plus, ShoppingBag, ShoppingCart, Store, Trash2, Truck, X } from "lucide-react";
+import { BadgeCheck, Minus, Package, Plus, ShoppingBag, ShoppingCart, Store, Trash2, Truck, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { buttonClasses } from "@/components/ui/button-classes";
@@ -166,20 +166,10 @@ export function MiniCart({ onClose }: { onClose: () => void }) {
             <span className="text-[0.9rem] text-fg">Subtotal</span>
             <b className="text-[1.15rem] font-extrabold text-primary tabular-nums">{money(subtotalCents)}</b>
           </div>
-          <div className="flex items-stretch gap-2.5">
-            <Link
-              href="/cart"
-              onClick={onClose}
-              className="flex min-h-11 items-center gap-1 rounded-md border border-line px-3 text-caption sm:px-4 font-semibold whitespace-nowrap !text-fg transition-colors duration-(--dur-fast) hover:border-primary hover:!text-primary"
-            >
-              Expand cart
-              <ChevronRight aria-hidden className="size-4" strokeWidth={2} />
-            </Link>
-            <Link href="/checkout" onClick={onClose} className={cn(buttonClasses.primary, "h-13 flex-1 px-3 whitespace-nowrap sm:px-5")}>
-              <ShoppingCart aria-hidden className="size-4" strokeWidth={2} />
-              Proceed To Checkout
-            </Link>
-          </div>
+          <Link href="/checkout" onClick={onClose} className={cn(buttonClasses.primary, "h-13 w-full px-3 whitespace-nowrap sm:px-5")}>
+            <ShoppingCart aria-hidden className="size-4" strokeWidth={2} />
+            Proceed To Checkout
+          </Link>
         </div>
       )}
     </div>

@@ -85,7 +85,35 @@ export type StoreSummary = {
   reviewCount: number;
 };
 
-export type ProductReview = { id: string; author: string; avatar: string | null; rating: number; createdAt: string; body: string; photos: string[] };
+/** A store on All Vendors (/vendors) and the header of its store page. */
+export type StoreCardData = {
+  id: string;
+  name: string;
+  slug: string;
+  logo: string | null;
+  cover: string | null;
+  /** Products the store currently shows on the storefront (VISIBLE only). */
+  productCount: number;
+  /** TODO(reviews): real store rating / review count once the Review model exists. */
+  rating: number;
+  reviewCount: number;
+};
+
+/** The store page header: the card data plus when the store joined. */
+export type StoreProfile = StoreCardData & {
+  /** ISO date the store was created. */
+  joinedAt: string;
+  /** TODO(orders): completed orders once checkout records them. */
+  orderCount: number;
+};
+
+/** One option of a storefront filter list (slug in the URL), with how many stores / products it matches. */
+export type FacetOption = { slug: string; name: string; image?: string | null; count: number };
+
+/** One page of a server-paginated list. */
+export type Paged<T> = { items: T[]; total: number; page: number; pageCount: number; pageSize: number };
+
+export type ProductReview = { id: string; author: string; avatar: string | null; rating: number; title: string | null; createdAt: string; body: string; photos: string[] };
 /** Reviews tab: average (0–5), total, count per star (5 → 1) and the reviews themselves. */
 export type ReviewSummary = { average: number; count: number; distribution: { stars: number; count: number }[]; reviews: ProductReview[] };
 

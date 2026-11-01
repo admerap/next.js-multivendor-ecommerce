@@ -7,7 +7,7 @@ import { money } from "@/lib/money";
 import { productHref, sellerHref, type ProductPageData } from "@/lib/storefront";
 import { getMoreFromVendor, getSimilarProducts } from "@/lib/storefront.server";
 import { cn } from "@/lib/utils";
-import { pageContainer } from "./ProductPageSections";
+import { pageContainer } from "@/components/commerce/StorefrontBits";
 
 /**
  * Right-rail "More From The Store" (Product Detail Page design): the same store's other visible products

@@ -145,6 +145,8 @@ a { color:var(--color-primary); } a:hover { color:var(--color-primary-hover); }
 }
 html.rz *, html.rz *::before, html.rz *::after { transition:none !important; animation:none !important; }
 @keyframes shimmer { to { background-position:-200% 0; } }
+/* 404 logomark: gentle float (disabled by the reduced-motion rule below). */
+@keyframes float { 0%, 100% { transform:translateY(0) rotate(-3deg); } 50% { transform:translateY(-8%) rotate(3deg); } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; }
 }

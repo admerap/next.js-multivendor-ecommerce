@@ -21,16 +21,19 @@ import {
 /**
  * Storefront data layer — every product query goes through VISIBLE (CLAUDE.md §6): the product is
  * APPROVED and switched on by its vendor, the vendor is APPROVED (a suspended store disappears) and its
- * category is ACTIVE. Each function returns only what its section renders; `cache` dedupes per request.
+ * category — and sub / sub-sub category, when it has them — is ACTIVE. Each function returns only what its section renders; `cache` dedupes per request.
  */
 export const VISIBLE: Prisma.ProductWhereInput = {
   approvalStatus: "APPROVED",
   isActive: true,
   vendor: { status: "APPROVED" },
   category: { status: "ACTIVE" },
+  // An inactive sub / sub-sub category hides its products too (optional levels: no level = fine).
+  // VISIBLE owns the NOT key — callers spreading it must not set their own NOT.
+  NOT: [{ subCategory: { status: "INACTIVE" } }, { subSubCategory: { status: "INACTIVE" } }],
 };
 
-const CARD_SELECT = {
+export const CARD_SELECT = {
   id: true,
   slug: true,
   name: true,
@@ -41,13 +44,15 @@ const CARD_SELECT = {
   discountValue: true,
   productType: true,
   stock: true,
+  ratingAvg: true,
+  reviewCount: true,
   vendor: { select: { id: true, storeName: true, slug: true } },
   _count: { select: { variations: true } },
 } satisfies Prisma.ProductSelect;
 
-type CardRow = Prisma.ProductGetPayload<{ select: typeof CARD_SELECT }>;
+export type CardRow = Prisma.ProductGetPayload<{ select: typeof CARD_SELECT }>;
 
-function toCard(p: CardRow): ProductCardData {
+export function toCard(p: CardRow): ProductCardData {
   return {
     id: p.id,
     slug: p.slug,
@@ -55,8 +60,9 @@ function toCard(p: CardRow): ProductCardData {
     image: p.thumbnail,
     ...productPricing(p),
     seller: { id: p.vendor.id, name: p.vendor.storeName, slug: p.vendor.slug },
-    rating: 0,
-    reviewCount: 0,
+    // Average of APPROVED reviews, stored in hundredths (450 → 4.5) and kept fresh on every moderation.
+    rating: p.ratingAvg / 100,
+    reviewCount: p.reviewCount,
     // Product.stock is already the total of its variations (kept in sync on save).
     inStock: p.productType === "DIGITAL" || p.stock > 0,
     stock: p.productType === "DIGITAL" ? null : p.stock,
@@ -183,7 +189,7 @@ export const getTopSellers = cache(async (limit = 6): Promise<SellerCardData[]> 
 // ── Quick view + product page ────────────────────────────────────────────────
 
 /** Storefront slugs are lowercase a–z, 0–9 and dashes; anything else can't exist → no query. */
-const isSlug = (slug: string) => slug.length > 0 && slug.length <= 220 && /^[a-z0-9-]+$/.test(slug);
+export const isSlug = (slug: string) => slug.length > 0 && slug.length <= 220 && /^[a-z0-9-]+$/.test(slug);
 
 const LEVEL = { select: { id: true, name: true, slug: true, status: true } } as const;
 
@@ -329,7 +335,43 @@ export const getSimilarProducts = cache(async (catalog: ProductPageData["catalog
  * TODO(reviews): load approved reviews for `productId` (average, per-star counts, newest first) once the
  * Review model exists — the page already renders ReviewSummary, so only this function changes.
  */
+/** Shown name for a reviewer: first name + last initial ("Ana R."), never the full name or email. */
+const reviewerName = (name: string) => {
+  const [first, ...rest] = name.trim().split(/\s+/);
+  const last = rest.at(-1);
+  return last ? `${first} ${last.charAt(0).toUpperCase()}.` : (first ?? "Customer");
+};
+
+/**
+ * Reviews tab (PRD FR-S19): ONLY approved reviews — average, per-star distribution and the newest 20.
+ * Pending and denied reviews never reach the storefront.
+ */
 export const getProductReviews = cache(async (productId: string): Promise<ReviewSummary> => {
-  void productId;
-  return { average: 0, count: 0, distribution: [5, 4, 3, 2, 1].map((stars) => ({ stars, count: 0 })), reviews: [] };
+  const where = { productId, status: "APPROVED" as const };
+  const [byStars, rows] = await Promise.all([
+    prisma.review.groupBy({ by: ["rating"], where, _count: { _all: true } }),
+    prisma.review.findMany({
+      where,
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: 20,
+      select: { id: true, rating: true, title: true, comment: true, images: true, createdAt: true, customer: { select: { name: true, image: true } } },
+    }),
+  ]);
+  const count = byStars.reduce((n, r) => n + r._count._all, 0);
+  const sum = byStars.reduce((n, r) => n + r.rating * r._count._all, 0);
+  return {
+    average: count ? Math.round((sum * 10) / count) / 10 : 0,
+    count,
+    distribution: [5, 4, 3, 2, 1].map((stars) => ({ stars, count: byStars.find((r) => r.rating === stars)?._count._all ?? 0 })),
+    reviews: rows.map((r) => ({
+      id: r.id,
+      author: reviewerName(r.customer.name),
+      avatar: r.customer.image,
+      rating: r.rating,
+      title: r.title,
+      createdAt: r.createdAt.toISOString(),
+      body: r.comment,
+      photos: Array.isArray(r.images) ? r.images.filter((x): x is string => typeof x === "string") : [],
+    })),
+  };
 });

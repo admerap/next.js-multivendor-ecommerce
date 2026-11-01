@@ -62,7 +62,7 @@ Commands: `npm run dev` · `npm run build` · `npm run lint` · `npm run typeche
    - Carts group items under a **seller header**.
    - Orders are **split by seller** (one parent order → one sub-order per store, each with its own status).
    - **Sellers only ever see their own data.** Every vendor query is scoped by `storeId` on the server. Never trust a client-sent `storeId`.
-2. **Payments are Stripe-only** (Card via Stripe, Stripe Wallet: Apple Pay / Google Pay / Link). **No Cash on Delivery.**
+2. **Payments: Cash on Delivery in v1; Stripe added later** (Card via Stripe, Stripe Wallet: Apple Pay / Google Pay / Link). Only COD is offered until the Stripe integration ships; the order code keeps a seam for it (`paymentMethod`).
 3. **Not in this project:** Auctions · Publication House / Authors / Creators filters · Chat With Vendor (use the **Sundry AI Support** agent instead) · Google Maps address picker · currency/language switchers.
 4. **Design tokens only.** No hex/rgb values in components. Use Tailwind token utilities or `var(--token)`. No new colors, radii, shadows or font sizes.
 5. **Every data surface has 4 states:** Default · Loading skeleton · Empty · Error (with Retry).
@@ -115,7 +115,7 @@ Reference only (not routes): `Design System`, `Component States`, `Mobile Layout
 - **Store** — name, slug, logo, banner, tagline, status (`PENDING | ACTIVE | SUSPENDED`), `isOpen`, rating, `stripeAccountId` (Stripe Connect), commission rate.
 - **Product** — `vendorId` (required), name, slug, SKU, category → sub → sub-sub, brand, price/compareAt/discount/tax (cents), stock, images (thumbnail + `ProductImage` gallery), **ProductVariation** rows (one per attribute combination, own price + stock), meta title/description. Two separate statuses: `approvalStatus` (`PENDING | APPROVED | REJECTED`, set by admin; new vendor products start `PENDING`) and `isActive` (vendor show/hide). Storefront shows a product only when `APPROVED` **and** `isActive`. `REJECTED` is labelled **"Denied"** in every UI; `rejectionReason` holds the admin's note to the vendor. `submittedAt` = when it last entered `PENDING` (created, resubmitted, or sent back for re-review); it orders the admin queue (Coupon has the same field). Admin flags `isFeatured` / `isPopular` drive storefront merchandising: they can only be checked on `APPROVED` products (always unchecked), and the storefront honours them only for `APPROVED` + `isActive` products.
 - **Cart / CartItem** — items carry `storeId`; UI groups by store.
-- **Order** (parent: customer, addresses, Stripe PaymentIntent, totals) → **StoreOrder** (one per store: items, subtotal, shipping, tax, commission, **status**) → **OrderItem**.
+- **Order** (parent: customer, addresses, payment method `COD | STRIPE` + Stripe PaymentIntent later, totals) → **StoreOrder** (one per store: items, subtotal, shipping, tax, commission, **status**) → **OrderItem**.
 - StoreOrder status: `PENDING → CONFIRMED → PACKAGING → OUT_FOR_DELIVERY → DELIVERED` · plus `RETURNED · FAILED · CANCELED`. Payment status: `UNPAID | PAID | REFUNDED`. Map to colors with `StatusBadge` (DESIGN_SYSTEM.md §6).
 - **Coupon** — `vendorId` (required), `code` (unique **per vendor**: `@@unique([vendorId, code])`), title, `type` (`DISCOUNT | FREE_DELIVERY | FIRST_ORDER`), `discountType` (`AMOUNT | PERCENTAGE`), `discountValue` (cents or whole %), `scope` (`STORE_WIDE | SPECIFIC_PRODUCTS` via **CouponProduct**), `minPurchase` / `maxDiscount` (cents), `usageLimit`, `limitPerUser`, `usedCount`, `startsAt` / `expiresAt` (dates, inclusive), `isActive`, `approvalStatus` (`PENDING | APPROVED | REJECTED`, set by admin; new coupons start `PENDING`, shown as "Denied" when `REJECTED`) + `rejectionReason`. Only `APPROVED` coupons apply at checkout. Editing an approved coupon's terms (code, type, value, min/max, dates, scope, products) sends it back to `PENDING`; title, usage limits and the on/off switch don't. **A vendor coupon only ever discounts that vendor's own items** — in a multi-seller cart, never another store's lines.
 - **Review**, **Address** (type: Home | Office | Other), **SupportTicket**, **WishlistItem**, **Payout/Transaction**.
@@ -165,6 +165,6 @@ Reference only (not routes): `Design System`, `Component States`, `Mobile Layout
 - [ ] No horizontal overflow at 360 · 390 · 768 · 1024 · 1280 · 1440; tables become cards ≤1200.
 - [ ] Keyboard + screen-reader usable; icon buttons labelled; focus visible.
 - [ ] Marketplace rule respected (seller shown, carts/orders split by seller, vendor data scoped).
-- [ ] Stripe-only; none of the excluded features (§3.3).
+- [ ] Payments per §3.2 (COD now, Stripe later); none of the excluded features (§3.3).
 - [ ] `npm run lint` and `npm run typecheck` pass; no console errors.
 

@@ -43,14 +43,13 @@ The MVP delivers four connected areas, each already designed:
 | G2 | Sellers can onboard and start selling without staff help (after approval) | Median time from registration to first approved product < 48h |
 | G3 | Admins can control quality: approve vendors and products, monitor orders | 100% of new vendors and vendor products pass an approval state |
 | G4 | Premium, accessible, responsive experience on every device | Lighthouse ≥ 90 (Perf, A11y, Best Practices) on key pages; zero horizontal overflow at 360–1440px |
-| G5 | Trustworthy payments and payouts | Stripe-only; 0 payment-status mismatches (webhook is the source of truth) |
+| G5 | Trustworthy payments and payouts | Cash on Delivery in v1, Stripe next; 0 payment-status mismatches (for Stripe, the webhook is the source of truth) |
 
 ### 3.2 Non-goals (explicitly out of scope)
 
 - Auctions / auction products.
 - Publication House / Authors / Creators filters.
 - Direct **Chat With Vendor**. Customer questions go to **Sundry AI Support**.
-- **Cash on Delivery.** Stripe is the only payment processor.
 - Google Maps address picker. Addresses are entered through a structured form.
 - Currency and language switchers. MVP is USD, English.
 - Native mobile apps. Responsive web only.
@@ -82,7 +81,7 @@ The MVP delivers four connected areas, each already designed:
 ## 5. Core principles (apply to every feature)
 
 1. **Marketplace transparency.** Every product shows its seller. Carts group items by seller. Orders split into one sub-order per seller. Sellers only ever see their own data.
-2. **Stripe-only payments:** card, and Stripe Wallet (Apple Pay, Google Pay, Link).
+2. **Payments:** Cash on Delivery in v1. Stripe (card, and Stripe Wallet: Apple Pay, Google Pay, Link) is added next; checkout keeps a payment-method seam for it.
 3. **Four states everywhere:** Default · Loading skeleton · Empty · Error with Retry.
 4. **Responsive by default:** 360px → 1440px+. Tables become cards at ≤1200px. Touch-friendly (≥44px targets).
 5. **Design-system fidelity:** only the tokens and components in `DESIGN_SYSTEM.md`.
@@ -150,7 +149,7 @@ Sections in approved order:
 ### 6.7 Checkout (P0)
 - **FR-S28** Stepper: Cart ✓ → **Shipping & Billing** → **Payment**. Payment unlocks only after Shipping & Billing is valid.
 - **FR-S29** Shipping address: saved-address picker or a new form (name, phone, email, country, city, ZIP, address, type **Home / Office / Other**). "Same as shipping address" collapses billing. "Create an account with the above info" option for guests.
-- **FR-S30** Payment methods: **Credit/Debit Card (Stripe Payment Element)** and **Stripe Wallet** (Apple Pay / Google Pay / Link). The selected method's details render below the options.
+- **FR-S30** Payment methods: **Cash on Delivery** in v1 (pay the courier on delivery; payment `UNPAID` until collected). Next: **Credit/Debit Card (Stripe Payment Element)** and **Stripe Wallet** (Apple Pay / Google Pay / Link). The selected method's details render below the options.
 - **FR-S31** Terms checkbox, unchecked by default. **Place Order is disabled until it is checked.**
 - **FR-S32** On success: a **Thank-you modal** (Order ID + Copy, Track Order, Continue Shopping) and a confirmation email. The parent order is split into **StoreOrders**.
 - **FR-S33** Payment failures show an inline error, keep the form data and allow retry. No duplicate charges (idempotency keys).
@@ -264,8 +263,8 @@ Shell: same frame as Vendor, plus a header search (⌘K / Ctrl K) and a **theme 
 
 ## 10. Order & payment lifecycle
 
-1. **Checkout:** customer pays once through a Stripe PaymentIntent (card or wallet). The parent **Order** is created with payment `UNPAID`.
-2. **Webhook `payment_intent.succeeded`:** payment becomes `PAID`. The system creates one **StoreOrder** per seller (status `PENDING`), decrements stock, and emails the customer and each seller.
+1. **Checkout (v1, Cash on Delivery):** placing the order creates the parent **Order** (payment `UNPAID`) and one **StoreOrder** per seller (status `PENDING`) and decrements stock, in one transaction with prices, stock and coupons re-checked on the server. Payment becomes `PAID` when the cash is collected on delivery.
+2. **Checkout (next, Stripe):** customer pays once through a Stripe PaymentIntent (card or wallet); the webhook `payment_intent.succeeded` marks the payment `PAID`, creates the StoreOrders, decrements stock, and emails the customer and each seller.
 3. **Seller fulfils:** `CONFIRMED → PACKAGING → OUT_FOR_DELIVERY → DELIVERED` (or `CANCELED` / `FAILED` / `RETURNED`). The customer sees each StoreOrder's status independently.
 4. **Payouts (Stripe Connect):** each StoreOrder amount minus the **commission** (default 10%, configurable) is transferred to the seller's connected account after delivery plus the holding period (default 7 days).
 5. **Refunds:** requested by the customer, approved by the seller or admin. A Stripe refund is issued, the payment becomes `REFUNDED`, and the transfer is reversed if already paid out.
@@ -353,7 +352,7 @@ A feature is **done** when:
 3. It has no horizontal overflow at 360–1440px, tables become cards at ≤1200px, and it works with touch.
 4. It is keyboard and screen-reader accessible (WCAG 2.2 AA).
 5. It respects the marketplace rule: seller visible, cart and order split by seller, vendor data scoped.
-6. It uses Stripe only and includes none of the non-goals.
+6. It follows the payment rule (COD in v1, Stripe next) and includes none of the non-goals.
 7. Server-side permission checks and zod validation are in place, and tests cover the core logic.
 8. Lint, typecheck and E2E pass, with no console errors.
 
@@ -373,7 +372,7 @@ A feature is **done** when:
 
 ## 17. Open questions
 
-1. **Cash on Delivery.** The approved Checkout design includes a COD option, but the project rule is Stripe-only. **Decision needed:** remove it from the design (this PRD assumes removal) or re-scope.
+1. ~~**Cash on Delivery.**~~ **Decided:** COD ships in v1 (the design's COD option); Stripe card and wallet follow.
 2. Commission model: one global rate, per category, or per store? (PRD default: global 10%, overridable per store.)
 3. Payout holding period after delivery: 7 days default. Confirm.
 4. Return window: 7 days, as shown on the trust badges. Confirm policy and who pays return shipping.

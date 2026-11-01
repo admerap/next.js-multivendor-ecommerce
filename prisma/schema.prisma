@@ -34,6 +34,8 @@ model User {
   vendor   Vendor?
   accounts Account[]
   sessions Session[]
+  orders   Order[]
+  reviews  Review[]
 }
 
 /// A seller's store. Exactly one per VENDOR user.
@@ -57,9 +59,10 @@ model Vendor {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  products Product[]
-  coupons  Coupon[]
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products    Product[]
+  coupons     Coupon[]
+  storeOrders StoreOrder[]
 }
 
 enum BrandStatus {
@@ -267,9 +270,17 @@ model Product {
   isFeatured Boolean @default(false)
   isPopular  Boolean @default(false)
 
+  /// Average of APPROVED reviews in hundredths (450 = 4.50 stars) — an integer, never a float.
+  /// Recomputed whenever a review is approved, rejected or deleted.
+  ratingAvg   Int @default(0)
+  /// Number of APPROVED reviews.
+  reviewCount Int @default(0)
+
   images      ProductImage[]
   variations  ProductVariation[]
   couponLinks CouponProduct[]
+  orderItems  OrderItem[]
+  reviews     Review[]
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
 
@@ -311,6 +322,8 @@ model ProductVariation {
   position   Int      @default(0)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  orderItems OrderItem[]
 
   @@unique([productId, name])
 }
@@ -373,9 +386,10 @@ model Coupon {
   /// Admin's note to the vendor when the coupon is denied (REJECTED); cleared on approval.
   rejectionReason String?              @db.VarChar(500)
 
-  products  CouponProduct[]
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  products    CouponProduct[]
+  storeOrders StoreOrder[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   @@unique([vendorId, code])
   @@index([vendorId, isActive])
@@ -391,4 +405,215 @@ model CouponProduct {
 
   @@id([couponId, productId])
   @@index([productId])
+}
+
+// ── Orders (checkout) ──
+// One checkout = one parent Order (customer, addresses, payment, grand totals) split into one StoreOrder
+// per seller (its items, its own totals and fulfilment status — what that vendor sees) → OrderItems.
+// Money is integer cents. Items, prices and addresses are SNAPSHOTS, so history survives later edits
+// or deletions of products, variations and coupons.
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PACKAGING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  RETURNED
+  FAILED
+  CANCELED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+}
+
+/// COD in v1; STRIPE is the seam for the card / wallet integration that follows.
+enum PaymentMethod {
+  COD
+  STRIPE
+}
+
+/// Delivery speed chosen once for the whole order (every store ships with it).
+enum ShippingMethod {
+  STANDARD
+  EXPRESS
+}
+
+enum AddressType {
+  HOME
+  OFFICE
+  OTHER
+}
+
+model Order {
+  id          String @id @default(cuid())
+  /// Human-facing number shown to customers ("#100196"); allocated at placement, unique.
+  orderNumber Int    @unique
+  customerId  String
+  /// Restrict: an account with orders can't be deleted out from under its order history.
+  customer    User   @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
+  paymentMethod         PaymentMethod
+  paymentStatus         PaymentStatus @default(UNPAID)
+  /// Stripe seam (unused for COD).
+  stripePaymentIntentId String?       @unique @db.VarChar(255)
+
+  shippingMethod ShippingMethod @default(STANDARD)
+
+  // Shipping address snapshot
+  shipName        String      @db.VarChar(120)
+  shipPhone       String      @db.VarChar(32)
+  shipEmail       String      @db.VarChar(191)
+  shipAddressType AddressType @default(HOME)
+  shipCountry     String      @db.VarChar(60)
+  /// State / province (code for US + Canada, free text county for the UK); optional for older rows.
+  shipState       String?     @db.VarChar(60)
+  shipCity        String      @db.VarChar(120)
+  shipZip         String      @db.VarChar(20)
+  shipAddress     String      @db.VarChar(500)
+  /// Apt, suite, unit… (address line 2)
+  shipAddress2    String?     @db.VarChar(100)
+
+  /// When true the bill* fields are null and billing = shipping.
+  billingSameAsShipping Boolean      @default(true)
+  billName              String?      @db.VarChar(120)
+  billPhone             String?      @db.VarChar(32)
+  billEmail             String?      @db.VarChar(191)
+  billAddressType       AddressType?
+  billCountry           String?      @db.VarChar(60)
+  billState             String?      @db.VarChar(60)
+  billCity              String?      @db.VarChar(120)
+  billZip               String?      @db.VarChar(20)
+  billAddress           String?      @db.VarChar(500)
+  billAddress2          String?      @db.VarChar(100)
+
+  note String? @db.VarChar(500)
+
+  // Grand totals (cents) = sums of the StoreOrders
+  subtotal Int
+  discount Int @default(0)
+  shipping Int @default(0)
+  tax      Int @default(0)
+  total    Int
+
+  /// Customer's "Hide from my orders" (their list only). The order itself is never deleted and stays
+  /// visible to sellers, admins and reports.
+  hiddenByCustomerAt DateTime?
+
+  storeOrders StoreOrder[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([customerId, createdAt])
+}
+
+/// One seller's part of an Order: its items, totals, coupon and fulfilment status (vendor-scoped).
+model StoreOrder {
+  id       String @id @default(cuid())
+  orderId  String
+  order    Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  vendorId String
+  /// Restrict: a store with orders can't be deleted out from under them.
+  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Restrict)
+
+  status OrderStatus @default(PENDING)
+
+  // Cents
+  subtotal       Int
+  discount       Int @default(0)
+  shipping       Int @default(0)
+  tax            Int @default(0)
+  total          Int
+  /// Basis points snapshot (1000 = 10%) and the resulting commission on the item subtotal after discount.
+  commissionRate Int @default(1000)
+  commission     Int @default(0)
+
+  /// Vendor coupon applied to this store's lines (SetNull keeps the order if the coupon is deleted).
+  couponId   String?
+  coupon     Coupon? @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  couponCode String? @db.VarChar(40)
+
+  items     OrderItem[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([orderId, vendorId])
+  @@index([vendorId, status])
+  @@index([couponId])
+}
+
+/// A purchased line — name, variation, image and prices are snapshots taken at placement.
+model OrderItem {
+  id           String     @id @default(cuid())
+  storeOrderId String
+  storeOrder   StoreOrder @relation(fields: [storeOrderId], references: [id], onDelete: Cascade)
+
+  // Live links (SetNull: the line survives if the product / variation is later deleted)
+  productId   String?
+  product     Product?          @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variationId String?
+  variation   ProductVariation? @relation(fields: [variationId], references: [id], onDelete: SetNull)
+
+  productName   String  @db.VarChar(200)
+  productSlug   String? @db.VarChar(220)
+  sku           String? @db.VarChar(64)
+  variationName String? @db.VarChar(160)
+  image         String?
+
+  /// Unit price paid before the coupon (after the product's own discount), cents.
+  unitPrice Int
+  qty       Int
+  /// This line's share of the store coupon discount, cents.
+  discount  Int @default(0)
+  tax       Int @default(0)
+  /// unitPrice × qty − discount + tax
+  lineTotal Int
+
+  review Review?
+
+  @@index([storeOrderId])
+  @@index([productId])
+  @@index([variationId])
+}
+
+// ── Reviews ──────────────────────────────────────────────────────────────────────────────────────
+
+/// Admin moderation of customer reviews. REJECTED is labelled "Denied" in the UI.
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// A verified-buyer review: tied to the OrderItem that proves the purchase (one review per line).
+/// New reviews start PENDING; the storefront shows APPROVED ones only.
+model Review {
+  id          String    @id @default(cuid())
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customerId  String
+  customer    User      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  /// The purchased line this review is for — unique, so the same purchase can't be reviewed twice.
+  orderItemId String    @unique
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+
+  /// 1–5 stars (validated by Zod on the server).
+  rating  Int
+  title   String? @db.VarChar(120)
+  comment String  @db.Text
+  /// Optional photos: an array of /uploads/reviews/… paths.
+  images  Json?
+
+  status      ReviewStatus @default(PENDING)
+  /// When an admin approved or rejected it.
+  moderatedAt DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([productId, status, createdAt])
+  @@index([customerId])
+  @@index([status, createdAt])
 }

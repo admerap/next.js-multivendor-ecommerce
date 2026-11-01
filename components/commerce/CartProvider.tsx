@@ -25,6 +25,8 @@ export type CartItem = {
 };
 
 type CartContextValue = {
+  /** false until the browser cart has been read (avoid flashing "empty" on first paint) */
+  ready: boolean;
   items: CartItem[];
   count: number;
   subtotalCents: number;
@@ -33,6 +35,13 @@ type CartContextValue = {
   add: (item: Omit<CartItem, "qty">, qty?: number) => void;
   setQty: (id: string, qty: number) => void;
   remove: (id: string) => void;
+  /**
+   * Apply the server's view of the lines (checkout quote): current unit price, stock cap and an adjusted
+   * quantity. Only changed lines are touched; unknown ids are ignored.
+   */
+  sync: (updates: { id: string; priceCents?: number; maxQty?: number | null; qty?: number }[]) => void;
+  /** Empty the cart (after an order is placed). */
+  clear: () => void;
 };
 
 const STORAGE_KEY = "sundry-cart";
@@ -95,6 +104,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((cur) => (qty <= 0 ? cur.filter((i) => i.id !== id) : cur.map((i) => (i.id === id ? { ...i, qty: Math.max(1, clampQty(qty, i.maxQty)) } : i))));
   }, []);
   const remove = useCallback((id: string) => setItems((cur) => cur.filter((i) => i.id !== id)), []);
+  const sync = useCallback<CartContextValue["sync"]>((updates) => {
+    const byId = new Map(updates.map((u) => [u.id, u]));
+    setItems((cur) => {
+      let changed = false;
+      const next = cur.map((i) => {
+        const u = byId.get(i.id);
+        if (!u) return i;
+        const maxQty = u.maxQty === undefined ? i.maxQty : (u.maxQty ?? undefined);
+        const priceCents = u.priceCents ?? i.priceCents;
+        const qty = Math.max(1, Math.min(u.qty ?? i.qty, maxQty ?? Number.MAX_SAFE_INTEGER));
+        if (maxQty === i.maxQty && priceCents === i.priceCents && qty === i.qty) return i;
+        changed = true;
+        return { ...i, maxQty, priceCents, qty };
+      });
+      return changed ? next : cur; // same array → no re-render loop
+    });
+  }, []);
+  const clear = useCallback(() => setItems([]), []);
 
   const value = useMemo<CartContextValue>(() => {
     const groups = new Map<string, { store: CartItem["store"]; items: CartItem[] }>();
@@ -104,6 +131,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       groups.set(i.store.id, g);
     }
     return {
+      ready: loaded,
       items,
       count: items.reduce((n, i) => n + i.qty, 0),
       // Integer cents × integer qty: exact, no float rounding.
@@ -112,8 +140,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       add,
       setQty,
       remove,
+      sync,
+      clear,
     };
-  }, [items, add, setQty, remove]);
+  }, [loaded, items, add, setQty, remove, sync, clear]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

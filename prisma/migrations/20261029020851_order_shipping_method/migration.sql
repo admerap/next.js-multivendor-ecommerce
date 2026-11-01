@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `order` ADD COLUMN `shippingMethod` ENUM('STANDARD', 'EXPRESS') NOT NULL DEFAULT 'STANDARD';

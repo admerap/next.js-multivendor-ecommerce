@@ -52,11 +52,6 @@ const inputSchema = z.object({
   userId: z.string().max(40).nullish(),
   /** this store's shipping charge in the cart, cents — what FREE_DELIVERY waives */
   shipping: z.number().int().min(0).max(100_000_000).default(0),
-  /**
-   * Redemption history from checkout until the Order model exists:
-   * TODO(orders): read these from orders instead of trusting the caller.
-   */
-  history: z.object({ userRedemptions: z.number().int().min(0), ordersWithVendor: z.number().int().min(0) }).default({ userRedemptions: 0, ordersWithVendor: 0 }),
   /** YYYY-MM-DD; defaults to today (UTC) — injectable for tests */
   today: z.iso.date().optional(),
 });
@@ -95,10 +90,23 @@ function allocate(total: number, lines: { id: string; subtotal: number }[]): Rec
   return out;
 }
 
+/**
+ * The customer's history with this coupon and store, read from their orders (never from the caller).
+ * Canceled / failed store orders don't count — the coupon wasn't really used.
+ */
+async function customerHistory(userId: string, couponId: string, vendorId: string) {
+  const live = { status: { notIn: ["CANCELED", "FAILED"] as ("CANCELED" | "FAILED")[] }, order: { customerId: userId } };
+  const [userRedemptions, ordersWithVendor] = await Promise.all([
+    prisma.storeOrder.count({ where: { ...live, couponId } }),
+    prisma.storeOrder.count({ where: { ...live, vendorId } }),
+  ]);
+  return { userRedemptions, ordersWithVendor };
+}
+
 export async function validateCoupon(rawInput: ValidateCouponInput): Promise<CouponCheck> {
   const parsed = inputSchema.safeParse(rawInput);
   if (!parsed.success) return invalid("Enter a valid coupon code.");
-  const { code, vendorId, items, userId, shipping, history } = parsed.data;
+  const { code, vendorId, items, userId, shipping } = parsed.data;
   const today = parsed.data.today ?? todayIso();
 
   const coupon = await prisma.coupon.findUnique({
@@ -116,6 +124,7 @@ export async function validateCoupon(rawInput: ValidateCouponInput): Promise<Cou
 
   // Usage limits.
   if (coupon.usageLimit !== null && coupon.usedCount >= coupon.usageLimit) return invalid("This coupon has been fully redeemed.");
+  const history = userId ? await customerHistory(userId, coupon.id, coupon.vendorId) : { userRedemptions: 0, ordersWithVendor: 0 };
   if (coupon.limitPerUser !== null) {
     if (!userId) return invalid("Sign in to use this coupon.");
     if (history.userRedemptions >= coupon.limitPerUser) return invalid("You've already used this coupon the maximum number of times.");

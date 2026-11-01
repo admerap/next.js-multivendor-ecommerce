@@ -1,14 +1,15 @@
 "use client";
 
-import { Heart, Inbox, LogOut, MapPin, ShoppingBag, Truck, User, Headphones, type LucideIcon } from "lucide-react";
+import { Heart, Inbox, KeyRound, LogOut, MapPin, ShoppingBag, Truck, User, Headphones, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOutAction } from "@/lib/actions/auth";
 import { cn } from "@/lib/utils";
 
-/** Account pages that exist in the route map (CLAUDE.md §5). */
+/** Account pages from the route map (CLAUDE.md §5), plus Change Password. */
 const NAV: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/dashboard", label: "Profile Info", icon: User },
+  { href: "/account/change-password", label: "Change Password", icon: KeyRound },
   { href: "/account/orders", label: "My Order", icon: ShoppingBag },
   { href: "/account/wishlist", label: "Wish List", icon: Heart },
   { href: "/account/inbox", label: "Inbox", icon: Inbox },

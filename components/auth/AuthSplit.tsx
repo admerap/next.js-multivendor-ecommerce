@@ -1,5 +1,6 @@
-import { RotateCcw, ShieldCheck, ShoppingBag, Truck, type LucideIcon } from "lucide-react";
+import { RotateCcw, ShieldCheck, Truck, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import { LogoMark } from "@/components/shell/LogoMark";
 
 const PERKS: { icon: LucideIcon; text: string }[] = [
   { icon: Truck, text: "Free shipping on orders over $75" },
@@ -28,9 +29,7 @@ export function AuthSplit({
         <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,var(--iris-400),transparent_55%)] opacity-35" />
         <div className="relative">
           <span className="flex items-center gap-2.5">
-            <span className="grid size-10 place-items-center rounded-md bg-on-primary/15">
-              <ShoppingBag aria-hidden className="size-5" strokeWidth={2} />
-            </span>
+            <LogoMark className="size-10" />
             <span className="font-display text-[1.6rem] font-extrabold tracking-[-0.02em]">Sundry</span>
           </span>
           <p className="mt-5 max-w-[340px] text-[0.95rem] leading-relaxed text-on-primary/80">

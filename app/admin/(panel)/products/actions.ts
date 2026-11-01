@@ -10,6 +10,7 @@ import {
   adminProductFlagSchema,
   adminProductIdSchema,
   adminProductListSchema,
+  adminProductViewSchema,
   type AdminProductView,
 } from "@/lib/validations/admin-product";
 import type { ApprovalStatus, ProductTypeValue } from "@/lib/validations/product";
@@ -123,8 +124,11 @@ export async function getAdminProducts(
 }
 
 /** Vendor + category options for the list filters: only those that have products in this list. */
-export async function getAdminProductFilters(view: AdminProductView): Promise<ActionResult<{ vendors: FilterOption[]; categories: FilterOption[] }>> {
+export async function getAdminProductFilters(input: AdminProductView): Promise<ActionResult<{ vendors: FilterOption[]; categories: FilterOption[] }>> {
   if (!(await isAdmin())) return forbidden();
+  const parsed = adminProductViewSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "We couldn't load the filters." };
+  const view = parsed.data;
   try {
     const where = VIEW_WHERE[view];
     const [vendors, categories] = await Promise.all([

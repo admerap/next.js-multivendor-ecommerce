@@ -6,7 +6,7 @@ import { couponStatus, type CouponStatus } from "@/lib/coupons";
 import { forbiddenResult, isAdmin } from "@/lib/admin-auth";
 import { couponStatusWhere, toDbDate } from "@/lib/coupons.server";
 import { prisma } from "@/lib/db";
-import { adminCouponDenySchema, adminCouponIdSchema, adminCouponListSchema, type AdminCouponView } from "@/lib/validations/admin-coupon";
+import { adminCouponDenySchema, adminCouponIdSchema, adminCouponListSchema, adminCouponViewSchema, type AdminCouponView } from "@/lib/validations/admin-coupon";
 import { todayIso, type CouponDiscountTypeValue, type CouponScopeValue, type CouponTypeValue } from "@/lib/validations/coupon";
 import type { ApprovalStatus } from "@/lib/validations/product";
 import type { FilterOption } from "@/lib/list-params";
@@ -112,8 +112,11 @@ export async function getAdminCoupons(
 }
 
 /** Vendor options for the list filter: only vendors that have coupons in this list (same shape as getAdminProductFilters). */
-export async function getAdminCouponFilters(view: AdminCouponView): Promise<ActionResult<{ vendors: FilterOption[] }>> {
+export async function getAdminCouponFilters(input: AdminCouponView): Promise<ActionResult<{ vendors: FilterOption[] }>> {
   if (!(await isAdmin())) return forbidden();
+  const parsed = adminCouponViewSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "We couldn't load the filters." };
+  const view = parsed.data;
   try {
     const vendors = await prisma.vendor.findMany({ where: { coupons: { some: VIEW_WHERE[view] } }, orderBy: { storeName: "asc" }, select: { id: true, storeName: true } });
     return { success: true, data: { vendors: vendors.map((v) => ({ id: v.id, label: v.storeName })) } };

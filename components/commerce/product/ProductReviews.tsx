@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { BadgeCheck, Star } from "lucide-react";
 import Image from "next/image";
 import { StarRating } from "@/components/commerce/StarRating";
 import type { ReviewSummary } from "@/lib/storefront";
@@ -30,8 +30,8 @@ function ago(iso: string) {
 
 /**
  * Reviews tab (Product Detail Page design + PRD FR-S19): average score, stars, per-star distribution and
- * the reviews (avatar, name, date, rating, text, photos). Renders from ReviewSummary, so it shows real
- * reviews as soon as getProductReviews returns them (TODO(reviews) there). Empty → "No reviews yet".
+ * the reviews (avatar, name, "Verified purchase", date, rating, title, text, photos). Only APPROVED
+ * reviews reach it (getProductReviews). Empty → "No reviews yet".
  */
 export function ProductReviews({ summary }: { summary: ReviewSummary }) {
   if (summary.count === 0) {
@@ -80,12 +80,17 @@ export function ProductReviews({ summary }: { summary: ReviewSummary }) {
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2.5">
                 <span className="text-sm font-bold text-fg-strong">{r.author}</span>
+                <span className="inline-flex items-center gap-1 text-caption font-semibold text-success-600">
+                  <BadgeCheck aria-hidden className="size-3.5" strokeWidth={2.2} />
+                  Verified purchase
+                </span>
                 <time dateTime={r.createdAt} className="ml-auto text-caption text-fg-subtle">
                   {ago(r.createdAt)}
                 </time>
               </div>
               <StarRating value={r.rating} className="my-1.5" />
-              <p className="text-sm leading-relaxed text-pretty text-fg">{r.body}</p>
+              {r.title && <p className="mb-0.5 text-sm font-bold text-fg-strong">{r.title}</p>}
+              <p className="text-sm leading-relaxed text-pretty whitespace-pre-line text-fg">{r.body}</p>
               {r.photos.length > 0 && (
                 <ul aria-label="Review photos" className="mt-3 flex flex-wrap gap-2">
                   {r.photos.map((src) => (

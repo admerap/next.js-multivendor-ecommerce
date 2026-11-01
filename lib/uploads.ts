@@ -15,7 +15,7 @@ import { PRODUCT_IMAGE_MAX_BYTES } from "@/lib/validations/product";
  */
 
 const PUBLIC_DIR = path.join(process.cwd(), "public");
-type Folder = "brands" | "categories" | "vendors" | "products";
+type Folder = "brands" | "categories" | "vendors" | "products" | "users" | "reviews";
 const dirOf = (folder: Folder) => path.join(PUBLIC_DIR, "uploads", folder);
 const prefixOf = (folder: Folder) => `/uploads/${folder}/`;
 const STORED_NAME = /^[0-9a-f-]{36}\.(jpg|png|webp)$/;
@@ -91,6 +91,14 @@ export const deleteCategoryImage = (publicPath: string | null | undefined) => de
 /** Vendor images: 1 MB by default (Add New Vendor); the vendor profile passes its own 2 MB limit. */
 export const saveVendorImage = (file: File, maxBytes = VENDOR_FILE_MAX_BYTES) => saveImage(file, "vendors", maxBytes);
 export const deleteVendorImage = (publicPath: string | null | undefined) => deleteImage(publicPath, "vendors");
+
+/** Customer profile photo (user.dashboard design). */
+export const saveUserImage = (file: File, maxBytes: number) => saveImage(file, "users", maxBytes);
+export const deleteUserImage = (publicPath: string | null | undefined) => deleteImage(publicPath, "users");
+
+/** Customer review photos (order details › Reviews). */
+export const saveReviewImage = (file: File, maxBytes: number) => saveImage(file, "reviews", maxBytes);
+export const deleteReviewImage = (publicPath: string | null | undefined) => deleteImage(publicPath, "reviews");
 
 /** Product thumbnail, gallery and variation images (vendoraddproduct design: max 1 MB). */
 export const saveProductImage = (file: File) => saveImage(file, "products", PRODUCT_IMAGE_MAX_BYTES);

@@ -4,6 +4,7 @@ import { DENY_REASON_MAX } from "@/lib/validations/admin-product";
 /** The three admin Coupon Manage lists (routes /admin/coupons/<view>). */
 const ADMIN_COUPON_VIEWS = ["pending", "approved", "denied"] as const;
 export type AdminCouponView = (typeof ADMIN_COUPON_VIEWS)[number];
+export const adminCouponViewSchema = z.enum(ADMIN_COUPON_VIEWS);
 
 const id = z.string().trim().min(1).max(40);
 

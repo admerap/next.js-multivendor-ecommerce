@@ -90,7 +90,7 @@ export function ProductHero({ product: p }: { product: QuickViewProduct }) {
             size="lg"
             disabled={!s.canBuy}
             onClick={() => {
-              if (s.addToCart()) router.push("/cart");
+              if (s.addToCart()) router.push("/checkout");
             }}
             className="flex-1 sm:flex-none"
           >
