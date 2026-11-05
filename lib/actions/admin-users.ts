@@ -9,7 +9,9 @@ import { covers, toPermissions } from "@/lib/permissions";
 import { deleteUserImage, saveUserImage, UploadError } from "@/lib/uploads";
 import { createStaffUserSchema, STAFF_IMAGE_MAX_BYTES, staffImageSchema, updateStaffUserSchema, userIdSchema } from "@/lib/validations/admin-user";
 
-export type StaffUserResult = { success: true; name: string } | { success: false; error: string; fieldErrors?: Record<string, string> };
+export type StaffUserResult =
+  | { success: true; name: string; /** restore: their role was deleted meanwhile, so they came back with none */ roleCleared?: boolean }
+  | { success: false; error: string; fieldErrors?: Record<string, string> };
 
 const FORBIDDEN: StaffUserResult = { success: false, error: "You don't have access to do that." };
 const NO_PERMISSION: StaffUserResult = noPermissionResult;
@@ -232,11 +234,16 @@ export async function restoreStaffUserAction(input: unknown): Promise<StaffUserR
   const parsed = userIdSchema.safeParse(input);
   if (!parsed.success) return GONE;
   try {
-    const user = await prisma.user.findFirst({ where: { id: parsed.data.id, role: "ADMIN", deletedAt: { not: null } }, select: { name: true } });
+    const user = await prisma.user.findFirst({
+      where: { id: parsed.data.id, role: "ADMIN", deletedAt: { not: null } },
+      select: { name: true, adminRole: { select: { deletedAt: true } } },
+    });
     if (!user) return GONE;
-    await prisma.user.update({ where: { id: parsed.data.id }, data: { deletedAt: null, deletedById: null } });
+    // A role deleted while they were away can't come back with them: they return with no role (no access).
+    const roleCleared = !!user.adminRole?.deletedAt;
+    await prisma.user.update({ where: { id: parsed.data.id }, data: { deletedAt: null, deletedById: null, ...(roleCleared && { adminRoleId: null }) } });
     refresh();
-    return { success: true, name: user.name };
+    return { success: true, name: user.name, roleCleared };
   } catch (error) {
     console.error("[admin-users] restore failed", error instanceof Error ? error.name : error);
     return { success: false, error: "We couldn't restore the user. Please try again." };

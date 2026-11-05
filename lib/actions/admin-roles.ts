@@ -182,7 +182,7 @@ export async function deleteRoleAction(input: unknown): Promise<RoleResult> {
         error: `“${role.name}” is a system role and can't be deleted.`,
       };
     const users = await prisma.user.count({
-      where: { adminRoleId: parsed.data.id },
+      where: { adminRoleId: parsed.data.id, deletedAt: null }, // deleted users don't hold it up (they come back with no role)
     });
     if (users > 0) return { success: false, error: inUse(role.name, users) };
     // Only flip it if it's still live and unassigned (a delete racing a delete or an assignment → GONE / refused).
@@ -191,7 +191,7 @@ export async function deleteRoleAction(input: unknown): Promise<RoleResult> {
         id: parsed.data.id,
         deletedAt: null,
         isSystem: false,
-        users: { none: {} },
+        users: { none: { deletedAt: null } },
       },
       data: { deletedAt: new Date(), deletedById: me.userId },
     });

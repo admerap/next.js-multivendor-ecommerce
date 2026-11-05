@@ -5,22 +5,29 @@ import { adminOrderStatusCounts } from "@/lib/admin-orders.server";
 import { getAccess, readableModules } from "@/lib/access.server";
 import { requireArea } from "@/lib/auth-guard";
 import { prisma } from "@/lib/db";
+import { noOrders } from "@/lib/orders";
+import type { PermissionModule } from "@/lib/permissions";
 
 /** Admin frame (admindashboard design). Server-side role check; proxy.ts does the same optimistically. */
 export default async function AdminPanelLayout({ children }: { children: ReactNode }) {
   const user = await requireArea("ADMIN");
   const access = await getAccess();
+  // Sidebar counts only for the modules this role can open: the others are neither queried nor sent to the
+  // browser (they'd travel in the page even with the menu item hidden). The Setup Guide (Super Admin) needs all.
+  const can = (m: PermissionModule) => !!access?.permissions[m].read;
+  const zero = <T,>(v: T) => Promise.resolve(v);
+  const noGroups: { approvalStatus: string; _count: { _all: number } }[] = [];
   const [customers, pendingVendors, approvedStores, brands, productsByStatus, featured, popular, couponsByStatus, orders, pendingReviews] = await Promise.all([
-    prisma.user.count({ where: { role: "CUSTOMER" } }),
-    prisma.vendor.count({ where: { status: "PENDING" } }),
-    prisma.vendor.count({ where: { status: "APPROVED" } }),
-    prisma.brand.count(),
-    prisma.product.groupBy({ by: ["approvalStatus"], _count: { _all: true } }),
-    prisma.product.count({ where: { isFeatured: true } }),
-    prisma.product.count({ where: { isPopular: true } }),
-    prisma.coupon.groupBy({ by: ["approvalStatus"], _count: { _all: true } }),
-    adminOrderStatusCounts(), // Order Manage: orders per overall status
-    prisma.review.count({ where: { status: "PENDING" } }), // Review Manage: reviews waiting for moderation
+    can("customers") ? prisma.user.count({ where: { role: "CUSTOMER" } }) : zero(0),
+    can("vendors") ? prisma.vendor.count({ where: { status: "PENDING" } }) : zero(0),
+    access?.isSuper ? prisma.vendor.count({ where: { status: "APPROVED" } }) : zero(0),
+    access?.isSuper ? prisma.brand.count() : zero(0),
+    can("products") ? prisma.product.groupBy({ by: ["approvalStatus"], _count: { _all: true } }) : zero(noGroups),
+    can("products") ? prisma.product.count({ where: { isFeatured: true } }) : zero(0),
+    can("products") ? prisma.product.count({ where: { isPopular: true } }) : zero(0),
+    can("coupons") ? prisma.coupon.groupBy({ by: ["approvalStatus"], _count: { _all: true } }) : zero(noGroups),
+    can("orders") ? adminOrderStatusCounts() : zero(noOrders()), // Order Manage: orders per overall status
+    can("reviews") ? prisma.review.count({ where: { status: "PENDING" } }) : zero(0), // Review Manage: reviews waiting for moderation
   ]);
   // Sidebar list sizes — the same filters the Product / Coupon Manage pages use.
   const byStatus = (rows: { approvalStatus: string; _count: { _all: number } }[]) => {
@@ -50,7 +57,12 @@ export default async function AdminPanelLayout({ children }: { children: ReactNo
 
   return (
     <AdminShell
-      user={{ name: access?.name ?? user.name ?? "Admin", email: access?.email ?? user.email ?? "", role: access?.roleName ?? "No role", image: access?.image ?? null }}
+      user={{
+        name: access?.name ?? user.name ?? "Admin",
+        email: access?.email ?? user.email ?? "",
+        role: access?.roleName ?? "No role",
+        image: access?.image ?? null,
+      }}
       readable={readableModules(access)}
       permissions={access?.permissions}
       counts={{ orders, pendingVendors, products, coupons, reviews: { pending: pendingReviews }, customers }}

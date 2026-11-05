@@ -2,6 +2,7 @@ import "server-only";
 
 import bcrypt from "bcryptjs";
 import { signOut } from "@/auth";
+import { clearFailures, lockedFor, lockedMessage, recordFailure } from "@/lib/attempts.server";
 import { prisma } from "@/lib/db";
 import { vendorPasswordSchema as changePasswordSchema } from "@/lib/validations/vendor-profile";
 
@@ -34,14 +35,20 @@ export async function changeOwnPassword(userId: string, input: unknown, logTag: 
     return { success: false, error: first ?? "Please check the highlighted fields", fieldErrors };
   }
   const { oldPassword, newPassword } = parsed.data;
+  // Five wrong current passwords in 15 minutes lock this form for a while (lib/attempts.server).
+  const key = `pw:${userId}`;
+  const wait = lockedFor(key);
+  if (wait) return { success: false, error: lockedMessage(wait), fieldErrors: { oldPassword: lockedMessage(wait) } };
 
   try {
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { passwordHash: true } });
     if (!user) return { success: false, error: SESSION_EXPIRED };
 
     if (!(await bcrypt.compare(oldPassword, user.passwordHash))) {
+      recordFailure(key);
       return { success: false, error: WRONG_OLD, fieldErrors: { oldPassword: WRONG_OLD } };
     }
+    clearFailures(key);
 
     await prisma.user.update({ where: { id: userId }, data: { passwordHash: await bcrypt.hash(newPassword, 12) } });
   } catch (error) {

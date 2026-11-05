@@ -39,6 +39,7 @@ export function UserActions({ user, roles, viewer }: { user: AdminUserRow; roles
           return;
         }
         toast.success(done(res.name));
+        if (res.roleCleared) toast(`${res.name}'s role was deleted, so they're back with no role. Give them one with Edit.`, { icon: "⚠️", duration: 6000 });
         setDialog(null);
         router.refresh();
       } catch {

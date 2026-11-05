@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, Contact, ImagePlus, Mail, Phone, Save, ShieldCheck, Trash2, Undo2, UserRound } from "lucide-react";
+import { Camera, Contact, ImagePlus, Mail, Phone, Save, ShieldCheck, Trash2, TriangleAlert, Undo2, UserRound, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useState, useTransition } from "react";
@@ -9,13 +9,14 @@ import { ChatAvatar } from "@/components/chat/ChatAvatar";
 import { ariaFor, Field } from "@/components/forms/FormBits";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { updateMyProfileAction } from "@/lib/actions/admin-profile";
 import { cn } from "@/lib/utils";
 import { STAFF_IMAGE_TYPES, staffImageSchema, staffProfileSchema } from "@/lib/validations/admin-user";
 
 type Values = { firstName: string; lastName: string; phone: string; email: string };
-type Key = keyof Values | "image";
+type Key = keyof Values | "image" | "currentPassword";
 
 /**
  * Admin › Profile. Left, always shown whichever tab is open: a read-only summary card — iris banner, the photo,
@@ -53,6 +54,7 @@ export function AdminProfile({
   const [errors, setErrors] = useState<Partial<Record<Key, string>>>({});
   const [file, setFile] = useState<File | null>(null);
   const [removeImage, setRemoveImage] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
   const [pending, start] = useTransition();
   const base = useId();
   const fid = (k: Key) => `${base}-${k}`;
@@ -61,8 +63,26 @@ export function AdminProfile({
   useEffect(() => () => void (preview && URL.revokeObjectURL(preview)), [preview]);
   const shown = removeImage ? null : (preview ?? image);
   const photoChanged = !!file || removeImage;
+  // A new email (the sign-in name) needs the current password — asked right under the Email field.
+  const emailChanged = values.email.trim().toLowerCase() !== saved.email.trim().toLowerCase();
   const dirty = photoChanged || (Object.keys(values) as (keyof Values)[]).some((k) => values[k] !== saved[k]);
   const fullName = [values.firstName, values.lastName].filter(Boolean).join(" ") || "Your name";
+
+  // Unsaved edits are never lost silently: switching tab asks first (leaveTo = the tab waiting to open), and
+  // reloading or closing the page shows the browser's own warning.
+  const [leaveTo, setLeaveTo] = useState<string | null>(null);
+  const guardTabs = (e: React.MouseEvent) => {
+    const link = (e.target as HTMLElement).closest("a");
+    if (!dirty || !link || link.getAttribute("aria-current") === "page") return;
+    e.preventDefault();
+    setLeaveTo(link.getAttribute("href"));
+  };
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
 
   const set = (k: keyof Values, v: string) => {
     setValues((s) => ({ ...s, [k]: v }));
@@ -84,6 +104,7 @@ export function AdminProfile({
     setFile(null);
     setRemoveImage(false);
     setErrors({});
+    setCurrentPassword("");
   };
 
   const save = (e: React.FormEvent) => {
@@ -98,6 +119,7 @@ export function AdminProfile({
     }
     const form = new FormData();
     for (const [k, v] of Object.entries(values)) form.set(k, v);
+    if (emailChanged) form.set("currentPassword", currentPassword);
     if (file) form.set("image", file);
     else if (removeImage) form.set("removeImage", "1");
     start(async () => {
@@ -115,6 +137,7 @@ export function AdminProfile({
       setSaved(values);
       setFile(null);
       setRemoveImage(false);
+      setCurrentPassword("");
       router.refresh();
     });
   };
@@ -203,7 +226,9 @@ export function AdminProfile({
 
       {/* Right: one card — the tabs are its header; below them the panel they pick (form or password). */}
       <section aria-label={tab === "password" ? "Change Password" : "Profile Information"} className="flex min-w-0 flex-col rounded-lg bg-card shadow-sm">
-        <div className="border-b border-line px-5 py-3.5 sm:px-7">{tabs}</div>
+        <div className="border-b border-line px-5 py-3.5 sm:px-7" onClickCapture={guardTabs}>
+          {tabs}
+        </div>
         {tab === "password" ? (
           passwordPanel
         ) : (
@@ -287,6 +312,27 @@ export function AdminProfile({
                 <>
                   {text("email", "Email", { type: "email", autoComplete: "email", placeholder: "you@sundry.com" })}
                   {text("phone", "Phone", { type: "tel", autoComplete: "tel", inputMode: "tel", placeholder: "+1 415 555 0100" })}
+                  {emailChanged && (
+                    <Field
+                      id={fid("currentPassword")}
+                      label="Current password"
+                      required
+                      error={errors.currentPassword}
+                      hint="You sign in with your email, so changing it needs your password"
+                    >
+                      <Input
+                        {...ariaFor(fid("currentPassword"), errors.currentPassword)}
+                        type="password"
+                        autoComplete="current-password"
+                        value={currentPassword}
+                        onChange={(e) => {
+                          setCurrentPassword(e.target.value);
+                          setErrors((x) => ({ ...x, currentPassword: undefined }));
+                        }}
+                        placeholder="Enter your current password"
+                      />
+                    </Field>
+                  )}
                 </>,
               )}
             </div>
@@ -311,6 +357,35 @@ export function AdminProfile({
           </form>
         )}
       </section>
+
+      <Dialog open={!!leaveTo} onOpenChange={(o) => !o && setLeaveTo(null)}>
+        <DialogContent className="sm:w-[min(460px,calc(100vw-32px))]" aria-describedby={undefined}>
+          <span className="mb-4 grid size-14 place-items-center rounded-full bg-warning-50 text-warning-600">
+            <TriangleAlert aria-hidden className="size-7" strokeWidth={1.8} />
+          </span>
+          <DialogTitle>Leave without saving?</DialogTitle>
+          <DialogDescription>Your changes to Profile Information haven&apos;t been saved and will be lost.</DialogDescription>
+          <div className="mt-6 flex flex-col-reverse gap-2.5 sm:flex-row sm:justify-end">
+            <Button type="button" variant="secondary" onClick={() => setLeaveTo(null)}>
+              <Undo2 aria-hidden />
+              Keep editing
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              onClick={() => {
+                const href = leaveTo;
+                setLeaveTo(null);
+                discard();
+                if (href) router.push(href);
+              }}
+            >
+              <X aria-hidden />
+              Discard changes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

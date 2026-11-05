@@ -70,7 +70,7 @@ export async function listAdminRoles(params: AdminRoleListParams) {
       isActive: true,
       isSystem: true,
       deletedAt: true,
-      _count: { select: { users: true } },
+      _count: { select: { users: { where: { deletedAt: null } } } }, // live users only
       permissions: {
         select: {
           module: true,

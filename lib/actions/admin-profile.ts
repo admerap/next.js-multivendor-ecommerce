@@ -1,8 +1,10 @@
 "use server";
 
+import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { unstable_update } from "@/auth";
 import { getAccess } from "@/lib/access.server";
+import { clearFailures, lockedFor, lockedMessage, recordFailure } from "@/lib/attempts.server";
 import { prisma } from "@/lib/db";
 import { changeOwnPassword, SESSION_EXPIRED, type PasswordActionResult } from "@/lib/password.server";
 import { deleteUserImage, saveUserImage, UploadError } from "@/lib/uploads";
@@ -15,6 +17,7 @@ const EMAIL_TAKEN = "An account with this email already exists";
 
 /**
  * Admin › Profile › Save: the signed-in admin's OWN name, phone, email and photo — the id comes from the session,
+ * a new email also needs the current password —
  * never from the form, and no permission is needed (everyone may keep their own profile up to date). Role and
  * status aren't here: whoever manages users sets those. The photo is optional, checked by its bytes, and the old
  * file is deleted once the row points at the new one.
@@ -42,10 +45,24 @@ export async function updateMyProfileAction(form: FormData): Promise<ProfileResu
 
   let saved: string | null = null;
   try {
-    const current = await prisma.user.findUnique({ where: { id: me.userId }, select: { image: true } });
+    const current = await prisma.user.findUnique({ where: { id: me.userId }, select: { image: true, email: true, passwordHash: true } });
     if (!current) return { success: false, error: SESSION_EXPIRED };
     // Emails stay unique across live and deleted accounts.
     if (await prisma.user.count({ where: { email, NOT: { id: me.userId } } })) return { success: false, error: CHECK, fieldErrors: { email: EMAIL_TAKEN } };
+    // Changing the email (the sign-in name) needs the current password, so an unattended open session can't
+    // hand the account to someone else. Wrong guesses count toward the same lock as Change Password.
+    if (email !== current.email) {
+      const key = `pw:${me.userId}`;
+      const wait = lockedFor(key);
+      if (wait) return { success: false, error: lockedMessage(wait), fieldErrors: { currentPassword: lockedMessage(wait) } };
+      const typed = String(form.get("currentPassword") ?? "");
+      if (!typed) return { success: false, error: CHECK, fieldErrors: { currentPassword: "Enter your current password to change your email" } };
+      if (!(await bcrypt.compare(typed, current.passwordHash))) {
+        recordFailure(key);
+        return { success: false, error: CHECK, fieldErrors: { currentPassword: "Current password is incorrect" } };
+      }
+      clearFailures(key);
+    }
     if (photo?.success) saved = await saveUserImage(photo.data, STAFF_IMAGE_MAX_BYTES);
     await prisma.user.update({
       where: { id: me.userId },
