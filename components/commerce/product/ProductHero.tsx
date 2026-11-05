@@ -110,7 +110,7 @@ export function ProductHero({ product: p }: { product: QuickViewProduct }) {
           </Button>
           <button
             type="button"
-            onClick={() => toast.success(wishlist.toggle(p.id) ? "Saved to your wishlist" : "Removed from your wishlist")}
+            onClick={() => wishlist.toggle(p.id)}
             aria-pressed={wished}
             aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
             className={cn(

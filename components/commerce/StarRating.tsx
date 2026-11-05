@@ -5,7 +5,11 @@ import { cn } from "@/lib/utils";
 export function StarRating({ value, count, size = "sm", className }: { value: number; count?: number; size?: "sm" | "lg"; className?: string }) {
   const filled = Math.round(value);
   return (
-    <span className={cn("inline-flex items-center gap-1.5", className)} aria-label={count ? `Rated ${value.toFixed(1)} out of 5 from ${count} reviews` : "No reviews yet"}>
+    <span
+      className={cn("inline-flex items-center gap-1.5", className)}
+      // Without a count (e.g. the product hero, which prints it separately) a rated product still says its rating.
+      aria-label={count ? `Rated ${value.toFixed(1)} out of 5 from ${count} reviews` : value > 0 ? `Rated ${value.toFixed(1)} out of 5` : "No reviews yet"}
+    >
       <span aria-hidden className="inline-flex gap-px">
         {[1, 2, 3, 4, 5].map((i) => (
           <Star key={i} className={cn(size === "lg" ? "size-4.5" : "size-3.5", "text-rating", i <= filled ? "fill-current" : "opacity-40")} strokeWidth={1.5} />

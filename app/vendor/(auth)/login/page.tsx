@@ -3,11 +3,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SundryLogo } from "@/components/auth/SundryLogo";
 import { VendorLoginForm } from "@/components/auth/VendorLoginForm";
+import { expiredReason } from "@/lib/session-policy";
 
 export const metadata: Metadata = { title: "Vendor Sign In" };
 
 export default async function VendorLoginPage({ searchParams }: PageProps<"/vendor/login">) {
-  const { callbackUrl } = await searchParams;
+  const { callbackUrl, expired, reset } = await searchParams;
 
   return (
     <main className="flex min-h-dvh flex-wrap content-start bg-card md:content-stretch">
@@ -40,7 +41,7 @@ export default async function VendorLoginPage({ searchParams }: PageProps<"/vend
         <div className="w-full max-w-[520px]">
           <h2 className="font-display text-h2 font-extrabold tracking-[-0.02em] text-fg-strong">Sign in</h2>
           <p className="mt-1.5 mb-7 text-base font-semibold text-fg">Welcome back to Vendor Login</p>
-          <VendorLoginForm callbackUrl={typeof callbackUrl === "string" ? callbackUrl : undefined} />
+          <VendorLoginForm callbackUrl={typeof callbackUrl === "string" ? callbackUrl : undefined} expired={expiredReason(expired)} passwordReset={reset === "1"} />
           <p className="mt-7 text-center text-caption text-fg-muted">
             Shopping instead?{" "}
             <Link href="/login" className="font-semibold">

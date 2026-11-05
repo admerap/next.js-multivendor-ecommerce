@@ -4,30 +4,38 @@ import { Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { BrandRow } from "@/app/admin/(panel)/brands/actions";
+import { useCan } from "@/components/admin/AdminPermissions";
 import { Button } from "@/components/ui/button";
 import { BrandFormDialog } from "./BrandFormDialog";
 import { DeleteBrandDialog } from "./DeleteBrandDialog";
 
-/** Edit + Delete buttons on the brand detail page (delete returns to the list). */
+/** Edit + Delete buttons on the brand detail page (delete returns to the list), each per the role's permission. */
 export function BrandDetailActions({ brand }: { brand: BrandRow }) {
   const router = useRouter();
   const [dialog, setDialog] = useState<null | "edit" | "delete">(null);
   const [instance, setInstance] = useState(0);
+  const canUpdate = useCan("brands", "update");
+  const canDelete = useCan("brands", "delete");
   const open = (d: "edit" | "delete") => {
     setInstance((n) => n + 1);
     setDialog(d);
   };
+  if (!canUpdate && !canDelete) return null;
 
   return (
     <div className="flex flex-wrap gap-2.5">
-      <Button type="button" variant="secondary" onClick={() => open("edit")}>
-        <Pencil aria-hidden />
-        Edit
-      </Button>
-      <Button type="button" variant="danger" onClick={() => open("delete")}>
-        <Trash2 aria-hidden />
-        Delete
-      </Button>
+      {canUpdate && (
+        <Button type="button" variant="secondary" onClick={() => open("edit")}>
+          <Pencil aria-hidden />
+          Edit
+        </Button>
+      )}
+      {canDelete && (
+        <Button type="button" variant="danger" onClick={() => open("delete")}>
+          <Trash2 aria-hidden />
+          Delete
+        </Button>
+      )}
       {dialog === "edit" && (
         <BrandFormDialog key={`e${instance}`} brand={brand} open onOpenChange={(o) => !o && setDialog(null)} />
       )}

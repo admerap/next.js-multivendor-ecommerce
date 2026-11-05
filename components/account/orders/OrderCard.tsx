@@ -1,9 +1,9 @@
 import { Eye, ShoppingBag, Store, Truck } from "lucide-react";
 import Link from "next/link";
-import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
+import { OrderProgressNote, OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 import { Button } from "@/components/ui/button";
 import { money } from "@/lib/money";
-import { accountOrderHref, PAYMENT_METHOD_LABEL, PAYMENT_STATUS_LABEL } from "@/lib/orders";
+import { accountOrderHref, PAYMENT_METHOD_LABEL, PAYMENT_STATUS_LABEL, trackOrderHref } from "@/lib/orders";
 import type { CustomerOrderRow } from "@/lib/orders.server";
 import { OrderActionsMenu } from "./OrderActionsMenu";
 
@@ -22,6 +22,7 @@ export function OrderCard({ order: o }: { order: CustomerOrderRow }) {
           <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
             <h2 className="text-base font-bold text-fg-strong tabular-nums">Order #{o.orderNumber}</h2>
             <OrderStatusBadge status={o.status} />
+            <OrderProgressNote note={o.progressNote} />
           </div>
           <p className="mt-1 text-sm text-fg-muted">
             <b className="font-semibold text-fg-strong tabular-nums">{o.itemCount}</b> {o.itemCount === 1 ? "Product" : "Products"}
@@ -50,7 +51,7 @@ export function OrderCard({ order: o }: { order: CustomerOrderRow }) {
       </div>
       <div className="flex justify-end gap-2.5 border-t border-line bg-sunken px-5 py-3.5 max-sm:grid max-sm:grid-cols-2 max-sm:px-4">
         <Button asChild variant="secondary">
-          <Link href={`${accountOrderHref(o.orderNumber)}?tab=track`}>
+          <Link href={trackOrderHref(o.orderNumber)}>
             <Truck aria-hidden />
             Track Order
           </Link>

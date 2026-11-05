@@ -4,6 +4,7 @@ import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useId, useState, useTransition } from "react";
 import toast from "react-hot-toast";
+import { useCan } from "@/components/admin/AdminPermissions";
 import { setProductFlag } from "@/app/admin/(panel)/products/actions";
 import { cn } from "@/lib/utils";
 
@@ -37,7 +38,10 @@ export function ProductFlagToggle({
   const descId = useId();
   const [on, setOn] = useState(checked);
   const [pending, startTransition] = useTransition();
-  const locked = !approved && !on;
+  // Featured / Popular need Products › Update (and an APPROVED product to switch on).
+  const canUpdate = useCan("products", "update");
+  const locked = !canUpdate || (!approved && !on);
+  const lockedWhy = !canUpdate ? "Your role can't change this" : "Approve the product first";
 
   function toggle() {
     const next = !on;
@@ -78,7 +82,7 @@ export function ProductFlagToggle({
         role="checkbox"
         aria-checked={on}
         aria-label={`${LABELS[flag]}: ${name}`}
-        title={locked ? "Approve the product first" : LABELS[flag]}
+        title={locked ? lockedWhy : LABELS[flag]}
         disabled={locked || pending}
         onClick={toggle}
         className="grid size-9 place-items-center rounded-md hover:bg-hover disabled:cursor-not-allowed disabled:opacity-50 max-lg:size-11"
@@ -107,7 +111,7 @@ export function ProductFlagToggle({
         <span className="text-sm font-bold text-fg-strong">{LABELS[flag]}</span>
         {(description || locked) && (
           <span id={descId} className="text-caption text-fg-muted">
-            {locked ? "Approve the product to enable it." : description}
+            {locked ? (canUpdate ? "Approve the product to enable it." : "Your role can't change this.") : description}
           </span>
         )}
       </span>

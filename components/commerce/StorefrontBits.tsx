@@ -43,7 +43,7 @@ export function HelpCards({ className = "pt-8" }: { className?: string }) {
         {HELP.map(({ icon: Icon, title, text }) => (
           <li key={title}>
             <Link
-              href="/account/support"
+              href="/dashboard/support"
               className="flex h-full flex-col items-center gap-2 rounded-lg bg-card px-5 py-8 text-center shadow-sm transition-[box-shadow,transform] duration-(--dur-med) ease-out hover:-translate-y-1 hover:shadow-lg"
             >
               <span className="mb-1 grid size-14 place-items-center rounded-full bg-iris-50">

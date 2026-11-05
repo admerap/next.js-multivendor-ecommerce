@@ -4,6 +4,7 @@ import { Check, MessageSquareText, Star, X } from "lucide-react";
 import Image from "next/image";
 import { useState, useTransition } from "react";
 import toast from "react-hot-toast";
+import { useCan } from "@/components/admin/AdminPermissions";
 import { EmptyState } from "@/components/data/DashCard";
 import { ApprovalBadge } from "@/components/products/ApprovalBadge";
 import { Button } from "@/components/ui/button";
@@ -21,11 +22,15 @@ const when = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", 
 export function ProductReviewsModeration({ reviews }: { reviews: AdminProductReview[] }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [, start] = useTransition();
+  const canUpdate = useCan("reviews", "update"); // Approve / Deny need Reviews › Update
 
   function decide(id: string, decision: "APPROVED" | "REJECTED") {
     setBusy(id);
     start(async () => {
-      const res = await moderateReviewAction({ id, decision }).catch(() => ({ success: false as const, error: "We couldn't reach the server. Please try again." }));
+      const res = await moderateReviewAction({ id, decision }).catch(() => ({
+        success: false as const,
+        error: "We couldn't reach the server. Please try again.",
+      }));
       setBusy(null);
       if (!res.success) {
         toast.error(res.error);
@@ -42,11 +47,20 @@ export function ProductReviewsModeration({ reviews }: { reviews: AdminProductRev
   return (
     <ul className="flex flex-col gap-3.5">
       {reviews.map((r) => (
-        <li key={r.id} aria-label={`Review by ${r.customerName}`} className={cn("rounded-md border p-4", r.status === "PENDING" ? "border-warning-500/40 bg-warning-50/40" : "border-line")}>
+        <li
+          key={r.id}
+          aria-label={`Review by ${r.customerName}`}
+          className={cn("rounded-md border p-4", r.status === "PENDING" ? "border-warning-500/40 bg-warning-50/40" : "border-line")}
+        >
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
             <span className="inline-flex gap-0.5" role="img" aria-label={`${r.rating} out of 5 stars`}>
               {[1, 2, 3, 4, 5].map((n) => (
-                <Star key={n} aria-hidden className={cn("size-4", n <= r.rating ? "fill-warning-500 text-warning-500" : "text-line-default")} strokeWidth={1.6} />
+                <Star
+                  key={n}
+                  aria-hidden
+                  className={cn("size-4", n <= r.rating ? "fill-warning-500 text-warning-500" : "text-line-default")}
+                  strokeWidth={1.6}
+                />
               ))}
             </span>
             <ApprovalBadge status={r.status} />
@@ -68,20 +82,29 @@ export function ProductReviewsModeration({ reviews }: { reviews: AdminProductRev
               ))}
             </ul>
           )}
-          <div className="mt-3.5 flex flex-wrap gap-2.5">
-            {r.status !== "APPROVED" && (
-              <Button type="button" size="sm" disabled={busy === r.id} onClick={() => decide(r.id, "APPROVED")} className="max-lg:h-11">
-                <Check aria-hidden />
-                Approve
-              </Button>
-            )}
-            {r.status !== "REJECTED" && (
-              <Button type="button" size="sm" variant="secondary" disabled={busy === r.id} onClick={() => decide(r.id, "REJECTED")} className="text-error-600 hover:border-error-500 max-lg:h-11">
-                <X aria-hidden />
-                Deny
-              </Button>
-            )}
-          </div>
+          {canUpdate && (
+            <div className="mt-3.5 flex flex-wrap gap-2.5">
+              {r.status !== "APPROVED" && (
+                <Button type="button" size="sm" disabled={busy === r.id} onClick={() => decide(r.id, "APPROVED")} className="max-lg:h-11">
+                  <Check aria-hidden />
+                  Approve
+                </Button>
+              )}
+              {r.status !== "REJECTED" && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  disabled={busy === r.id}
+                  onClick={() => decide(r.id, "REJECTED")}
+                  className="text-error-600 hover:border-error-500 max-lg:h-11"
+                >
+                  <X aria-hidden />
+                  Deny
+                </Button>
+              )}
+            </div>
+          )}
         </li>
       ))}
     </ul>

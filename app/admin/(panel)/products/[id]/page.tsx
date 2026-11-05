@@ -22,7 +22,7 @@ import {
   shortDate,
   VideoCard,
 } from "@/components/products/detail/ProductDetailSections";
-import { requireArea } from "@/lib/auth-guard";
+import { requirePermission } from "@/lib/access.server";
 import { getAdminProductDetail, type ProductDetail } from "@/lib/product-detail.server";
 import { adminProductReviews } from "@/lib/reviews.server";
 import { adminProductIdSchema } from "@/lib/validations/admin-product";
@@ -69,7 +69,7 @@ function MerchandisingCard({ p }: { p: ProductDetail }) {
  * Deny (reason for the store), Delete, and the Featured / Most Popular placement flags.
  */
 export default async function AdminProductDetailsPage({ params }: PageProps<"/admin/products/[id]">) {
-  await requireArea("ADMIN");
+  await requirePermission("products");
   const parsed = adminProductIdSchema.safeParse(await params);
   if (!parsed.success) notFound();
   const p = await getAdminProductDetail(parsed.data.id);

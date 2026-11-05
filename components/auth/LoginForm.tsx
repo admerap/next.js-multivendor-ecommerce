@@ -1,20 +1,27 @@
 "use client";
 
 import { LogIn, Lock, Mail } from "lucide-react";
+import Link from "next/link";
 import { loginAction } from "@/lib/actions/auth";
+import type { ExpiredReason } from "@/lib/session-policy";
 import { loginSchema } from "@/lib/validations/auth";
 import { AuthField, PasswordField } from "./AuthField";
 import { FormAlert } from "./FormAlert";
+import { SessionExpiredNotice } from "./SessionExpiredNotice";
 import { SubmitButton } from "./SubmitButton";
 import { useAuthForm } from "./useAuthForm";
 
-/** Email + password form used by the customer and admin sign-in cards. */
-export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
+/**
+ * Email + password form used by the customer and admin sign-in cards. `area` picks the "Forgot password?" page
+ * (its back link and wording); `expired` / `passwordReset` show why they're here.
+ */
+export function LoginForm({ callbackUrl, expired, passwordReset, area = "customer" }: { callbackUrl?: string; expired?: ExpiredReason; passwordReset?: boolean; area?: "customer" | "admin" }) {
   const form = useAuthForm({ email: "", password: "" });
   const { values, errors } = form;
 
   return (
     <>
+      {!form.formError && <SessionExpiredNotice reason={expired} passwordReset={passwordReset} />}
       {form.formError && <FormAlert message={form.formError} />}
       <form
         noValidate
@@ -47,6 +54,9 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
           onChange={(e) => form.set("password", e.target.value)}
           error={errors.password}
         />
+        <Link href={`/forgot-password?area=${area}`} className="-mt-1 inline-flex items-center self-end text-sm font-semibold max-lg:min-h-11">
+          Forgot password?
+        </Link>
         <div className="mt-1">
           <SubmitButton pending={form.pending} icon={LogIn} pendingLabel="Signing in…">
             Sign In

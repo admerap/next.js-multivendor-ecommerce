@@ -5,7 +5,17 @@ import type { CartLineInput, CartQuote, ShippingMethod } from "@/lib/checkout";
 import { quoteCart } from "@/lib/checkout.server";
 import { prisma } from "@/lib/db";
 import { VISIBLE } from "@/lib/storefront.server";
-import { canCustomerCancel, customerOrderStatus, ORDER_STATUSES, statusFromSlug, type OrderStatusKey } from "@/lib/orders";
+import {
+  canceledPartsTotal,
+  canCustomerCancel,
+  canCustomerCancelPart,
+  CUSTOMER_CANCELABLE,
+  customerOrderStatus,
+  ORDER_STATUSES,
+  orderProgressNote,
+  statusFromSlug,
+  type OrderStatusKey,
+} from "@/lib/orders";
 import { CUSTOMER_ORDERS_PAGE_SIZE, type CustomerOrderListParams } from "@/lib/validations/customer-orders";
 import type { CheckoutAddresses } from "@/lib/validations/checkout";
 
@@ -65,7 +75,8 @@ function quoteProblem(quote: CartQuote, input: PlaceOrderInput): PlaceOrderError
 }
 
 export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResult> {
-  const quote = await quoteCart(input.lines, { coupons: input.coupons, userId: input.customerId, shippingMethod: input.shippingMethod });
+  const ship = input.addresses.shipping;
+  const quote = await quoteCart(input.lines, { coupons: input.coupons, userId: input.customerId, shippingMethod: input.shippingMethod, shipTo: { country: ship.country, state: ship.state ?? "" } });
   const problem = quoteProblem(quote, input);
   if (problem) return { ok: false, ...problem };
 
@@ -113,6 +124,8 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
             paymentMethod: input.paymentMethod,
             paymentStatus,
             shippingMethod: quote.shippingMethod,
+            taxRate: quote.taxRegion?.rate ?? 0,
+            taxRegion: quote.taxRegion?.region ?? null,
             shipName: shipping.name,
             shipPhone: shipping.phone,
             shipEmail: shipping.email,
@@ -156,6 +169,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
                 commission: Math.round(((s.subtotal - s.discount) * DEFAULT_COMMISSION_BP) / 10_000),
                 couponId: s.coupon?.couponId ?? null,
                 couponCode: s.coupon?.code ?? null,
+                events: { create: { status: "PENDING", actorRole: "CUSTOMER", actorId: input.customerId } },
                 items: {
                   create: s.lines
                     .filter((l) => l.available)
@@ -192,12 +206,13 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
 
 // ── Reading an order back (confirmation page, invoice) ──
 
-const ORDER_VIEW = {
+export const ORDER_VIEW = {
   storeOrders: {
     orderBy: { createdAt: "asc" },
     include: {
       vendor: { select: { id: true, storeName: true, slug: true, logo: true, storeAddress: true, status: true } },
       items: { orderBy: { productName: "asc" } },
+      events: { orderBy: { createdAt: "asc" }, select: { status: true, actorRole: true, createdAt: true } },
     },
   },
 } satisfies Prisma.OrderInclude;
@@ -228,6 +243,8 @@ export type CustomerOrderRow = {
   /** first item images (cards show a small strip) */
   images: string[];
   canCancel: boolean;
+  /** "2 of 3 delivered" when sellers are at different steps */
+  progressNote: string | null;
 };
 
 export type CustomerOrderList = {
@@ -259,7 +276,7 @@ export async function listCustomerOrders(customerId: string, params: CustomerOrd
       paymentStatus: true,
       storeOrders: {
         orderBy: { createdAt: "asc" },
-        select: { status: true, vendor: { select: { storeName: true } }, items: { select: { qty: true, image: true, productName: true } } },
+        select: { status: true, total: true, vendor: { select: { storeName: true } }, items: { select: { qty: true, image: true, productName: true } } },
       },
     },
   });
@@ -273,7 +290,7 @@ export async function listCustomerOrders(customerId: string, params: CustomerOrd
     return {
       orderNumber: o.orderNumber,
       createdAt: o.createdAt,
-      total: o.total,
+      total: o.total - canceledPartsTotal(o.storeOrders), // what's still due when some sellers were canceled
       status: customerOrderStatus(statuses),
       paymentMethod: o.paymentMethod,
       paymentStatus: o.paymentStatus,
@@ -281,6 +298,7 @@ export async function listCustomerOrders(customerId: string, params: CustomerOrd
       sellers: o.storeOrders.map((s) => s.vendor.storeName),
       images: items.flatMap((i) => (i.image ? [i.image] : [])).slice(0, 4),
       canCancel: canCustomerCancel(statuses),
+      progressNote: orderProgressNote(statuses),
     };
   });
 
@@ -305,61 +323,101 @@ export async function listCustomerOrders(customerId: string, params: CustomerOrd
   };
 }
 
-export type CancelOrderResult = { ok: true } | { ok: false; error: string };
+export type CancelOrderResult = { ok: true; storeName?: string } | { ok: false; error: string };
+
+/**
+ * Order.paymentStatus as the roll-up of its sellers' parts (each COD part is paid on its own delivery):
+ * PAID once every part still live (not canceled) is paid, UNPAID otherwise. REFUNDED is left alone —
+ * it's set by the refund flow, not derived. Call inside the transaction that changed a part.
+ */
+export async function rollUpPayment(tx: Prisma.TransactionClient, orderId: string) {
+  const order = await tx.order.findUnique({ where: { id: orderId }, select: { paymentStatus: true, storeOrders: { select: { status: true, paymentStatus: true } } } });
+  if (!order || order.paymentStatus === "REFUNDED") return;
+  const live = order.storeOrders.filter((s) => s.status !== "CANCELED");
+  const next = live.length > 0 && live.every((s) => s.paymentStatus === "PAID") ? "PAID" : "UNPAID";
+  if (next !== order.paymentStatus) await tx.order.update({ where: { id: orderId }, data: { paymentStatus: next } });
+}
+
+/** What a canceled StoreOrder needs to hand back (select these fields). */
+export const CANCEL_GIVE_BACK = {
+  couponId: true,
+  items: { select: { productId: true, variationId: true, qty: true, product: { select: { productType: true } } } },
+} satisfies Prisma.StoreOrderSelect;
+type GiveBackPart = Prisma.StoreOrderGetPayload<{ select: typeof CANCEL_GIVE_BACK }>;
+
+/**
+ * Inside the cancel transaction (customer or seller): stock back to each product / variation and one
+ * use back to each store coupon. Call only after the parts were flipped to CANCELED in the same tx.
+ */
+export async function giveBackCanceled(tx: Prisma.TransactionClient, parts: GiveBackPart[]) {
+  for (const item of parts.flatMap((p) => p.items)) {
+    // Digital lines never took stock; a deleted product / variation has nothing to give back.
+    if (!item.productId || !item.product || item.product.productType === "DIGITAL") continue;
+    if (item.variationId) {
+      await tx.productVariation.updateMany({ where: { id: item.variationId }, data: { stock: { increment: item.qty } } });
+    }
+    await tx.product.update({ where: { id: item.productId }, data: { stock: { increment: item.qty } } });
+  }
+  for (const p of parts) {
+    if (p.couponId) await tx.coupon.updateMany({ where: { id: p.couponId, usedCount: { gt: 0 } }, data: { usedCount: { decrement: 1 } } });
+  }
+}
 
 /**
  * Customer cancels THEIR order while no seller has started packing (every live part PENDING /
- * CONFIRMED). One transaction: the parts flip to CANCELED only if they're still in those statuses (a
- * seller moving it on at the same moment wins), then the stock and coupon redemptions taken at
- * placement are given back. The order record itself always stays.
+ * CONFIRMED) — or, with `storeOrderId`, just one seller's part while that part is PENDING / CONFIRMED
+ * (the other sellers carry on). One transaction: the parts flip to CANCELED only if they're still in
+ * those statuses (a seller moving it on at the same moment wins), then the stock and coupon
+ * redemptions taken at placement are given back. The order record itself always stays.
  */
-export async function cancelCustomerOrder(orderNumber: number, customerId: string): Promise<CancelOrderResult> {
+export async function cancelCustomerOrder(orderNumber: number, customerId: string, storeOrderId?: string): Promise<CancelOrderResult> {
   const order = await prisma.order.findFirst({
     where: { orderNumber, customerId },
-    select: {
-      id: true,
-      storeOrders: {
-        select: {
-          id: true,
-          status: true,
-          couponId: true,
-          items: { select: { productId: true, variationId: true, qty: true, product: { select: { productType: true } } } },
-        },
-      },
-    },
+    select: { id: true, storeOrders: { select: { id: true, status: true, vendor: { select: { storeName: true } }, ...CANCEL_GIVE_BACK } } },
   });
   if (!order) return { ok: false, error: "We couldn't find that order." };
-  if (!canCustomerCancel(order.storeOrders.map((s) => s.status))) {
-    return { ok: false, error: "This order can't be canceled any more — a seller has already started preparing it." };
+  const statuses = order.storeOrders.map((s) => s.status);
+
+  let parts: typeof order.storeOrders;
+  if (storeOrderId) {
+    const part = order.storeOrders.find((s) => s.id === storeOrderId);
+    if (!part) return { ok: false, error: "We couldn't find that order." };
+    if (!canCustomerCancelPart(statuses, part.status)) {
+      return {
+        ok: false,
+        error:
+          part.status === "CANCELED"
+            ? "These items were already canceled."
+            : CUSTOMER_CANCELABLE.includes(part.status)
+              ? "These are the last items left in this order — cancel the whole order instead."
+              : `These items can't be canceled any more — ${part.vendor.storeName} has already started preparing them.`,
+      };
+    }
+    parts = [part];
+  } else {
+    if (!canCustomerCancel(statuses)) return { ok: false, error: "This order can't be canceled any more — a seller has already started preparing it." };
+    parts = order.storeOrders.filter((s) => s.status !== "CANCELED");
   }
-  const parts = order.storeOrders.filter((s) => s.status !== "CANCELED");
 
   try {
     await prisma.$transaction(async (tx) => {
       const flipped = await tx.storeOrder.updateMany({
-        where: { id: { in: parts.map((p) => p.id) }, status: { in: ["PENDING", "CONFIRMED"] } },
+        where: { id: { in: parts.map((p) => p.id) }, status: { in: CUSTOMER_CANCELABLE } },
         data: { status: "CANCELED" },
       });
-      if (flipped.count !== parts.length) throw new Abort({ code: "CART_CHANGED", message: "A seller just started preparing this order, so it can't be canceled now." });
-
-      for (const item of parts.flatMap((p) => p.items)) {
-        // Digital lines never took stock; a deleted product / variation has nothing to give back.
-        if (!item.productId || !item.product || item.product.productType === "DIGITAL") continue;
-        if (item.variationId) {
-          await tx.productVariation.updateMany({ where: { id: item.variationId }, data: { stock: { increment: item.qty } } });
-        }
-        await tx.product.update({ where: { id: item.productId }, data: { stock: { increment: item.qty } } });
+      if (flipped.count !== parts.length) {
+        throw new Abort({ code: "CART_CHANGED", message: storeOrderId ? "The seller just started preparing these items, so they can't be canceled now." : "A seller just started preparing this order, so it can't be canceled now." });
       }
-      for (const p of parts) {
-        if (p.couponId) await tx.coupon.updateMany({ where: { id: p.couponId, usedCount: { gt: 0 } }, data: { usedCount: { decrement: 1 } } });
-      }
+      await tx.storeOrderStatusEvent.createMany({ data: parts.map((p) => ({ storeOrderId: p.id, status: "CANCELED" as const, actorRole: "CUSTOMER" as const, actorId: customerId })) });
+      await giveBackCanceled(tx, parts);
+      await rollUpPayment(tx, order.id);
     });
   } catch (error) {
     if (error instanceof Abort) return { ok: false, error: error.detail.message };
     console.error("[orders] cancel failed:", error instanceof Prisma.PrismaClientKnownRequestError ? error.code : error instanceof Error ? error.name : "unknown");
     return { ok: false, error: "We couldn't cancel this order. Please try again." };
   }
-  return { ok: true };
+  return { ok: true, storeName: storeOrderId ? parts[0]!.vendor.storeName : undefined };
 }
 
 /** "Hide from my orders" / undo — only the customer's own list changes; the order stays for everyone else. */

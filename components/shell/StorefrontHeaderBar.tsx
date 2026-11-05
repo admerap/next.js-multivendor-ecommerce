@@ -28,7 +28,7 @@ import { CategoryLinkList, CategoryMegaMenu, MobileCategoryPanel } from "@/compo
 import { useCart } from "@/components/commerce/CartProvider";
 import type { CategoryNode } from "@/lib/catalog";
 import { MiniCart } from "@/components/commerce/MiniCart";
-import { useWishlist } from "@/components/commerce/wishlist";
+import { useWishlist, useWishlistViewer } from "@/components/commerce/wishlist";
 import { signOutAction } from "@/lib/actions/auth";
 import { money } from "@/lib/money";
 import { useBodyScrollLock, useMediaQuery } from "@/lib/hooks";
@@ -47,12 +47,12 @@ const NAV_LINKS = [
 /** Mobile drawer › My Account: the full account menu (on phones it's the only way around the account). */
 const ACCOUNT_LINKS: { label: string; href: string; icon: LucideIcon }[] = [
   { label: "Profile Info", href: "/dashboard", icon: User },
-  { label: "Change Password", href: "/account/change-password", icon: KeyRound },
-  { label: "My Orders", href: "/account/orders", icon: ShoppingBag },
-  { label: "Wish List", href: "/account/wishlist", icon: Heart },
-  { label: "Track Order", href: "/account/track-order", icon: Truck },
-  { label: "Inbox", href: "/account/inbox", icon: Inbox },
-  { label: "Support Ticket", href: "/account/support", icon: Headphones },
+  { label: "Change Password", href: "/dashboard/change-password", icon: KeyRound },
+  { label: "My Orders", href: "/dashboard/orders", icon: ShoppingBag },
+  { label: "Wish List", href: "/dashboard/wishlist", icon: Heart },
+  { label: "Track Order", href: "/dashboard/track-order", icon: Truck },
+  { label: "Inbox", href: "/dashboard/inbox", icon: Inbox },
+  { label: "Support Ticket", href: "/dashboard/support", icon: Headphones },
 ];
 
 /**
@@ -61,8 +61,8 @@ const ACCOUNT_LINKS: { label: string; href: string; icon: LucideIcon }[] = [
  * account sidebar.
  */
 const ACCOUNT_MENU: { label: string; href: string; icon: LucideIcon }[] = [
-  { label: "My Orders", href: "/account/orders", icon: ShoppingBag },
-  { label: "Change Password", href: "/account/change-password", icon: KeyRound },
+  { label: "My Orders", href: "/dashboard/orders", icon: ShoppingBag },
+  { label: "Change Password", href: "/dashboard/change-password", icon: KeyRound },
 ];
 
 export type HeaderUser = { name: string; email: string; home: string; isCustomer: boolean } | null;
@@ -77,6 +77,7 @@ export function StorefrontHeaderBar({ user, categories }: { user: HeaderUser; ca
   const desktop = useMediaQuery("(min-width: 1025px)");
   const cart = useCart();
   const wishlist = useWishlist();
+  useWishlistViewer(user?.email ?? null); // sign-in / sign-out → reload whose hearts these are
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [mobileSearch, setMobileSearch] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -124,10 +125,10 @@ export function StorefrontHeaderBar({ user, categories }: { user: HeaderUser; ca
             +1 (800) 555-0142
           </span>
           <div className="flex items-center gap-5">
-            <Link href="/account/track-order" className="inline-flex h-full items-center !text-fg-subtle hover:!text-on-primary max-lg:min-h-11">
+            <Link href="/dashboard/track-order" className="inline-flex h-full items-center !text-fg-subtle hover:!text-on-primary max-lg:min-h-11">
               Track order
             </Link>
-            <Link href="/account/support" className="inline-flex h-full items-center !text-fg-subtle hover:!text-on-primary max-lg:min-h-11">
+            <Link href="/dashboard/support" className="inline-flex h-full items-center !text-fg-subtle hover:!text-on-primary max-lg:min-h-11">
               Help Center
             </Link>
             <Link href="/vendor/login" className="flex items-center gap-1.5 font-semibold !text-accent hover:!text-saffron-50 max-lg:min-h-11">
@@ -199,7 +200,7 @@ export function StorefrontHeaderBar({ user, categories }: { user: HeaderUser; ca
             </button>
 
             <Link
-              href="/account/wishlist"
+              href="/dashboard/wishlist"
               aria-label={`Wishlist, ${wishlist.count} ${wishlist.count === 1 ? "item" : "items"}`}
               className="flex min-h-11 flex-col items-center justify-center rounded-md px-2.5 !text-fg hover:!text-primary sm:px-3"
             >
@@ -457,7 +458,7 @@ export function StorefrontHeaderBar({ user, categories }: { user: HeaderUser; ca
                     {label}
                   </Link>
                 ))}
-                <Link href="/account/support" className={menuItem}>
+                <Link href="/dashboard/support" className={menuItem}>
                   <Headphones aria-hidden className="size-5" strokeWidth={1.8} />
                   Help Center
                 </Link>

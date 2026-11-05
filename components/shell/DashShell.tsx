@@ -1,20 +1,9 @@
 "use client";
 
-import {
-  ChevronDown,
-  ChevronRight,
-  ChevronsLeft,
-  Ellipsis,
-  KeyRound,
-  LogOut,
-  Maximize,
-  Menu,
-  Search,
-  UserCog,
-  type LucideIcon,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, ChevronsLeft, Ellipsis, KeyRound, LogOut, Maximize, Menu, Search, UserCog, UserRound, type LucideIcon } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { signOutAction } from "@/lib/actions/auth";
 import { useBodyScrollLock, useMediaQuery } from "@/lib/hooks";
@@ -74,8 +63,7 @@ const railLabel = (label: string, count?: number, tone?: Tone) => (isAlert(count
 
 type Overlay = null | "drawer" | "profile" | "theme" | "more" | "search";
 
-const iconBtn =
-  "grid size-10 place-items-center rounded-md text-fg transition-colors duration-(--dur-fast) hover:bg-hover hover:text-primary max-lg:size-11";
+const iconBtn = "grid size-10 place-items-center rounded-md text-fg transition-colors duration-(--dur-fast) hover:bg-hover hover:text-primary max-lg:size-11";
 
 function initials(name: string) {
   return name
@@ -86,14 +74,36 @@ function initials(name: string) {
     .join("");
 }
 
+/** The account button's picture: the photo when there is one, else the initials (the parent draws the disc). */
+function Avatar({ name, image, size }: { name: string; image?: string | null; size: number }) {
+  if (!image) return <>{initials(name)}</>;
+  return (
+    <span className="absolute inset-0 overflow-hidden rounded-full">
+      <Image src={image} alt="" fill sizes={`${size}px`} className="object-cover" />
+    </span>
+  );
+}
+
 const pathOf = (href: string) => href.split("?")[0]!;
 
 /** The nav href that best matches the current path (exact, else longest parent), so detail pages keep their section lit. */
 function activeHref(pathname: string, nav: NavGroup[]) {
   const paths = nav.flatMap((g) => g.items.flatMap((i) => (i.children ? i.children.map((c) => pathOf(c.href)) : [pathOf(i.href)])));
-  return paths
-    .filter((p) => pathname === p || pathname.startsWith(`${p}/`))
-    .sort((a, b) => b.length - a.length)[0];
+  return paths.filter((p) => pathname === p || pathname.startsWith(`${p}/`)).sort((a, b) => b.length - a.length)[0];
+}
+
+const queryOf = (href: string) => new URLSearchParams(href.split("?")[1] ?? "");
+
+/**
+ * Whether a group child is the current page: same path, and the same value for every query filter its
+ * siblings on that path use — so on /vendor/orders "All Orders" (no ?status) and "Pending"
+ * (?status=pending) never light up together.
+ */
+function isChildOn(href: string, siblings: NavChild[], current: string | undefined, params: URLSearchParams) {
+  if (pathOf(href) !== current) return false;
+  const own = queryOf(href);
+  const keys = new Set(siblings.filter((s) => pathOf(s.href) === current).flatMap((s) => [...queryOf(s.href).keys()]));
+  return [...keys].every((k) => params.get(k) === own.get(k));
 }
 
 export function DashShell(props: Parameters<typeof DashShellFrame>[0]) {
@@ -123,8 +133,11 @@ function DashShellFrame({
   /** Admin launch checklist shown as the pinned "Setup Guide" at the bottom of the sidebar. */
   setupSteps?: SetupStep[];
   crumb: string;
-  user: { name: string; email: string; subtitle: string };
-  profileLinks: { settings: string; password: string };
+  /** `image`: the signed-in person's photo (initials when there is none) */
+  user: { name: string; email: string; subtitle: string; image?: string | null };
+  /** Account menu links; leave one out while its page doesn't exist (the menu then shows only what does). */
+  /** Account menu links: `profile` ("Profile", admin), `settings` ("Profile Settings", vendor), `password`. */
+  profileLinks: { profile?: string; settings?: string; password?: string };
   /** Header icon links (e.g. View storefront, New orders). */
   quickLinks: { label: string; href: string; icon: LucideIcon }[];
   withSearch?: boolean;
@@ -133,11 +146,15 @@ function DashShellFrame({
   children: ReactNode;
 }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const accountLinks = [
+    { label: "Profile", href: profileLinks.profile, icon: UserRound },
+    { label: "Profile Settings", href: profileLinks.settings, icon: UserCog },
+    { label: "Change Password", href: profileLinks.password, icon: KeyRound },
+  ].filter((l): l is { label: string; href: string; icon: LucideIcon } => !!l.href);
   const trail = useBreadcrumbs();
   const current = activeHref(pathname, nav);
-  const parentOfCurrent = nav
-    .flatMap((g) => g.items)
-    .find((i) => i.children?.some((c) => pathOf(c.href) === current))?.label;
+  const parentOfCurrent = nav.flatMap((g) => g.items).find((i) => i.children?.some((c) => pathOf(c.href) === current))?.label;
   // Accordion: only one collapsible group is open at a time; opening one closes the others.
   const [openParent, setOpenParent] = useState<string | null>(parentOfCurrent ?? null);
   const toggleParent = (label: string) => setOpenParent((o) => (o === label ? null : label));
@@ -170,7 +187,8 @@ function DashShellFrame({
       if (e.key === "Escape") setOverlay(null);
       if (withSearch && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        if (window.innerWidth <= 1440) setOverlay("search"); // the inline pill only exists from 2xl (1441px)
+        if (window.innerWidth <= 1440)
+          setOverlay("search"); // the inline pill only exists from 2xl (1441px)
         else searchRef.current?.focus();
       }
     };
@@ -240,7 +258,7 @@ function DashShellFrame({
                       {open && (
                         <ul className="mt-0.5 mb-1 ml-5.5 flex flex-col gap-0.5 border-l border-line pl-2.5">
                           {children.map((c) => {
-                            const on = pathOf(c.href) === current;
+                            const on = isChildOn(c.href, children, current, searchParams);
                             return (
                               <li key={c.href}>
                                 <Link
@@ -401,9 +419,17 @@ function DashShellFrame({
                 <Ellipsis aria-hidden className="size-5" strokeWidth={1.9} />
               </button>
               {overlay === "more" && (
-                <div role="menu" className="absolute top-[calc(100%+8px)] right-0 z-50 flex w-[min(260px,calc(100vw-24px))] flex-col gap-0.5 rounded-lg border border-line bg-card p-1.5 shadow-xl">
+                <div
+                  role="menu"
+                  className="absolute top-[calc(100%+8px)] right-0 z-50 flex w-[min(260px,calc(100vw-24px))] flex-col gap-0.5 rounded-lg border border-line bg-card p-1.5 shadow-xl"
+                >
                   {quickLinks.map(({ label, href, icon: Icon }) => (
-                    <Link key={label} href={href} role="menuitem" className="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-semibold !text-fg hover:bg-sunken">
+                    <Link
+                      key={label}
+                      href={href}
+                      role="menuitem"
+                      className="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-semibold !text-fg hover:bg-sunken"
+                    >
                       <Icon aria-hidden className="size-5" strokeWidth={1.9} />
                       {label}
                     </Link>
@@ -427,7 +453,7 @@ function DashShellFrame({
                 )}
               >
                 <span className="relative grid size-9 place-items-center rounded-full bg-iris-50 text-caption font-bold text-primary">
-                  {initials(user.name)}
+                  <Avatar name={user.name} image={user.image} size={36} />
                   <span aria-hidden className="absolute right-0 bottom-0 size-2.5 rounded-full border-2 border-card bg-success-500" />
                 </span>
                 <span className="hidden flex-col items-start leading-tight whitespace-nowrap min-[1101px]:flex">
@@ -445,27 +471,35 @@ function DashShellFrame({
               {overlay === "profile" && (
                 <div role="menu" className="absolute top-[calc(100%+10px)] right-0 z-50 w-65 overflow-hidden rounded-lg border border-line bg-card shadow-xl">
                   <div className="flex items-center gap-3 border-b border-line bg-sunken p-4">
-                    <span className="grid size-10.5 shrink-0 place-items-center rounded-full bg-iris-50 text-sm font-bold text-primary">
-                      {initials(user.name)}
+                    <span className="relative grid size-10.5 shrink-0 place-items-center overflow-hidden rounded-full bg-iris-50 text-sm font-bold text-primary">
+                      <Avatar name={user.name} image={user.image} size={42} />
                     </span>
                     <span className="min-w-0">
                       <span className="block text-sm font-bold text-fg-strong">{user.name}</span>
                       <span className="block truncate text-caption text-fg-muted">{user.email}</span>
                     </span>
                   </div>
-                  <div className="p-1.5">
-                    {[
-                      { label: "Profile Settings", href: profileLinks.settings, icon: UserCog },
-                      { label: "Change Password", href: profileLinks.password, icon: KeyRound },
-                    ].map(({ label, href, icon: Icon }) => (
-                      <Link key={label} href={href} role="menuitem" className="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-semibold !text-fg hover:bg-iris-50 hover:!text-primary">
-                        <Icon aria-hidden className="size-[18px]" strokeWidth={1.9} />
-                        {label}
-                      </Link>
-                    ))}
-                  </div>
-                  <form action={signOutAction} className="border-t border-line p-1.5">
-                    <button type="submit" role="menuitem" className="flex min-h-11 w-full items-center gap-3 rounded-md px-3 text-sm font-semibold text-error-600 hover:bg-error-50">
+                  {accountLinks.length > 0 && (
+                    <div className="border-b border-line p-1.5">
+                      {accountLinks.map(({ label, href, icon: Icon }) => (
+                        <Link
+                          key={label}
+                          href={href}
+                          role="menuitem"
+                          className="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-semibold !text-fg hover:bg-iris-50 hover:!text-primary"
+                        >
+                          <Icon aria-hidden className="size-[18px]" strokeWidth={1.9} />
+                          {label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                  <form action={signOutAction} className="p-1.5">
+                    <button
+                      type="submit"
+                      role="menuitem"
+                      className="flex min-h-11 w-full items-center gap-3 rounded-md px-3 text-sm font-semibold text-error-600 hover:bg-error-50"
+                    >
                       <LogOut aria-hidden className="size-[18px]" strokeWidth={1.9} />
                       Log Out
                     </button>
@@ -577,4 +611,3 @@ function MobileThemeRow() {
     </div>
   );
 }
-

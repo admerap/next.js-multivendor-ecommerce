@@ -6,7 +6,7 @@ import { LoginForm } from "@/components/auth/LoginForm";
 export const metadata: Metadata = { title: "Sign In" };
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
-  const { callbackUrl } = await searchParams;
+  const { callbackUrl, reset } = await searchParams;
 
   return (
     <AuthSplit
@@ -21,7 +21,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         </>
       }
     >
-      <LoginForm callbackUrl={typeof callbackUrl === "string" ? callbackUrl : undefined} />
+      <LoginForm callbackUrl={typeof callbackUrl === "string" ? callbackUrl : undefined} passwordReset={reset === "1"} />
     </AuthSplit>
   );
 }

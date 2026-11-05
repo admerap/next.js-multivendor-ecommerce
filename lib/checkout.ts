@@ -9,10 +9,19 @@ export const SHIPPING_METHODS = ["STANDARD", "EXPRESS"] as const;
 export type ShippingMethod = (typeof SHIPPING_METHODS)[number];
 /** Express surcharge per store that ships something physical, on top of its normal shipping. */
 export const EXPRESS_FEE_CENTS = 999;
-export const SHIPPING_METHOD_INFO: Record<ShippingMethod, { label: string; eta: string }> = {
-  STANDARD: { label: "Standard Delivery", eta: "5–7 business days" },
-  EXPRESS: { label: "Express Delivery", eta: "1–3 business days" },
+/** `days`: the business-day window behind `eta` (used for the estimated delivery date on tracking). */
+export const SHIPPING_METHOD_INFO: Record<ShippingMethod, { label: string; eta: string; days: readonly [number, number] }> = {
+  STANDARD: { label: "Standard Delivery", eta: "5–7 business days", days: [5, 7] },
+  EXPRESS: { label: "Express Delivery", eta: "1–3 business days", days: [1, 3] },
 };
+
+/** Where the order ships — decides the sales tax (country as on the address form, state / province code). */
+export type ShipTo = { country: string; state: string };
+
+/** Sales-tax rate in thousandths of a percent (6350 = 6.35%, 6875 = 6.875%) → "6.35%" / "6.875%". */
+export const formatTaxRate = (rate: number) => `${Number((rate / 1000).toFixed(3))}%`;
+/** "Tax (CT 6.35%)" — or plain "Tax" when no rate applies. */
+export const taxLabel = (region: string | null | undefined, rate: number) => (region && rate > 0 ? `Tax (${region} ${formatTaxRate(rate)})` : "Tax");
 
 /** What the browser sends: a cart line key, the product / variation and the wanted quantity. */
 export type CartLineInput = { id: string; productId: string; variationId?: string | null; qty: number };
@@ -93,6 +102,10 @@ export type CartQuote = {
   shippingOptions: Record<ShippingMethod, number>;
   /** at least one physical item → a delivery method applies (digital-only orders don't ship) */
   needsShipping: boolean;
+  /** the destination's sales tax (null = no destination given yet, or no rate for it) */
+  taxRegion: { region: string; rate: number } | null;
+  /** no destination yet (cart step): tax is "Calculated at shipping" and isn't in the total */
+  taxPending: boolean;
   freeShippingThreshold: number;
   /** lines that need the shopper's attention (unavailable, out of stock, quantity changed) */
   issueCount: number;

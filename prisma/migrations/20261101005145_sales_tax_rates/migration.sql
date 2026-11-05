@@ -1,0 +1,71 @@
+-- AlterTable
+ALTER TABLE `order` ADD COLUMN `taxRate` INTEGER NOT NULL DEFAULT 0,
+    ADD COLUMN `taxRegion` VARCHAR(8) NULL;
+
+-- CreateTable
+CREATE TABLE `TaxRate` (
+    `id` VARCHAR(191) NOT NULL,
+    `country` VARCHAR(60) NOT NULL,
+    `region` VARCHAR(8) NOT NULL,
+    `rate` INTEGER NOT NULL,
+    `isActive` BOOLEAN NOT NULL DEFAULT true,
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `TaxRate_country_region_key`(`country`, `region`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Initial data: statewide BASE sales-tax rates for the 50 states + DC, in thousandths of a percent
+-- (6350 = 6.35%). County / city taxes are not included. Admins can review and edit them (Tax Rates).
+INSERT INTO `TaxRate` (`id`, `country`, `region`, `rate`, `isActive`, `updatedAt`) VALUES
+  ('taxrate_us_al', 'United States', 'AL', 4000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_ak', 'United States', 'AK', 0, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_az', 'United States', 'AZ', 5600, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_ar', 'United States', 'AR', 6500, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_ca', 'United States', 'CA', 7250, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_co', 'United States', 'CO', 2900, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_ct', 'United States', 'CT', 6350, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_de', 'United States', 'DE', 0, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_dc', 'United States', 'DC', 6000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_fl', 'United States', 'FL', 6000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_ga', 'United States', 'GA', 4000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_hi', 'United States', 'HI', 4000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_id', 'United States', 'ID', 6000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_il', 'United States', 'IL', 6250, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_in', 'United States', 'IN', 7000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_ia', 'United States', 'IA', 6000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_ks', 'United States', 'KS', 6500, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_ky', 'United States', 'KY', 6000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_la', 'United States', 'LA', 5000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_me', 'United States', 'ME', 5500, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_md', 'United States', 'MD', 6000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_ma', 'United States', 'MA', 6250, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_mi', 'United States', 'MI', 6000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_mn', 'United States', 'MN', 6875, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_ms', 'United States', 'MS', 7000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_mo', 'United States', 'MO', 4225, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_mt', 'United States', 'MT', 0, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_ne', 'United States', 'NE', 5500, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_nv', 'United States', 'NV', 6850, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_nh', 'United States', 'NH', 0, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_nj', 'United States', 'NJ', 6625, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_nm', 'United States', 'NM', 4875, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_ny', 'United States', 'NY', 4000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_nc', 'United States', 'NC', 4750, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_nd', 'United States', 'ND', 5000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_oh', 'United States', 'OH', 5750, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_ok', 'United States', 'OK', 4500, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_or', 'United States', 'OR', 0, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_pa', 'United States', 'PA', 6000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_ri', 'United States', 'RI', 7000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_sc', 'United States', 'SC', 6000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_sd', 'United States', 'SD', 4200, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_tn', 'United States', 'TN', 7000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_tx', 'United States', 'TX', 6250, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_ut', 'United States', 'UT', 6100, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_vt', 'United States', 'VT', 6000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_va', 'United States', 'VA', 5300, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_wa', 'United States', 'WA', 6500, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_wv', 'United States', 'WV', 6000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_wi', 'United States', 'WI', 5000, true, CURRENT_TIMESTAMP(3)),
+  ('taxrate_us_wy', 'United States', 'WY', 4000, true, CURRENT_TIMESTAMP(3));

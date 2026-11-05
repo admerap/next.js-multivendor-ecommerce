@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { cache } from "react";
 import { categoryHref, subCategoryHref, subSubCategoryHref } from "@/lib/catalog";
 import { prisma } from "@/lib/db";
+import { PUBLISHED_REVIEW } from "@/lib/reviews.server";
 import { htmlToText } from "@/lib/rich-text";
 import { sanitizeDescription } from "@/lib/rich-text.server";
 import {
@@ -343,11 +344,11 @@ const reviewerName = (name: string) => {
 };
 
 /**
- * Reviews tab (PRD FR-S19): ONLY approved reviews — average, per-star distribution and the newest 20.
- * Pending and denied reviews never reach the storefront.
+ * Reviews tab (PRD FR-S19): ONLY published reviews (approved AND not hidden by an admin) — average,
+ * per-star distribution and the newest 20. Pending, denied and hidden reviews never reach the storefront.
  */
 export const getProductReviews = cache(async (productId: string): Promise<ReviewSummary> => {
-  const where = { productId, status: "APPROVED" as const };
+  const where = { productId, ...PUBLISHED_REVIEW };
   const [byStars, rows] = await Promise.all([
     prisma.review.groupBy({ by: ["rating"], where, _count: { _all: true } }),
     prisma.review.findMany({

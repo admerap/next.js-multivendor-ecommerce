@@ -8,9 +8,9 @@ import { CopyOrderId } from "@/components/checkout/CopyOrderId";
 import { pageContainer } from "@/components/commerce/StorefrontBits";
 import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 import { Button } from "@/components/ui/button";
-import { SHIPPING_METHOD_INFO } from "@/lib/checkout";
+import { SHIPPING_METHOD_INFO, taxLabel } from "@/lib/checkout";
 import { money } from "@/lib/money";
-import { addressLines, invoiceHref, orderAddress, orderDate, PAYMENT_METHOD_LABEL } from "@/lib/orders";
+import { addressLines, invoiceHref, orderAddress, orderDate, PAYMENT_METHOD_LABEL, trackOrderHref } from "@/lib/orders";
 import { getCustomerOrder } from "@/lib/orders.server";
 import { productHref, sellerHref } from "@/lib/storefront";
 import { cn } from "@/lib/utils";
@@ -60,7 +60,7 @@ export default async function OrderCompletePage({ searchParams }: Props) {
           </a>
           <div className="mt-8 flex w-full flex-wrap justify-center gap-3">
             <Button asChild size="lg" className="min-w-45 flex-1">
-              <Link href={`/account/track-order?order=${order.orderNumber}`}>
+              <Link href={trackOrderHref(order.orderNumber)}>
                 <Truck aria-hidden />
                 Track Order
               </Link>
@@ -157,7 +157,7 @@ export default async function OrderCompletePage({ searchParams }: Props) {
                 {s.discount > 0 && <Row label={`Discount${s.couponCode ? ` (${s.couponCode})` : ""}`} value={`− ${money(s.discount)}`} tone="success" />}
                 {s.discount === 0 && s.couponCode && <Row label={`Coupon ${s.couponCode}`} value="Free delivery" tone="success" />}
                 <Row label="Shipping" value={s.shipping === 0 ? "Free" : money(s.shipping)} />
-                <Row label="Tax" value={money(s.tax)} />
+                <Row label={taxLabel(order.taxRegion, order.taxRate)} value={money(s.tax)} />
                 <Row label={`${s.vendor.storeName} total`} value={money(s.total)} strong />
               </dl>
             </article>
@@ -168,7 +168,7 @@ export default async function OrderCompletePage({ searchParams }: Props) {
           <Row label="Sub total" value={money(order.subtotal)} />
           <Row label={order.shippingMethod === "EXPRESS" ? "Shipping (Express)" : "Shipping"} value={order.shipping === 0 ? "Free" : money(order.shipping)} />
           <Row label="Discount" value={`− ${money(order.discount)}`} tone="success" />
-          <Row label="Tax" value={money(order.tax)} />
+          <Row label={taxLabel(order.taxRegion, order.taxRate)} value={money(order.tax)} />
           <div aria-hidden className="my-1.5 h-px bg-line" />
           <div className="flex items-baseline justify-between gap-4">
             <dt className="text-[1.06rem] font-bold text-primary">Total</dt>

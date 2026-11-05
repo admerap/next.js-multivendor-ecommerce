@@ -4,9 +4,11 @@ import { Prisma, type VendorStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import type { z } from "zod";
-import { forbiddenResult, isAdmin } from "@/lib/admin-auth";
+import { can } from "@/lib/access.server";
+import { forbiddenResult } from "@/lib/admin-auth";
 import { prisma } from "@/lib/db";
 import { nextFreeSlug, slugify } from "@/lib/slug";
+import { VISIBLE } from "@/lib/storefront.server";
 import { deleteVendorDocument, deleteVendorImage, saveVendorDocument, saveVendorImage, UploadError } from "@/lib/uploads";
 import {
   VENDOR_TRANSITIONS,
@@ -62,23 +64,19 @@ const ROW_SELECT = {
   status: true,
   createdAt: true,
   user: { select: { name: true, email: true } },
+  _count: { select: { storeOrders: true } },
 } satisfies Prisma.VendorSelect;
 
-/**
- * Products per vendor. TODO(catalog): replace with `_count: { select: { products: true } }` once the
- * Product model (with vendorId/storeId) exists. Computed, never stored — 0 until then.
- */
+/** Products per vendor, whatever their review status. Computed, never stored. */
 async function productCounts(vendorIds: string[]): Promise<Map<string, number>> {
-  return new Map(vendorIds.map((id) => [id, 0]));
+  const groups = vendorIds.length ? await prisma.product.groupBy({ by: ["vendorId"], where: { vendorId: { in: vendorIds } }, _count: { _all: true } }) : [];
+  const byId = new Map(groups.map((g) => [g.vendorId, g._count._all]));
+  return new Map(vendorIds.map((id) => [id, byId.get(id) ?? 0]));
 }
 
-/**
- * Active products of one vendor. TODO(catalog): `prisma.product.count({ where: { vendorId, status:
- * "APPROVED", isActive: true } })` once the Product model exists. 0 until then.
- */
+/** Active products of one vendor = the ones shoppers can see on the storefront (approved, switched on, …). */
 async function activeProductCount(vendorId: string): Promise<number> {
-  void vendorId;
-  return 0;
+  return prisma.product.count({ where: { ...VISIBLE, vendorId } });
 }
 
 function toRow(v: Prisma.VendorGetPayload<{ select: typeof ROW_SELECT }>, productsCount: number): VendorRow {
@@ -92,7 +90,7 @@ function toRow(v: Prisma.VendorGetPayload<{ select: typeof ROW_SELECT }>, produc
     phone: v.phone,
     status: v.status,
     productsCount,
-    ordersCount: 0, // TODO(orders): count StoreOrders once the Order models exist
+    ordersCount: v._count.storeOrders,
     createdAt: v.createdAt.toISOString(),
   };
 }
@@ -114,7 +112,7 @@ export async function getVendors(
   params: unknown,
   onlyStatus?: VendorStatus,
 ): Promise<ActionResult<{ items: VendorRow[]; total: number; page: number; pageSize: number; pageCount: number }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("vendors", "read"))) return forbidden();
   const { q, status, sort, page, pageSize } = vendorListSchema.parse(params ?? {});
   const statusFilter = onlyStatus ?? (status === "ALL" ? undefined : status);
 
@@ -150,7 +148,7 @@ export async function getVendors(
 }
 
 export async function getVendor(id: unknown): Promise<ActionResult<VendorDetail | null>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("vendors", "read"))) return forbidden();
   const parsed = vendorIdSchema.safeParse({ id });
   if (!parsed.success) return { success: true, data: null };
 
@@ -199,7 +197,7 @@ export async function getVendor(id: unknown): Promise<ActionResult<VendorDetail 
 
 /** Approve (PENDING/SUSPENDED → APPROVED) or suspend (PENDING/APPROVED → SUSPENDED). */
 export async function changeVendorStatus(input: unknown): Promise<ActionResult<{ status: VendorStatus }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("vendors", "update"))) return forbidden();
   const parsed = vendorStatusActionSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Invalid status change." };
   const { id, action } = parsed.data;
@@ -237,7 +235,7 @@ function invalid<T>(error: z.ZodError): ActionResult<T> {
  * it with the vendor (interim; email invites come later).
  */
 export async function createVendor(formData: FormData): Promise<ActionResult<{ id: string }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("vendors", "create"))) return forbidden();
   const parsed = vendorCreateSchema.safeParse({
     ...Object.fromEntries(
       ["firstName", "lastName", "countryCode", "phone", "email", "password", "confirmPassword", "shopName", "shopAddress", "tinNumber", "tinExpiresAt"].map((k) => [k, formData.get(k) ?? undefined]),

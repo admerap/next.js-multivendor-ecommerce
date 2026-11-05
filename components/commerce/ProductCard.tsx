@@ -3,7 +3,6 @@
 import { Eye, Heart, Package } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import toast from "react-hot-toast";
 import { AddToCartButton } from "@/components/commerce/AddToCartButton";
 import { useQuickView } from "@/components/commerce/QuickView";
 import { StarRating } from "@/components/commerce/StarRating";
@@ -51,8 +50,7 @@ export function ProductCard({ product: p, sizes = "(max-width: 720px) 50vw, (max
         <button
           type="button"
           onClick={() => {
-            const on = wishlist.toggle(p.id);
-            toast.success(on ? "Saved to your wishlist" : "Removed from your wishlist");
+            wishlist.toggle(p.id); // saves / removes, or asks a guest to sign in (toasts included)
           }}
           aria-pressed={wished}
           aria-label={wished ? `Remove ${p.name} from wishlist` : `Add ${p.name} to wishlist`}

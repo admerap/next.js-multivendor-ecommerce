@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { changeVendorStatus } from "@/app/admin/(panel)/vendors/actions";
+import { useCan } from "@/components/admin/AdminPermissions";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { VENDOR_TRANSITIONS, type VendorStatus, type VendorStatusAction } from "@/lib/validations/admin-vendor";
@@ -16,6 +17,7 @@ import { VENDOR_TRANSITIONS, type VendorStatus, type VendorStatusAction } from "
 export function VendorStatusActions({ id, storeName, status }: { id: string; storeName: string; status: VendorStatus }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const canUpdate = useCan("vendors", "update"); // Approve / Suspend need Vendors › Update
   const [running, setRunning] = useState<VendorStatusAction | null>(null);
   const [confirmSuspend, setConfirmSuspend] = useState(false);
   const can = (a: VendorStatusAction) => VENDOR_TRANSITIONS[a].from.includes(status);
@@ -36,6 +38,8 @@ export function VendorStatusActions({ id, storeName, status }: { id: string; sto
   }
 
   const spinner = <span aria-hidden className="size-4 animate-spin rounded-full border-2 border-current/35 border-t-current" />;
+
+  if (!canUpdate) return null;
 
   return (
     <div className="flex flex-wrap gap-2.5">

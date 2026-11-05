@@ -2,6 +2,7 @@
 
 import {
   ArcElement,
+  BarElement,
   CategoryScale,
   Chart as ChartJS,
   Filler,
@@ -13,11 +14,11 @@ import {
   type ScriptableContext,
 } from "chart.js";
 import { useMemo, useRef } from "react";
-import { Doughnut, Line } from "react-chartjs-2";
+import { Bar, Doughnut, Line } from "react-chartjs-2";
 import { useAppliedTheme, useInViewOnce, useReducedMotion } from "@/lib/hooks";
 import { money } from "@/lib/money";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Filler, Tooltip);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Filler, Tooltip);
 
 /** Reads design tokens at render time so charts follow the active theme (DESIGN_SYSTEM §5 Chart). */
 function useTokens(names: string[]) {
@@ -104,7 +105,8 @@ export function LineChart({
       x: { grid: { display: false }, border: { display: false }, ticks: { color: t["--text-muted"], font: { family: "Manrope", size: 12 } } },
       y: {
         beginAtZero: true,
-        suggestedMax: format === "cents" ? 100_000 : 10,
+        // Only an all-zero chart needs a made-up ceiling; real data scales to its own values.
+        suggestedMax: series.every((s) => s.data.every((v) => v === 0)) ? (format === "cents" ? 100_000 : 10) : undefined,
         grid: { color: t["--border-subtle"] },
         border: { display: false },
         ticks: {
@@ -132,18 +134,131 @@ export function LineChart({
   );
 }
 
+/** Shared bar options: staggered growth, tooltip in the series' format, y ticks in $ / counts. */
+function barOptions({ t, dark, reduced, format, empty, stacked = false }: { t: Record<string, string>; dark: boolean; reduced: boolean; format: "count" | "cents"; empty: boolean; stacked?: boolean }): ChartOptions<"bar"> {
+  const fmt = (v: number) => (format === "cents" ? money(v) : v.toLocaleString("en-US"));
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: "index", intersect: false },
+    animation: reduced ? false : { duration: 700, easing: "easeOutCubic", delay: (c) => (c.type === "data" && c.mode === "default" ? c.dataIndex * 45 : 0) },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: dark ? t["--neutral-700"] : t["--neutral-900"],
+        padding: 12,
+        cornerRadius: 10,
+        titleFont: { family: "Manrope", weight: "bold" },
+        bodyFont: { family: "Manrope" },
+        callbacks: { label: (c) => ` ${c.dataset.label}: ${fmt(c.parsed.y ?? 0)}` },
+      },
+    },
+    scales: {
+      x: { stacked, grid: { display: false }, border: { display: false }, ticks: { color: t["--text-muted"], font: { family: "Manrope", size: 12 } } },
+      y: {
+        stacked,
+        beginAtZero: true,
+        suggestedMax: empty ? (format === "cents" ? 100_000 : 10) : undefined,
+        grid: { color: t["--border-subtle"] },
+        border: { display: false },
+        ticks: {
+          color: t["--text-muted"],
+          font: { family: "Manrope", size: 12 },
+          precision: 0,
+          callback: (v) => {
+            const n = Number(v);
+            if (format === "count") return n;
+            const d = n / 100;
+            return d >= 1000 ? `$${d / 1000}k` : `$${d}`;
+          },
+        },
+      },
+    },
+  };
+}
+
+/** Bar chart (one series): bars grow from zero, staggered, on first view and whenever the data change. */
+export function BarChart({
+  labels,
+  data,
+  seriesLabel,
+  format,
+  label,
+  token = "--iris-300",
+  hoverToken = "--color-primary",
+  className,
+}: {
+  labels: string[];
+  data: number[];
+  /** tooltip name of the series, e.g. "Order amount" */
+  seriesLabel: string;
+  format: "count" | "cents";
+  label: string;
+  token?: string;
+  hoverToken?: string;
+  className?: string;
+}) {
+  const box = useRef<HTMLDivElement>(null);
+  const seen = useInViewOnce(box);
+  const reduced = useReducedMotion();
+  const resolvedTheme = useAppliedTheme();
+  const t = useTokens([...BASE_TOKENS, token, hoverToken]);
+  const options = barOptions({ t, dark: resolvedTheme === "dark", reduced, format, empty: data.every((v) => v === 0) });
+
+  return (
+    <div ref={box} className={className}>
+      {seen && (
+        <Bar
+          key={`${resolvedTheme}|${labels.join()}|${data.join()}`}
+          data={{ labels, datasets: [{ label: seriesLabel, data, backgroundColor: t[token], hoverBackgroundColor: t[hoverToken], borderRadius: 6, maxBarThickness: 34 }] }}
+          options={options}
+          aria-label={label}
+        />
+      )}
+    </div>
+  );
+}
+
+export type BarSeries = { label: string; data: number[]; token: string };
+
+/** Stacked bars (several series per bucket, e.g. earnings by source): same entrance as BarChart. */
+export function StackedBarChart({ labels, series, format, label, className }: { labels: string[]; series: BarSeries[]; format: "count" | "cents"; label: string; className?: string }) {
+  const box = useRef<HTMLDivElement>(null);
+  const seen = useInViewOnce(box);
+  const reduced = useReducedMotion();
+  const resolvedTheme = useAppliedTheme();
+  const t = useTokens([...BASE_TOKENS, ...series.map((s) => s.token)]);
+  const options = barOptions({ t, dark: resolvedTheme === "dark", reduced, format, empty: series.every((s) => s.data.every((v) => v === 0)), stacked: true });
+
+  return (
+    <div ref={box} className={className}>
+      {seen && (
+        <Bar
+          key={`${resolvedTheme}|${labels.join()}|${series.map((s) => s.data.join()).join("/")}`}
+          data={{ labels, datasets: series.map((s) => ({ label: s.label, data: s.data, backgroundColor: t[s.token], borderRadius: 4, maxBarThickness: 34 })) }}
+          options={options}
+          aria-label={label}
+        />
+      )}
+    </div>
+  );
+}
+
 /** Doughnut that sweeps in segment by segment. */
 export function DoughnutChart({
   labels,
   data,
   tokens,
   label,
+  format = "count",
   className,
 }: {
   labels: string[];
   data: number[];
   tokens: string[];
   label: string;
+  /** "cents": data are money in cents, shown with money() in the tooltip */
+  format?: "count" | "cents";
   className?: string;
 }) {
   const box = useRef<HTMLDivElement>(null);
@@ -173,7 +288,7 @@ export function DoughnutChart({
         backgroundColor: resolvedTheme === "dark" ? t["--neutral-700"] : t["--neutral-900"],
         padding: 12,
         cornerRadius: 10,
-        callbacks: { label: (c) => ` ${c.label}: ${c.parsed.toLocaleString("en-US")}` },
+        callbacks: { label: (c) => ` ${c.label}: ${format === "cents" ? money(c.parsed) : c.parsed.toLocaleString("en-US")}` },
       },
     },
   };

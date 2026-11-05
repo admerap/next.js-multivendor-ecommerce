@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import type { z } from "zod";
 import { forbiddenResult } from "@/lib/admin-auth";
 import { CATEGORY_PATHS } from "@/lib/categories";
+import { prisma } from "@/lib/db";
 import { nextFreeSlug, slugify } from "@/lib/slug";
 import { fieldErrorsOf } from "@/lib/form-errors";
 
@@ -17,9 +18,10 @@ export type ActionResult<T = undefined> = {
   data?: T;
 };
 
-/** Every action re-checks the role on the server; the page guard is not a security boundary. */
-export { isAdmin } from "@/lib/admin-auth";
-
+/**
+ * Every action re-checks the role's permission on the server (`can("categories", …)`, lib/access.server); the
+ * page guard is not a security boundary. This is what a refusal returns.
+ */
 export const forbidden = <T>(): ActionResult<T> => forbiddenResult("categories");
 
 export function invalid<T>(error: z.ZodError): ActionResult<T> {
@@ -43,13 +45,16 @@ export async function uniqueSlug(name: string, fallback: string, findTaken: (bas
   return nextFreeSlug(base, (await findTaken(base)).map((r) => r.slug));
 }
 
-/**
- * Products per item. TODO(catalog): replace with `_count: { select: { products: true } }` once the
- * Product model (with categoryId / subCategoryId / subSubCategoryId) exists. Computed, never stored.
- * Until then every level has 0 products.
- */
-export async function productCounts(ids: string[]): Promise<Map<string, number>> {
-  return new Map(ids.map((id) => [id, 0]));
+/** Products filed under each category / sub / sub-sub (by that level's column). Computed, never stored. */
+export async function productCounts(ids: string[], level: "categoryId" | "subCategoryId" | "subSubCategoryId"): Promise<Map<string, number>> {
+  const counts = new Map(ids.map((id) => [id, 0]));
+  if (ids.length === 0) return counts;
+  const groups = await prisma.product.groupBy({ by: [level], where: { [level]: { in: ids } }, _count: { _all: true } });
+  for (const g of groups) {
+    const id = g[level];
+    if (id) counts.set(id, g._count._all);
+  }
+  return counts;
 }
 
 export const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;

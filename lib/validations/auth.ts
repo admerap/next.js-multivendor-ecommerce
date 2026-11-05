@@ -60,3 +60,23 @@ export const vendorRegisterSchema = vendorFields.refine(passwordsMatch.check, pa
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CustomerRegisterInput = z.infer<typeof customerRegisterSchema>;
 export type VendorRegisterInput = z.infer<typeof vendorRegisterSchema>;
+
+// ── Password recovery ──────────────────────────────────────────────────────────
+
+/** Which login a "Forgot password?" came from — only decides the back link and copy. */
+export const AUTH_AREAS = ["customer", "vendor", "admin"] as const;
+export type AuthArea = (typeof AUTH_AREAS)[number];
+export const authArea = (v: unknown): AuthArea => (AUTH_AREAS.includes(v as AuthArea) ? (v as AuthArea) : "customer");
+
+export const forgotPasswordSchema = z.object({ email });
+
+/** The raw token from the emailed link: 32 random bytes, base64url (43 chars). */
+export const resetToken = z.string().regex(/^[A-Za-z0-9_-]{43}$/, "This reset link isn't valid");
+
+export const resetPasswordSchema = z
+  .object({
+    token: resetToken,
+    password: passwordRules,
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine(passwordsMatch.check, passwordsMatch.params);

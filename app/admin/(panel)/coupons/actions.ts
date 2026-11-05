@@ -2,8 +2,9 @@
 
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { can } from "@/lib/access.server";
 import { couponStatus, type CouponStatus } from "@/lib/coupons";
-import { forbiddenResult, isAdmin } from "@/lib/admin-auth";
+import { forbiddenResult } from "@/lib/admin-auth";
 import { couponStatusWhere, toDbDate } from "@/lib/coupons.server";
 import { prisma } from "@/lib/db";
 import { adminCouponDenySchema, adminCouponIdSchema, adminCouponListSchema, adminCouponViewSchema, type AdminCouponView } from "@/lib/validations/admin-coupon";
@@ -38,7 +39,6 @@ export type AdminCouponRow = {
   vendor: { id: string; name: string };
 };
 
-
 const forbidden = <T>(): ActionResult<T> => forbiddenResult("coupons");
 const NOT_FOUND = "This coupon no longer exists.";
 
@@ -59,7 +59,7 @@ export async function getAdminCoupons(
   input: unknown,
   view: AdminCouponView,
 ): Promise<ActionResult<{ items: AdminCouponRow[]; total: number; page: number; pageSize: number; pageCount: number }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("coupons", "read"))) return forbidden();
   const { q, vendor, status, page, pageSize } = adminCouponListSchema.parse(input ?? {});
   const today = todayIso();
 
@@ -113,7 +113,7 @@ export async function getAdminCoupons(
 
 /** Vendor options for the list filter: only vendors that have coupons in this list (same shape as getAdminProductFilters). */
 export async function getAdminCouponFilters(input: AdminCouponView): Promise<ActionResult<{ vendors: FilterOption[] }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("coupons", "read"))) return forbidden();
   const parsed = adminCouponViewSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "We couldn't load the filters." };
   const view = parsed.data;
@@ -128,7 +128,7 @@ export async function getAdminCouponFilters(input: AdminCouponView): Promise<Act
 
 /** Approve: the coupon can be redeemed (while the vendor keeps it on and within its dates). */
 export async function approveCoupon(input: unknown): Promise<ActionResult<{ isActive: boolean }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("coupons", "update"))) return forbidden();
   const parsed = adminCouponIdSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Invalid request." };
   const { id } = parsed.data;
@@ -145,7 +145,7 @@ export async function approveCoupon(input: unknown): Promise<ActionResult<{ isAc
 
 /** Deny with a reason the vendor sees; the coupon stops applying at checkout. */
 export async function denyCoupon(input: unknown): Promise<ActionResult> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("coupons", "update"))) return forbidden();
   const parsed = adminCouponDenySchema.safeParse(input);
   if (!parsed.success) {
     const reason = parsed.error.issues.find((i) => i.path[0] === "reason")?.message;
@@ -168,7 +168,7 @@ export async function denyCoupon(input: unknown): Promise<ActionResult> {
  * the vendor's delete), so order history that references it keeps making sense.
  */
 export async function adminDeleteCoupon(input: unknown): Promise<ActionResult<{ deactivated: boolean }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("coupons", "delete"))) return forbidden();
   const parsed = adminCouponIdSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Invalid request." };
   const { id } = parsed.data;

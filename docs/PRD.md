@@ -49,7 +49,6 @@ The MVP delivers four connected areas, each already designed:
 
 - Auctions / auction products.
 - Publication House / Authors / Creators filters.
-- Direct **Chat With Vendor**. Customer questions go to **Sundry AI Support**.
 - Google Maps address picker. Addresses are entered through a structured form.
 - Currency and language switchers. MVP is USD, English.
 - Native mobile apps. Responsive web only.
@@ -180,8 +179,14 @@ Shell: storefront header with the "Hello, {name} · Dashboard" chip, and an acco
 - **FR-A7 Inbox (P0):**
   - **Support** tab: chat with **Sundry AI Support**, which answers order, shipping, return and product questions. It hands off to a human ticket when it cannot resolve the issue.
   - **Deliveryman** tab: chat with the courier assigned to an active order.
+  - **Sellers** tab: direct chat with stores (see FR-A10).
 - **FR-A8 Support tickets (P0):** list (ID, subject, type, priority, status, date). **Add New Ticket** modal: subject, type, priority, description, attachments. Ticket detail with the conversation thread (P1).
 - **FR-A9 Notifications (P1):** email for order status changes, and in-app badge counts.
+- **FR-A10 Chat with the seller (P0):** a **Chat with Vendor** button on the product page's seller card opens a direct conversation with that store (guests sign in first and come back to it).
+  - One conversation per customer and store: asking the same store again reopens the same thread. A customer can talk to many stores, and a store to many customers.
+  - Messages are text and/or an image, saved in the database, with unread counts that clear when read.
+  - Updates arrive by polling every few seconds in v1; a realtime provider can replace it later without changing the data or the UI.
+  - Only the two participants can read or write a conversation.
 
 ---
 
@@ -219,6 +224,7 @@ Shell: 68px top bar (brand, sidebar toggle, breadcrumbs, messages, orders, profi
   - **Order report:** totals by status, chart, table.
   - **Transaction report:** Stripe payments, commission, refunds, payouts.
   - All three have date filters and CSV export.
+- **FR-V13 Chat Box (P0):** the store's side of FR-A10, in the sidebar after Report Manage with an unread badge. The vendor sees only conversations with its own store, opens a thread and replies with text and/or images (same conversation UI as the customer inbox).
 
 ---
 

@@ -37,7 +37,7 @@ The development database contains real data I need to keep. Data loss is unaccep
 | Area | Route prefix | Who |
 |---|---|---|
 | Storefront | `/` | Shoppers (guests + customers) |
-| Customer account | `/account` | Logged-in customers |
+| Customer account | `/dashboard` | Logged-in customers |
 | Vendor (Seller) dashboard | `/vendor` | Store owners — see only their own data |
 | Admin dashboard | `/admin` | Marketplace staff |
 
@@ -63,7 +63,7 @@ Commands: `npm run dev` · `npm run build` · `npm run lint` · `npm run typeche
    - Orders are **split by seller** (one parent order → one sub-order per store, each with its own status).
    - **Sellers only ever see their own data.** Every vendor query is scoped by `storeId` on the server. Never trust a client-sent `storeId`.
 2. **Payments: Cash on Delivery in v1; Stripe added later** (Card via Stripe, Stripe Wallet: Apple Pay / Google Pay / Link). Only COD is offered until the Stripe integration ships; the order code keeps a seam for it (`paymentMethod`).
-3. **Not in this project:** Auctions · Publication House / Authors / Creators filters · Chat With Vendor (use the **Sundry AI Support** agent instead) · Google Maps address picker · currency/language switchers.
+3. **Not in this project:** Auctions · Publication House / Authors / Creators filters · Google Maps address picker · currency/language switchers.
 4. **Design tokens only.** No hex/rgb values in components. Use Tailwind token utilities or `var(--token)`. No new colors, radii, shadows or font sizes.
 5. **Every data surface has 4 states:** Default · Loading skeleton · Empty · Error (with Retry).
 6. **Responsive at every width** — test 360, 390, 768, 1024, 1280, 1440. No horizontal page scroll. Tables → cards at ≤1200px. Touch targets ≥44px. Hover-only actions must be reachable on touch.
@@ -78,7 +78,7 @@ app/
   globals.css                # tokens (DESIGN_SYSTEM.md §11)
   (storefront)/layout.tsx    # StorefrontHeader + Footer (forcedTheme light)
   (auth)/layout.tsx          # /login + /register: minimal AuthHeader only (no storefront header/footer)
-  (account)/account/layout.tsx   # storefront header + AccountSidebar
+  (account)/layout.tsx           # customer area (/dashboard/*): storefront header + AccountSidebar
   vendor/(auth)/…            # vendor login/register (simple header, no sidebar)
   vendor/(panel)/layout.tsx  # VendorShell: top bar + rail/panel sidebar
   admin/layout.tsx           # AdminShell: same frame + search + theme dropdown
@@ -101,9 +101,9 @@ design/          # the approved .dc.html design files (read-only reference)
 
 **Storefront** — `Sundry Home` → `/` · `Category Page` → `/category/[slug]` · `Product Detail Page` → `/product/[slug]` · `Cart Page` → `/cart` · `Checkout Page` → `/checkout` (steps: Shipping & Billing → Payment; success opens the Thank-you modal) · `Order Complete` → `/checkout/complete` · `All Vendor Page` → `/vendors` · `Vendor Details Page` → `/vendors/[slug]` · `Login Page` → `/login` · `Register Page` → `/register`
 
-**Account** — `user.dashboard` → `/dashboard` · `userOrder` → `/account/orders` · `userorderdetails` → `/account/orders/[id]` · `usertrackorder` → `/account/track-order` · `userwishlist` → `/account/wishlist` · `useraddress` → `/account/addresses` · `userchat` → `/account/inbox` (tabs: Support = Sundry AI Support, Deliveryman) · `supportticket` → `/account/support`
+**Account** (everything under `/dashboard`; old `/account/*` URLs redirect permanently) — `user.dashboard` → `/dashboard` (Profile Info) · Change Password → `/dashboard/change-password` · `userOrder` → `/dashboard/orders` · `userorderdetails` → `/dashboard/orders/[orderNumber]` · `usertrackorder` → `/dashboard/track-order` · `userwishlist` → `/dashboard/wishlist` · `useraddress` → `/dashboard/addresses` · `userchat` → `/dashboard/inbox` (tabs: Sellers = chat with stores, Support = Sundry AI Support, Deliveryman) · `supportticket` → `/dashboard/support`
 
-**Vendor** — `vendorLogin` → `/vendor/login` · `vendorregister` → `/vendor/register` · `vendordashboard` → `/vendor/dashboard` · `vendorProfile` → `/vendor/profile` · `vendorchangepassword` → `/vendor/change-password` · `vendorproductlist` → `/vendor/products` · `vendoraddproduct` → `/vendor/products/add` · `vendoreditproduct` → `/vendor/products/[id]/edit` · product details → `/vendor/products/[id]` · `vendorproductreview` → `/vendor/reviews` · `vendororderlist` → `/vendor/orders` · `vendororderdetails` → `/vendor/orders/[id]` · `vendorcoupon` → `/vendor/coupons` · `vendorproductreport` / `vendororderreport` / `vendortransactionreport` → `/vendor/reports/{products|orders|transactions}`
+**Vendor** — `vendorLogin` → `/vendor/login` · `vendorregister` → `/vendor/register` · `vendordashboard` → `/vendor/dashboard` · `vendorProfile` → `/vendor/profile` · `vendorchangepassword` → `/vendor/change-password` · `vendorproductlist` → `/vendor/products` · `vendoraddproduct` → `/vendor/products/add` · `vendoreditproduct` → `/vendor/products/[id]/edit` · product details → `/vendor/products/[id]` · `vendorproductreview` → `/vendor/reviews` · `vendororderlist` → `/vendor/orders` · `vendororderdetails` → `/vendor/orders/[id]` · `vendorcoupon` → `/vendor/coupons` · `vendorproductreport` / `vendororderreport` / `vendortransactionreport` → `/vendor/reports/{products|orders|transactions}` · Chat Box (`userchat` design, store side) → `/vendor/chat`
 
 **Admin** — `admindashboard` → `/admin/dashboard` · `adminallorders` → `/admin/orders` · `adminproductlist` → `/admin/products` · `adminproductadd` → `/admin/products/new` · Brands → `/admin/brands` (+ `/admin/brands/[id]`) · Category Setup → `/admin/categories` · `/admin/categories/sub` · `/admin/categories/sub-sub` · Product Manage → `/admin/products/{pending|approved|denied|featured|popular}` (`adminvendorproductlist` design) · Coupon Manage → `/admin/coupons/{pending|approved|denied}` + details `/admin/coupons/[id]` · `adminproductdetail` → `/admin/products/[id]` · `adminproductstock` → `/admin/products/stock` · Vendor Manage → Vendor Approval `/admin/vendors/approval` · `adminaddvendor` → `/admin/vendors/add` · `adminvendorlist` → `/admin/vendors` · vendor details `/admin/vendors/[id]` · `admincustomerlist` → `/admin/customers` · `admincustomerreview` → `/admin/customers/reviews` · `adminearningreports` / `adminorderreport` / `adminproductreport` / `admintransactionreport` → `/admin/reports/{earnings|orders|products|transactions}`
 

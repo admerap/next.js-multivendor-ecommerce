@@ -1,12 +1,12 @@
 "use server";
 
 import type { CategoryStatus, Prisma } from "@prisma/client";
+import { can } from "@/lib/access.server";
 import { prisma } from "@/lib/db";
 import {
   duplicate,
   forbidden,
   invalid,
-  isAdmin,
   isForeignKeyError,
   isNotFoundError,
   isUniqueError,
@@ -68,7 +68,7 @@ const readForm = (fd: FormData) => ({ id: fd.get("id") ?? undefined, name: fd.ge
 export async function getSubCategories(
   params: unknown,
 ): Promise<ActionResult<{ items: SubCategoryRow[]; total: number; page: number; pageSize: number; pageCount: number }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("categories", "read"))) return forbidden();
   const { q, status, category, page, pageSize } = subCategoryListSchema.parse(params ?? {});
   const where: Prisma.SubCategoryWhereInput = {
     ...(q && { name: { contains: q } }),
@@ -81,7 +81,7 @@ export async function getSubCategories(
     const pageCount = Math.max(1, Math.ceil(total / pageSize));
     const current = Math.min(page, pageCount);
     const rows = await prisma.subCategory.findMany({ where, orderBy: { createdAt: "desc" }, skip: (current - 1) * pageSize, take: pageSize, select: ROW_SELECT });
-    const counts = await productCounts(rows.map((r) => r.id));
+    const counts = await productCounts(rows.map((r) => r.id), "subCategoryId");
     return { success: true, data: { items: rows.map((r) => toRow(r, counts.get(r.id) ?? 0)), total, page: current, pageSize, pageCount } };
   } catch (error) {
     console.error("[sub-categories] list failed", error);
@@ -91,7 +91,7 @@ export async function getSubCategories(
 
 /** The dependent dropdown: only the chosen category's sub-categories, A→Z. */
 export async function getSubCategoriesByCategory(categoryId: unknown): Promise<ActionResult<SubCategoryOption[]>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("categories", "read"))) return forbidden();
   const parsed = categoryIdSchema.safeParse({ id: categoryId });
   if (!parsed.success) return { success: false, error: "Choose a category" };
   try {
@@ -106,7 +106,7 @@ export async function getSubCategoriesByCategory(categoryId: unknown): Promise<A
 // ── Mutations ────────────────────────────────────────────────────────────────
 
 export async function createSubCategory(formData: FormData): Promise<ActionResult<{ id: string }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("categories", "create"))) return forbidden();
   const parsed = await subCategoryCreateServerSchema.safeParseAsync(readForm(formData));
   if (!parsed.success) return invalid(parsed.error);
   const { name, status, categoryId } = parsed.data;
@@ -125,7 +125,7 @@ export async function createSubCategory(formData: FormData): Promise<ActionResul
 }
 
 export async function updateSubCategory(formData: FormData): Promise<ActionResult<{ id: string }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("categories", "update"))) return forbidden();
   const parsed = await subCategoryUpdateServerSchema.safeParseAsync(readForm(formData));
   if (!parsed.success) return invalid(parsed.error);
   const { id, name, status, categoryId } = parsed.data;
@@ -154,7 +154,7 @@ export async function updateSubCategory(formData: FormData): Promise<ActionResul
 }
 
 export async function toggleSubCategoryStatus(input: unknown): Promise<ActionResult<{ status: CategoryStatus }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("categories", "update"))) return forbidden();
   const parsed = categoryStatusSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Invalid status change." };
   try {
@@ -169,7 +169,7 @@ export async function toggleSubCategoryStatus(input: unknown): Promise<ActionRes
 }
 
 export async function deleteSubCategory(input: unknown): Promise<ActionResult<{ subSubCategoriesCount?: number; productsCount?: number }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("categories", "delete"))) return forbidden();
   const parsed = categoryIdSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Invalid sub-category." };
   const { id } = parsed.data;
@@ -179,7 +179,7 @@ export async function deleteSubCategory(input: unknown): Promise<ActionResult<{ 
 
   // Never cascade: block while anything still hangs off this sub-category.
   const subSubCategoriesCount = found._count.subSubCategories;
-  const productsCount = (await productCounts([id])).get(id) ?? 0;
+  const productsCount = (await productCounts([id], "subCategoryId")).get(id) ?? 0;
   if (subSubCategoriesCount > 0 || productsCount > 0) {
     const parts = [
       subSubCategoriesCount > 0 && plural(subSubCategoriesCount, "sub-sub-category", "sub-sub-categories"),

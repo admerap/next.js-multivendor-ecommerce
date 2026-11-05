@@ -4,7 +4,7 @@ import { AlertTriangle, LoaderCircle, Tag, X } from "lucide-react";
 import { useId, useState, useTransition, type FormEvent } from "react";
 import toast from "react-hot-toast";
 import { applyCoupon } from "@/app/(storefront)/cart/actions";
-import type { CartLineInput, CartQuote } from "@/lib/checkout";
+import type { CartLineInput, CartQuote, ShipTo } from "@/lib/checkout";
 import { money } from "@/lib/money";
 
 /**
@@ -18,7 +18,9 @@ export function CouponForm({
   lines,
   coupons,
   onChange,
+  shipTo = null,
 }: {
+  shipTo?: ShipTo | null;
   quote: CartQuote;
   lines: CartLineInput[];
   coupons: Record<string, string>;
@@ -34,7 +36,7 @@ export function CouponForm({
     const value = code.trim().toUpperCase();
     if (!value) return setError("Enter a coupon code.");
     start(async () => {
-      const res = await applyCoupon({ code: value, lines, coupons, shippingMethod: quote.shippingMethod }).catch(() => ({ success: false as const, error: "We couldn't check this coupon right now. Please try again." }));
+      const res = await applyCoupon({ code: value, lines, coupons, shippingMethod: quote.shippingMethod, shipTo }).catch(() => ({ success: false as const, error: "We couldn't check this coupon right now. Please try again." }));
       if (!res.success) {
         setError(res.error); // shown under the field (role="alert") — no toast on top of the button
         return;

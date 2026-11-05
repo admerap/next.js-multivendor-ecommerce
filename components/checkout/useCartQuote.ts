@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { getCartQuote } from "@/app/(storefront)/cart/actions";
 import { useCart } from "@/components/commerce/CartProvider";
-import type { CartQuote, ShippingMethod } from "@/lib/checkout";
+import type { CartQuote, ShippingMethod, ShipTo } from "@/lib/checkout";
 
 const DEBOUNCE_MS = 250;
 
@@ -13,7 +13,7 @@ const DEBOUNCE_MS = 250;
  * are dropped). After each quote the cart is synced to it — live unit price, stock cap, adjusted
  * quantity — so the header cart and this page always agree with what the order would charge.
  */
-export function useCartQuote(coupons: Record<string, string> = {}, shippingMethod: ShippingMethod = "STANDARD") {
+export function useCartQuote(coupons: Record<string, string> = {}, shippingMethod: ShippingMethod = "STANDARD", shipTo: ShipTo | null = null, paused = false) {
   const cart = useCart();
   const [quote, setQuote] = useState<CartQuote | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -23,12 +23,12 @@ export function useCartQuote(coupons: Record<string, string> = {}, shippingMetho
 
   // Only what the server needs; prices in the browser are ignored on purpose.
   const lines = useMemo(() => cart.items.map((i) => ({ id: i.id, productId: i.productId, variationId: i.variationId ?? null, qty: i.qty })), [cart.items]);
-  const key = JSON.stringify({ lines, coupons, shippingMethod });
+  const key = JSON.stringify({ lines, coupons, shippingMethod, shipTo });
 
   const load = useCallback(async () => {
     const mine = ++seq.current;
     setStatus("loading");
-    const payload: { lines: { id: string; qty: number }[]; coupons: Record<string, string>; shippingMethod: ShippingMethod } = JSON.parse(key);
+    const payload: { lines: { id: string; qty: number }[]; coupons: Record<string, string>; shippingMethod: ShippingMethod; shipTo: ShipTo | null } = JSON.parse(key);
     const requested = payload.lines;
     const res = await getCartQuote(payload).catch(() => ({ success: false as const, error: "We couldn't load your cart totals. Check your connection and try again." }));
     if (mine !== seq.current) return; // a newer request is on its way
@@ -53,7 +53,9 @@ export function useCartQuote(coupons: Record<string, string> = {}, shippingMetho
   }, [key, sync]);
 
   useEffect(() => {
-    if (!cart.ready) return;
+    // `paused`: the caller is still reading its saved checkout draft (coupons, address) — quoting now
+    // would show a total without them for a moment (e.g. tax "Calculated at shipping" on the payment step).
+    if (!cart.ready || paused) return;
     if (lines.length === 0) {
       seq.current++;
       // eslint-disable-next-line react-hooks/set-state-in-effect -- an empty cart needs no server round-trip
@@ -63,7 +65,7 @@ export function useCartQuote(coupons: Record<string, string> = {}, shippingMetho
     }
     const t = setTimeout(load, DEBOUNCE_MS);
     return () => clearTimeout(t);
-  }, [cart.ready, lines.length, load]);
+  }, [cart.ready, paused, lines.length, load]);
 
   return { cart, quote, status, error, retry: load, busy: status === "loading" && quote !== null };
 }

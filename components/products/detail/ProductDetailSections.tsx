@@ -100,7 +100,8 @@ export function ProductOverview({ p }: { p: ProductDetail }) {
             </div>
             <div>
               <dt className="text-caption text-fg-muted">Tax</dt>
-              <dd className="font-semibold text-fg-strong tabular-nums">{p.taxRate != null ? `${(p.taxRate / 100).toFixed(2)}%` : "—"}</dd>
+              {/* Sales tax is charged by the shopper's ship-to state at checkout (admin › Tax Rates), not per product. */}
+              <dd className="font-semibold text-fg-strong">By ship-to state</dd>
             </div>
           </dl>
         </div>

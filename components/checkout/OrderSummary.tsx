@@ -1,6 +1,6 @@
 import { Lock } from "lucide-react";
 import type { ReactNode } from "react";
-import type { CartQuote } from "@/lib/checkout";
+import { taxLabel, type CartQuote } from "@/lib/checkout";
 import { money } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +26,7 @@ export function OrderSummary({ quote, busy, coupon, actions }: { quote: CartQuot
         {row("Sub total", money(quote.subtotal))}
         {row(quote.needsShipping && quote.shippingMethod === "EXPRESS" ? "Shipping (Express)" : "Shipping", quote.shipping === 0 && quote.itemCount > 0 ? "Free" : money(quote.shipping))}
         {quote.discount > 0 && row("Discount", `− ${money(quote.discount)}`, "discount")}
-        {row("Tax", money(quote.tax))}
+        {quote.taxPending ? row("Tax", "Calculated at shipping") : row(taxLabel(quote.taxRegion?.region, quote.taxRegion?.rate ?? 0), money(quote.tax))}
       </dl>
       <div aria-hidden className="my-4 h-px bg-line" />
       {coupon}

@@ -9,7 +9,7 @@ import { Pagination } from "@/components/data/Pagination";
 import { EmptyState } from "@/components/data/DashCard";
 import { SetBreadcrumbs } from "@/components/shell/Breadcrumbs";
 import { PreviewStateFrame } from "@/components/states/PreviewState";
-import { requireArea } from "@/lib/auth-guard";
+import { requirePermission } from "@/lib/access.server";
 import { brandListSchema } from "@/lib/validations/brand";
 import { getBrandOptions, getBrands, type BrandOption } from "./actions";
 import { firstParams } from "@/lib/list-params";
@@ -33,7 +33,7 @@ function BrandsCard({ brands, children }: { brands: BrandOption[]; children: Rea
 }
 
 export default async function BrandsPage({ searchParams }: PageProps<"/admin/brands">) {
-  await requireArea("ADMIN");
+  await requirePermission("brands");
   const sp = await searchParams;
   const params = brandListSchema.parse(firstParams(sp));
 

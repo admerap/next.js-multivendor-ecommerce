@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { adminDeleteProduct } from "@/app/admin/(panel)/products/actions";
 import { deleteProduct } from "@/app/vendor/(panel)/products/actions";
+import { useCan } from "@/components/admin/AdminPermissions";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,8 @@ export function DeleteProductButton({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+  // In the admin panel the button needs Products › Delete (the vendor's own products need no permission).
+  const canAdminDelete = useCan("products", "delete");
 
   function remove() {
     startTransition(async () => {
@@ -51,6 +54,8 @@ export function DeleteProductButton({
       }
     });
   }
+
+  if (scope === "admin" && !canAdminDelete) return null;
 
   return (
     <>

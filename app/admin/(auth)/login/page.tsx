@@ -3,11 +3,12 @@ import type { Metadata } from "next";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { SundryLogo } from "@/components/auth/SundryLogo";
+import { expiredReason } from "@/lib/session-policy";
 
 export const metadata: Metadata = { title: "Admin Sign In" };
 
 export default async function AdminLoginPage({ searchParams }: PageProps<"/admin/login">) {
-  const { callbackUrl } = await searchParams;
+  const { callbackUrl, expired, reset } = await searchParams;
 
   return (
     <main className="flex min-h-dvh flex-col bg-page">
@@ -20,7 +21,7 @@ export default async function AdminLoginPage({ searchParams }: PageProps<"/admin
         title="Admin sign in"
         subtitle="Sign in to manage vendors, products, orders and reports."
       >
-        <LoginForm callbackUrl={typeof callbackUrl === "string" ? callbackUrl : undefined} />
+        <LoginForm callbackUrl={typeof callbackUrl === "string" ? callbackUrl : undefined} expired={expiredReason(expired)} passwordReset={reset === "1"} area="admin" />
       </AuthCard>
     </main>
   );

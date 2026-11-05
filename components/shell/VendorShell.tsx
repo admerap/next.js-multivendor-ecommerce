@@ -1,23 +1,23 @@
 "use client";
 
-import {
-  BarChart3,
-  ChartLine,
-  KeyRound,
-  LayoutDashboard,
-  Package,
-  Receipt,
-  Settings,
-  ShoppingCart,
-  Star,
-  Store,
-  TicketPercent,
-} from "lucide-react";
-import type { ReactNode } from "react";
+import { ChartLine, KeyRound, LayoutDashboard, MessagesSquare, Package, Settings, ShoppingCart, Store, TicketPercent } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
+import { useChatPolling } from "@/components/chat/useChatPolling";
+import { unreadTotalAction } from "@/lib/actions/chat";
+import { CHAT_UNREAD_EVENT, LIST_POLL_MS } from "@/lib/chat";
+import type { OrderStatusKey } from "@/lib/orders";
 import { DashShell, type NavGroup } from "./DashShell";
+import { IdleGuard } from "./IdleGuard";
+import { orderManageNav } from "./orderNav";
 
-/** Seller Center sidebar (vendordashboard design), limited to routes in CLAUDE.md §5. */
-const NAV: NavGroup[] = [
+/** This store's sub-orders per status (StoreOrder.status), for the Order Manage counts. */
+export type VendorOrderCounts = Record<OrderStatusKey, number>;
+
+/**
+ * Seller Center sidebar (vendordashboard design) — only pages that exist. Product Reviews
+ * (/vendor/reviews, CLAUDE.md §5) comes back here when it's built.
+ */
+const vendorNav = (orders: VendorOrderCounts, chatUnread: number): NavGroup[] => [
   { title: "Overview", items: [{ label: "Dashboard", href: "/vendor/dashboard", icon: LayoutDashboard }] },
   {
     title: "Catalog",
@@ -38,16 +38,24 @@ const NAV: NavGroup[] = [
           { label: "Add Coupon", href: "/vendor/coupons/add" },
         ],
       },
-      { label: "Product Reviews", href: "/vendor/reviews", icon: Star },
     ],
   },
-  { title: "Orders", items: [{ label: "All Orders", href: "/vendor/orders", icon: ShoppingCart, count: 0, tone: "iris" }] },
   {
-    title: "Reports",
+    title: "Orders",
     items: [
-      { label: "Transactions Report", href: "/vendor/reports/transactions", icon: Receipt },
-      { label: "Product Report", href: "/vendor/reports/products", icon: BarChart3 },
-      { label: "Order Report", href: "/vendor/reports/orders", icon: ChartLine },
+      orderManageNav("/vendor/orders", orders),
+      {
+        label: "Report Manage",
+        icon: ChartLine,
+        // Read-only analytics of this store's orders (vendor*report designs).
+        children: [
+          { label: "Transactions Report", href: "/vendor/reports/transactions" },
+          { label: "Product Report", href: "/vendor/reports/products" },
+          { label: "Order Report", href: "/vendor/reports/orders" },
+        ],
+      },
+      // Customer messages (PRD FR-V13): the badge counts unread ones and hides at 0.
+      { label: "Chat Box", href: "/vendor/chat", icon: MessagesSquare, count: chatUnread, tone: "saffron" },
     ],
   },
   {
@@ -62,16 +70,36 @@ const NAV: NavGroup[] = [
 export function VendorShell({
   user,
   storeName,
+  orderCounts,
+  chatUnread: initialUnread,
+  signedInAt,
   children,
 }: {
   user: { name: string; email: string };
   storeName: string;
+  orderCounts: VendorOrderCounts;
+  /** unread customer messages (layout), then kept fresh: polling + the chat's read events */
+  chatUnread: number;
+  /** session sign-in time (ms) — IdleGuard's 12-hour limit */
+  signedInAt?: number;
   children: ReactNode;
 }) {
+  const [chatUnread, setChatUnread] = useState(initialUnread);
+  const refresh = async () => {
+    const r = await unreadTotalAction();
+    if (r.ok) setChatUnread(r.data);
+  };
+  useChatPolling(refresh, LIST_POLL_MS);
+  useEffect(() => {
+    const on = () => void refresh();
+    window.addEventListener(CHAT_UNREAD_EVENT, on);
+    return () => window.removeEventListener(CHAT_UNREAD_EVENT, on);
+  }, []);
+
   return (
     <DashShell
       badge="Seller"
-      nav={NAV}
+      nav={vendorNav(orderCounts, chatUnread)}
       crumb="Dashboard"
       user={{ ...user, subtitle: storeName }}
       profileLinks={{ settings: "/vendor/profile", password: "/vendor/change-password" }}
@@ -81,6 +109,7 @@ export function VendorShell({
       ]}
       footer="© 2026 Sundry Marketplace · Seller Center"
     >
+      <IdleGuard area="VENDOR" signedInAt={signedInAt} />
       {children}
     </DashShell>
   );

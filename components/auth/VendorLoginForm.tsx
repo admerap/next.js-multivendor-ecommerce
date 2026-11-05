@@ -3,19 +3,22 @@
 import { LogIn, Lock, Mail } from "lucide-react";
 import Link from "next/link";
 import { loginAction } from "@/lib/actions/auth";
+import type { ExpiredReason } from "@/lib/session-policy";
 import { loginSchema } from "@/lib/validations/auth";
 import { AuthField, PasswordField } from "./AuthField";
 import { FormAlert } from "./FormAlert";
+import { SessionExpiredNotice } from "./SessionExpiredNotice";
 import { SubmitButton } from "./SubmitButton";
 import { useAuthForm } from "./useAuthForm";
 
 /** Seller Center sign-in (vendorLogin design): larger 56px fields, register link under the password. */
-export function VendorLoginForm({ callbackUrl }: { callbackUrl?: string }) {
+export function VendorLoginForm({ callbackUrl, expired, passwordReset }: { callbackUrl?: string; expired?: ExpiredReason; passwordReset?: boolean }) {
   const form = useAuthForm({ email: "", password: "" });
   const { values, errors } = form;
 
   return (
     <>
+      {!form.formError && <SessionExpiredNotice reason={expired} passwordReset={passwordReset} />}
       {form.formError && <FormAlert variant="seller" message={form.formError} />}
       <form
         noValidate
@@ -50,7 +53,10 @@ export function VendorLoginForm({ callbackUrl }: { callbackUrl?: string }) {
           onChange={(e) => form.set("password", e.target.value)}
           error={errors.password}
         />
-        <div className="flex flex-wrap items-center justify-end gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Link href="/forgot-password?area=vendor" className="inline-flex items-center text-sm font-semibold max-lg:min-h-11">
+            Forgot password?
+          </Link>
           <Link href="/vendor/register" className="inline-flex items-center text-sm font-semibold max-lg:min-h-11">
             Register New Account
           </Link>

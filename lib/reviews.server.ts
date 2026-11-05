@@ -67,8 +67,14 @@ export async function createReview(customerId: string, input: unknown): Promise<
 // ── Admin moderation ─────────────────────────────────────────────────────────────────────────────
 
 /** Product.ratingAvg (hundredths, integer) and reviewCount from its APPROVED reviews — call inside the same transaction. */
+/**
+ * A review the storefront shows (and counts toward the product's stars): approved by an admin AND not
+ * switched off by one. The single definition used by the storefront and the rating recompute.
+ */
+export const PUBLISHED_REVIEW = { status: "APPROVED", isVisible: true } as const satisfies Prisma.ReviewWhereInput;
+
 async function recomputeProductRating(tx: Prisma.TransactionClient, productId: string) {
-  const agg = await tx.review.aggregate({ where: { productId, status: "APPROVED" }, _avg: { rating: true }, _count: { _all: true } });
+  const agg = await tx.review.aggregate({ where: { productId, ...PUBLISHED_REVIEW }, _avg: { rating: true }, _count: { _all: true } });
   const count = agg._count._all;
   await tx.product.update({ where: { id: productId }, data: { reviewCount: count, ratingAvg: count ? Math.round((agg._avg.rating ?? 0) * 100) : 0 } });
 }
@@ -76,9 +82,10 @@ async function recomputeProductRating(tx: Prisma.TransactionClient, productId: s
 export type ModerateResult = { ok: true; productId: string; slug: string } | { ok: false; error: string };
 
 /**
- * Approve → the review shows on the storefront; Deny → it's hidden (shown as "Denied"). Either way the
- * product's average / count are recomputed from its approved reviews in the same transaction, so the
- * stars on cards and the product page never drift. The caller must have checked the admin role.
+ * Approve → the review shows on the storefront (unless an admin switched it off); Deny → it's hidden
+ * (shown as "Denied"). Either way the product's average / count are recomputed from its published
+ * reviews in the same transaction, so the stars on cards and the product page never drift. The caller
+ * must have checked the admin role.
  */
 export async function moderateReview(reviewId: string, status: "APPROVED" | "REJECTED"): Promise<ModerateResult> {
   try {
@@ -94,6 +101,29 @@ export async function moderateReview(reviewId: string, status: "APPROVED" | "REJ
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") return { ok: false, error: "That review no longer exists." };
     console.error("[reviews] moderation failed:", error instanceof Prisma.PrismaClientKnownRequestError ? error.code : error instanceof Error ? error.name : "unknown");
+    return { ok: false, error: "We couldn't update this review. Please try again." };
+  }
+}
+
+export type VisibilityResult = { ok: true; productId: string; slug: string } | { ok: false; error: string };
+
+/**
+ * Show / hide an APPROVED review on the storefront (active / inactive) without changing the moderation
+ * decision; the product's stars are recomputed in the same transaction. Only approved reviews can be
+ * switched (pending / denied ones aren't shown anyway). The caller must have checked the admin role.
+ */
+export async function setReviewVisibility(reviewId: string, isVisible: boolean): Promise<VisibilityResult> {
+  try {
+    return await prisma.$transaction(async (tx) => {
+      const changed = await tx.review.updateMany({ where: { id: reviewId, status: "APPROVED" }, data: { isVisible } });
+      const r = await tx.review.findUnique({ where: { id: reviewId }, select: { productId: true, status: true, product: { select: { slug: true } } } });
+      if (!r) return { ok: false as const, error: "That review no longer exists." };
+      if (changed.count === 0) return { ok: false as const, error: "Only approved reviews can be shown or hidden. Approve it first." };
+      await recomputeProductRating(tx, r.productId);
+      return { ok: true as const, productId: r.productId, slug: r.product.slug };
+    });
+  } catch (error) {
+    console.error("[reviews] visibility failed:", error instanceof Prisma.PrismaClientKnownRequestError ? error.code : error instanceof Error ? error.name : "unknown");
     return { ok: false, error: "We couldn't update this review. Please try again." };
   }
 }

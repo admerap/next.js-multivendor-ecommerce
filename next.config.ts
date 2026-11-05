@@ -3,6 +3,13 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Dev-only "N" badge: keep it off the bottom-left, where the admin sidebar's Setup Guide sits.
   devIndicators: { position: "bottom-right" },
+  // The customer area moved from /account/* to /dashboard/* — old links (bookmarks, emails) keep working.
+  async redirects() {
+    return [
+      { source: "/account", destination: "/dashboard", permanent: true },
+      { source: "/account/:path*", destination: "/dashboard/:path*", permanent: true },
+    ];
+  },
   experimental: {
     serverActions: {
       // Product saves carry up to 10 MB of images (lib/validations/product.ts PRODUCT_LIMITS.uploadBytes,

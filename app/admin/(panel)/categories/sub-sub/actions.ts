@@ -1,12 +1,12 @@
 "use server";
 
 import type { CategoryStatus, Prisma } from "@prisma/client";
+import { can } from "@/lib/access.server";
 import { prisma } from "@/lib/db";
 import {
   duplicate,
   forbidden,
   invalid,
-  isAdmin,
   isForeignKeyError,
   isNotFoundError,
   isUniqueError,
@@ -74,7 +74,7 @@ const readForm = (fd: FormData) => ({
 export async function getSubSubCategories(
   params: unknown,
 ): Promise<ActionResult<{ items: SubSubCategoryRow[]; total: number; page: number; pageSize: number; pageCount: number }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("categories", "read"))) return forbidden();
   const { q, status, category, sub, page, pageSize } = subSubCategoryListSchema.parse(params ?? {});
   const where: Prisma.SubSubCategoryWhereInput = {
     ...(q && { name: { contains: q } }),
@@ -88,7 +88,7 @@ export async function getSubSubCategories(
     const pageCount = Math.max(1, Math.ceil(total / pageSize));
     const current = Math.min(page, pageCount);
     const rows = await prisma.subSubCategory.findMany({ where, orderBy: { createdAt: "desc" }, skip: (current - 1) * pageSize, take: pageSize, select: ROW_SELECT });
-    const counts = await productCounts(rows.map((r) => r.id));
+    const counts = await productCounts(rows.map((r) => r.id), "subSubCategoryId");
     return { success: true, data: { items: rows.map((r) => toRow(r, counts.get(r.id) ?? 0)), total, page: current, pageSize, pageCount } };
   } catch (error) {
     console.error("[sub-sub-categories] list failed", error);
@@ -99,7 +99,7 @@ export async function getSubSubCategories(
 // ── Mutations ────────────────────────────────────────────────────────────────
 
 export async function createSubSubCategory(formData: FormData): Promise<ActionResult<{ id: string }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("categories", "create"))) return forbidden();
   // The server schema re-checks that the sub-category belongs to the chosen category.
   const parsed = await subSubCategoryCreateServerSchema.safeParseAsync(readForm(formData));
   if (!parsed.success) return invalid(parsed.error);
@@ -122,7 +122,7 @@ export async function createSubSubCategory(formData: FormData): Promise<ActionRe
 }
 
 export async function updateSubSubCategory(formData: FormData): Promise<ActionResult<{ id: string }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("categories", "update"))) return forbidden();
   const parsed = await subSubCategoryUpdateServerSchema.safeParseAsync(readForm(formData));
   if (!parsed.success) return invalid(parsed.error);
   const { id, name, status, categoryId, subCategoryId } = parsed.data;
@@ -147,7 +147,7 @@ export async function updateSubSubCategory(formData: FormData): Promise<ActionRe
 }
 
 export async function toggleSubSubCategoryStatus(input: unknown): Promise<ActionResult<{ status: CategoryStatus }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("categories", "update"))) return forbidden();
   const parsed = categoryStatusSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Invalid status change." };
   try {
@@ -162,7 +162,7 @@ export async function toggleSubSubCategoryStatus(input: unknown): Promise<Action
 }
 
 export async function deleteSubSubCategory(input: unknown): Promise<ActionResult<{ productsCount?: number }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("categories", "delete"))) return forbidden();
   const parsed = categoryIdSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Invalid sub-sub-category." };
   const { id } = parsed.data;
@@ -171,7 +171,7 @@ export async function deleteSubSubCategory(input: unknown): Promise<ActionResult
   if (!found) return { success: false, error: GONE };
 
   // Leaf level: only products can block the delete.
-  const productsCount = (await productCounts([id])).get(id) ?? 0;
+  const productsCount = (await productCounts([id], "subSubCategoryId")).get(id) ?? 0;
   if (productsCount > 0) {
     return {
       success: false,

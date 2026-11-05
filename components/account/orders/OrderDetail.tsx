@@ -4,14 +4,22 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 import { Button } from "@/components/ui/button";
-import { SHIPPING_METHOD_INFO } from "@/lib/checkout";
+import { SHIPPING_METHOD_INFO, taxLabel } from "@/lib/checkout";
 import { money } from "@/lib/money";
-import { addressLines, orderAddress, PAYMENT_METHOD_LABEL, PAYMENT_STATUS_LABEL, type OrderStatusKey } from "@/lib/orders";
+import {
+  addressLines,
+  canceledPartsTotal,
+  canCustomerCancelPart,
+  orderAddress,
+  PAYMENT_METHOD_LABEL,
+  PAYMENT_STATUS_LABEL,
+  type OrderStatusKey,
+} from "@/lib/orders";
 import type { OrderView } from "@/lib/orders.server";
 import { productHref, sellerHref } from "@/lib/storefront";
 import { cn } from "@/lib/utils";
 import { REVIEW_STATUS_LABEL } from "@/lib/validations/review";
-import { CancelOrderButton } from "./CancelOrderDialog";
+import { CancelOrderButton, CancelPartButton } from "./CancelOrderDialog";
 import { ReviewForm } from "./ReviewForm";
 
 export const ORDER_TABS = [
@@ -88,13 +96,18 @@ function Thumb({ src }: { src: string | null }) {
   );
 }
 
-/** Order summary tab: info, addresses, one item table per seller (cards ≤1280), totals, Cancel. */
+/**
+ * Order summary tab: info, addresses, one item table per seller (cards ≤1280), totals, Cancel — the
+ * whole order, or one seller's items while that seller hasn't started packing.
+ */
 export function SummaryTab({ order, canCancel }: { order: OrderView; canCancel: boolean }) {
   const ship = orderAddress(order, "ship");
   const items = order.storeOrders.flatMap((s) => s.items);
   const units = items.reduce((n, i) => n + i.qty, 0);
   const itemDiscount = 0; // product discounts are already in the unit price
   const method = SHIPPING_METHOD_INFO[order.shippingMethod];
+  const statuses = order.storeOrders.map((s) => s.status);
+  const canceledAmount = canceledPartsTotal(order.storeOrders);
 
   return (
     <div className="flex flex-col gap-5">
@@ -225,11 +238,22 @@ export function SummaryTab({ order, canCancel }: { order: OrderView; canCancel: 
               <dt className="inline">Tax: </dt>
               <dd className="inline font-semibold text-fg-strong">{money(s.tax)}</dd>
             </div>
+            {s.status !== "CANCELED" && (
+              <div>
+                <dt className="inline">Payment: </dt>
+                <dd className={cn("inline font-semibold", s.paymentStatus === "PAID" ? "text-success-600" : "text-fg-strong")}>{PAYMENT_STATUS_LABEL[s.paymentStatus]}</dd>
+              </div>
+            )}
             <div>
               <dt className="inline">Subtotal from {s.vendor.storeName}: </dt>
-              <dd className="inline font-bold text-fg-strong">{money(s.total)}</dd>
+              <dd className={cn("inline font-bold text-fg-strong", s.status === "CANCELED" && canceledAmount > 0 && "text-fg-muted line-through")}>{money(s.total)}</dd>
             </div>
           </dl>
+          {canCustomerCancelPart(statuses, s.status) && (
+            <div className="flex justify-end border-t border-line px-3 py-1.5">
+              <CancelPartButton orderNumber={order.orderNumber} part={{ id: s.id, storeName: s.vendor.storeName, total: s.total }} />
+            </div>
+          )}
         </section>
       ))}
 
@@ -242,13 +266,18 @@ export function SummaryTab({ order, canCancel }: { order: OrderView; canCancel: 
           <Row label="Coupon discount">
             <span className="text-success-600">− {money(order.discount)}</span>
           </Row>
-          <Row label="Tax fee">{money(order.tax)}</Row>
+          <Row label={taxLabel(order.taxRegion, order.taxRate)}>{money(order.tax)}</Row>
           <Row label={order.shippingMethod === "EXPRESS" ? "Shipping Fee (Express)" : "Shipping Fee"}>{order.shipping === 0 ? "Free" : money(order.shipping)}</Row>
+          {canceledAmount > 0 && (
+            <Row label="Canceled items">
+              <span className="text-error-600">− {money(canceledAmount)}</span>
+            </Row>
+          )}
         </dl>
         <div className="my-3.5 h-px bg-line" />
         <div className="flex items-baseline justify-between gap-4">
           <span className="text-lg font-bold text-primary">Total</span>
-          <span className="font-display text-[1.375rem] font-extrabold text-primary tabular-nums">{money(order.total)}</span>
+          <span className="font-display text-[1.375rem] font-extrabold text-primary tabular-nums">{money(order.total - canceledAmount)}</span>
         </div>
         {canCancel && <CancelOrderButton orderNumber={order.orderNumber} className="mt-4" />}
       </section>
@@ -314,31 +343,55 @@ export function DeliveryTab() {
   );
 }
 
-const STEPS: { key: OrderStatusKey; title: string; text: (store: string) => string }[] = [
-  { key: "PENDING", title: "Order Placed", text: () => "Your order has been received." },
-  { key: "CONFIRMED", title: "Order Confirmed", text: (s) => `${s} accepted your order.` },
-  { key: "PACKAGING", title: "Packed", text: (s) => `${s} is packing your items.` },
-  { key: "OUT_FOR_DELIVERY", title: "Out for Delivery", text: () => "On its way to your address." },
-  { key: "DELIVERED", title: "Delivered", text: () => "Delivered — enjoy your purchase!" },
+/** text: once reached · waiting: still ahead (the userorderdetails / usertrackorder copy). */
+const STEPS: { key: OrderStatusKey; title: string; text: (store: string) => string; waiting: (store: string) => string }[] = [
+  { key: "PENDING", title: "Order Placed", text: () => "Your order has been received.", waiting: () => "Your order has been received." },
+  { key: "CONFIRMED", title: "Order Confirmed", text: (s) => `${s} accepted your order.`, waiting: (s) => `Waiting for ${s} to confirm.` },
+  { key: "PACKAGING", title: "Packed", text: (s) => `${s} is packing your items.`, waiting: () => "Not packed yet." },
+  { key: "OUT_FOR_DELIVERY", title: "Out for Delivery", text: () => "On its way to your address.", waiting: () => "Not shipped yet." },
+  { key: "DELIVERED", title: "Delivered", text: () => "Delivered — enjoy your purchase!", waiting: () => "Awaiting delivery confirmation." },
 ];
 const placed = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
 
-/** Track order tab: a progress line per seller (each ships separately). */
-export function TrackTab({ order }: { order: OrderView }) {
+/** When a seller's part last reached `status`, from its history (older orders may not have every step). */
+const reachedAt = (s: StoreOrder, status: OrderStatusKey) => s.events.findLast((e) => e.status === status)?.createdAt;
+
+/**
+ * Track order tab: a progress line per seller (each ships separately), each reached step with its
+ * date. A part that ended (canceled / returned / failed) shows the steps it actually went through.
+ */
+export function TrackTab({ order, withItems = false }: { order: OrderView; withItems?: boolean }) {
   return (
     <div className="flex flex-col gap-5">
       {order.storeOrders.map((s) => {
         const reached = STEPS.findIndex((st) => st.key === s.status);
         const ended = s.status === "CANCELED" || s.status === "RETURNED" || s.status === "FAILED";
-        const steps = ended ? [STEPS[0]!] : STEPS;
+        const steps = ended ? STEPS.filter((st, i) => i === 0 || reachedAt(s, st.key)) : STEPS;
+        const endedAt = ended ? reachedAt(s, s.status) : undefined;
         return (
           <section key={s.id} aria-label={`Progress from ${s.vendor.storeName}`} className="overflow-hidden rounded-lg border border-line">
             <SellerHeader s={s} />
+            {withItems && (
+              <ul aria-label={`Items from ${s.vendor.storeName}`} className="flex flex-wrap gap-x-5 gap-y-3 border-b border-line px-5 py-3.5">
+                {s.items.map((it) => (
+                  <li key={it.id} className="flex min-w-0 items-center gap-2.5">
+                    <Thumb src={it.image} />
+                    <span className="min-w-0 text-sm">
+                      <span className="line-clamp-1 font-semibold text-fg-strong">{it.productName}</span>
+                      <span className="text-caption text-fg-muted tabular-nums">
+                        {it.variationName && <>{it.variationName} · </>}Qty {it.qty}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
             <ol className="flex flex-col p-5">
               {steps.map((st, i) => {
                 const done = ended || i <= reached;
                 // Delivered is the finish line: shown as done (✓), not "in progress".
                 const current = !ended && i === reached && s.status !== "DELIVERED";
+                const at = done ? (reachedAt(s, st.key) ?? (i === 0 ? order.createdAt : undefined)) : undefined;
                 return (
                   <li key={st.key} className="relative flex gap-4 pb-6 last:pb-0">
                     {(i < steps.length - 1 || ended) && <span aria-hidden className={cn("absolute top-9 bottom-0 left-4 w-0.5 -translate-x-1/2", done && (i < reached || ended) ? "bg-primary" : "bg-line-default")} />}
@@ -347,8 +400,12 @@ export function TrackTab({ order }: { order: OrderView }) {
                     </span>
                     <div className="min-w-0 pt-1">
                       <p className={cn("font-bold", done ? "text-fg-strong" : "text-fg-muted")}>{st.title}</p>
-                      <p className="text-sm text-fg-muted">{st.text(s.vendor.storeName)}</p>
-                      {i === 0 && <p className="mt-0.5 text-caption text-fg-subtle tabular-nums">{placed.format(order.createdAt)}</p>}
+                      <p className="text-sm text-fg-muted">{done ? st.text(s.vendor.storeName) : st.waiting(s.vendor.storeName)}</p>
+                      {at && (
+                        <p className="mt-0.5 text-caption text-fg-subtle tabular-nums">
+                          <time dateTime={at.toISOString()}>{placed.format(at)}</time>
+                        </p>
+                      )}
                     </div>
                   </li>
                 );
@@ -363,6 +420,11 @@ export function TrackTab({ order }: { order: OrderView }) {
                     <p className="text-sm text-fg-muted">
                       {s.status === "CANCELED" ? "This part of the order was canceled." : s.status === "RETURNED" ? "The items were returned to the seller." : "The courier couldn't deliver this part."}
                     </p>
+                    {endedAt && (
+                      <p className="mt-0.5 text-caption text-fg-subtle tabular-nums">
+                        <time dateTime={endedAt.toISOString()}>{placed.format(endedAt)}</time>
+                      </p>
+                    )}
                   </div>
                 </li>
               )}

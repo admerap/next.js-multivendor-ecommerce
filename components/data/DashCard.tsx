@@ -28,6 +28,7 @@ export function DashCard({
   title,
   icon,
   tone = "iris",
+  subtitle,
   actions,
   children,
   className,
@@ -35,6 +36,8 @@ export function DashCard({
   title: string;
   icon: LucideIcon;
   tone?: Tone;
+  /** muted line under the title, e.g. "Units sold, this year" */
+  subtitle?: string;
   actions?: ReactNode;
   children: ReactNode;
   className?: string;
@@ -42,10 +45,13 @@ export function DashCard({
   return (
     <section className={cn("min-w-0 rounded-lg bg-card p-4 shadow-sm sm:p-6", className)}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2.5 font-display text-lg font-extrabold tracking-[-0.01em] text-fg-strong sm:text-h4">
-          <IconTile icon={icon} tone={tone} />
-          {title}
-        </h2>
+        <div className="min-w-0">
+          <h2 className="flex items-center gap-2.5 font-display text-lg font-extrabold tracking-[-0.01em] text-fg-strong sm:text-h4">
+            <IconTile icon={icon} tone={tone} />
+            {title}
+          </h2>
+          {subtitle && <p className="mt-1 text-caption text-fg-muted">{subtitle}</p>}
+        </div>
         {actions}
       </div>
       {children}

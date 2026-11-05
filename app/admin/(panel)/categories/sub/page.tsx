@@ -12,7 +12,7 @@ import { SubCategoriesTable } from "@/components/admin/categories/SubCategoriesT
 import { EmptyState } from "@/components/data/DashCard";
 import { SetBreadcrumbs } from "@/components/shell/Breadcrumbs";
 import { PreviewStateFrame } from "@/components/states/PreviewState";
-import { requireArea } from "@/lib/auth-guard";
+import { requirePermission } from "@/lib/access.server";
 import { CATEGORY_ROUTES } from "@/lib/categories";
 import { subCategoryListSchema } from "@/lib/validations/category";
 import { getCategoryOptions } from "../actions";
@@ -22,7 +22,7 @@ import { firstParams } from "@/lib/list-params";
 export const metadata: Metadata = { title: "Sub-Categories" };
 
 export default async function SubCategoriesPage({ searchParams }: PageProps<"/admin/categories/sub">) {
-  await requireArea("ADMIN");
+  await requirePermission("categories");
   const sp = await searchParams;
   const params = subCategoryListSchema.parse(firstParams(sp));
 

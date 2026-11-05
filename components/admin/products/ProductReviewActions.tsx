@@ -1,12 +1,15 @@
 "use client";
 
 import { approveProduct, denyProduct } from "@/app/admin/(panel)/products/actions";
+import { useCan } from "@/components/admin/AdminPermissions";
 import { ReviewActions } from "@/components/admin/review/ReviewActions";
 import { DENY_REASON_PRESETS } from "@/lib/validations/admin-product";
 import type { ApprovalStatus } from "@/lib/validations/product";
 
 /** Approve / Deny on the admin product details page. */
 export function ProductReviewActions({ id, name, vendorName, status }: { id: string; name: string; vendorName: string; status: ApprovalStatus }) {
+  // Approve / Deny need Products › Update; without it the status column shows a dash.
+  if (!useCan("products", "update")) return <span className="text-fg-subtle">—</span>;
   return (
     <ReviewActions
       id={id}

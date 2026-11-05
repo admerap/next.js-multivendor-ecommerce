@@ -15,7 +15,7 @@ import { PRODUCT_IMAGE_MAX_BYTES } from "@/lib/validations/product";
  */
 
 const PUBLIC_DIR = path.join(process.cwd(), "public");
-type Folder = "brands" | "categories" | "vendors" | "products" | "users" | "reviews";
+type Folder = "brands" | "categories" | "vendors" | "products" | "users" | "reviews" | "chat";
 const dirOf = (folder: Folder) => path.join(PUBLIC_DIR, "uploads", folder);
 const prefixOf = (folder: Folder) => `/uploads/${folder}/`;
 const STORED_NAME = /^[0-9a-f-]{36}\.(jpg|png|webp)$/;
@@ -102,6 +102,9 @@ export const deleteReviewImage = (publicPath: string | null | undefined) => dele
 
 /** Product thumbnail, gallery and variation images (vendoraddproduct design: max 1 MB). */
 export const saveProductImage = (file: File) => saveImage(file, "products", PRODUCT_IMAGE_MAX_BYTES);
+/** Chat photos (lib/chat CHAT_IMAGE_MAX_BYTES). Public by unguessable UUID URL — TODO(storage): private bucket + signed URLs. */
+export const saveChatImage = (file: File, maxBytes: number) => saveImage(file, "chat", maxBytes);
+export const deleteChatImage = (publicPath: string | null | undefined) => deleteImage(publicPath, "chat");
 export const deleteProductImage = (publicPath: string | null | undefined) => deleteImage(publicPath, "products");
 
 const ADMIN_DOC_KINDS: DocKind[] = ["pdf", "doc", "docx", "jpg"];

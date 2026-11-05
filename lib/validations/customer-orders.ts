@@ -14,3 +14,6 @@ export const CUSTOMER_ORDERS_PAGE_SIZE = 10;
 
 /** Cancel / Hide / Unhide: just the order number — the customer comes from the session. */
 export const orderNumberSchema = z.object({ orderNumber: z.number().int().min(1).max(2_000_000_000) });
+
+/** Cancel: the whole order, or just one seller's part of it (its StoreOrder id). */
+export const cancelOrderSchema = orderNumberSchema.extend({ storeOrderId: z.string().regex(/^[a-z0-9]{1,40}$/i).optional() });

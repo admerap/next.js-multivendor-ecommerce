@@ -2,7 +2,7 @@ import "server-only";
 
 import { validateCoupon } from "@/lib/coupons.server";
 import { prisma } from "@/lib/db";
-import { EXPRESS_FEE_CENTS, type CartLineInput, type CartQuote, type QuotedLine, type QuotedStore, type QuoteIssue, type ShippingMethod } from "@/lib/checkout";
+import { EXPRESS_FEE_CENTS, type CartLineInput, type CartQuote, type QuotedLine, type QuotedStore, type QuoteIssue, type ShippingMethod, type ShipTo } from "@/lib/checkout";
 import { FREE_SHIPPING_CENTS, productPricing } from "@/lib/storefront";
 import { VISIBLE } from "@/lib/storefront.server";
 
@@ -20,7 +20,9 @@ import { VISIBLE } from "@/lib/storefront.server";
  *   Standard Delivery: the whole order ships free once the cart subtotal reaches FREE_SHIPPING_CENTS
  *   (the header promise). Express Delivery: that normal shipping + EXPRESS_FEE_CENTS per store with a
  *   physical item, never free. One method for the whole order.
- * - Tax per line = (subtotal − its coupon share) × the product's taxRate (basis points), rounded.
+ * - Sales tax by destination: tax per line = (subtotal − its coupon share) × the ship-to region's
+ *   TaxRate (thousandths of a percent), rounded. Shipping isn't taxed. With no destination yet (cart
+ *   step) tax is 0 and taxPending is set; a destination without an active rate pays no tax.
  * - Coupons: one per store, re-validated on every quote (validateCoupon) against that store's lines only;
  *   a discount is split over the eligible lines; a free-delivery coupon waives that store's normal shipping (not the Express surcharge).
  */
@@ -48,12 +50,20 @@ const LINE_SELECT = {
   minOrderQty: true,
   shippingCost: true,
   shippingPerUnit: true,
-  taxRate: true,
   vendor: { select: { id: true, storeName: true, slug: true } },
   variations: { select: { id: true, name: true, sku: true, price: true, stock: true, image: true } },
 } as const;
 
-const taxOf = (amount: number, rateBp: number | null) => (rateBp ? Math.round((amount * rateBp) / 10_000) : 0);
+/** rate in thousandths of a percent (6350 = 6.35%) */
+const taxOf = (amount: number, rate: number) => (rate > 0 ? Math.round((amount * rate) / 100_000) : 0);
+
+/** The active sales-tax rate for a destination, or null when none is configured. */
+export async function taxRateFor(to: ShipTo): Promise<{ region: string; rate: number } | null> {
+  const region = to.state.trim().toUpperCase();
+  if (!region) return null;
+  const row = await prisma.taxRate.findUnique({ where: { country_region: { country: to.country, region } }, select: { rate: true, isActive: true } });
+  return row?.isActive ? { region, rate: row.rate } : null;
+}
 
 export type QuoteOptions = {
   /** vendorId → coupon code the shopper applied for that store */
@@ -62,14 +72,18 @@ export type QuoteOptions = {
   userId?: string | null;
   /** delivery speed for the whole order (default Standard) */
   shippingMethod?: ShippingMethod;
+  /** destination — decides the sales tax; omitted on the cart step ("Calculated at shipping") */
+  shipTo?: ShipTo | null;
 };
 
 export async function quoteCart(lines: CartLineInput[], opts: QuoteOptions = {}): Promise<CartQuote> {
   const ids = [...new Set(lines.map((l) => l.productId))];
   const products = ids.length ? await prisma.product.findMany({ where: { ...VISIBLE, id: { in: ids } }, select: LINE_SELECT }) : [];
   const byId = new Map(products.map((p) => [p.id, p]));
+  const dest = opts.shipTo ? await taxRateFor(opts.shipTo) : null;
+  const rate = dest?.rate ?? 0;
 
-  type Work = { line: QuotedLine; vendor: QuotedStore["vendor"]; shipping: number; taxRate: number | null };
+  type Work = { line: QuotedLine; vendor: QuotedStore["vendor"]; shipping: number };
   const work: Work[] = [];
   const unknownStore = { id: "", name: "Unavailable", slug: "" };
 
@@ -81,7 +95,6 @@ export async function quoteCart(lines: CartLineInput[], opts: QuoteOptions = {})
         line: { ...base, name: "Unavailable product", slug: null, variationName: null, sku: null, image: null, unitPrice: 0, compareAt: null, qty: input.qty, maxQty: null, minQty: 1, digital: false, subtotal: 0, total: 0, available: false, issue: "unavailable", message: ISSUE_MESSAGE.unavailable() },
         vendor: unknownStore,
         shipping: 0,
-        taxRate: null,
       });
       continue;
     }
@@ -106,13 +119,13 @@ export async function quoteCart(lines: CartLineInput[], opts: QuoteOptions = {})
 
     // A product with variations needs an existing one; a product without them mustn't name one.
     if ((wantsVariation && !variation) || (!wantsVariation && input.variationId)) {
-      work.push({ line: { ...common, qty: input.qty, maxQty: null, subtotal: 0, total: 0, available: false, issue: "variation-gone", message: ISSUE_MESSAGE["variation-gone"]() }, vendor, shipping: 0, taxRate: null });
+      work.push({ line: { ...common, qty: input.qty, maxQty: null, subtotal: 0, total: 0, available: false, issue: "variation-gone", message: ISSUE_MESSAGE["variation-gone"]() }, vendor, shipping: 0 });
       continue;
     }
 
     const stock = digital ? null : (variation?.stock ?? p.stock);
     if (stock !== null && stock < common.minQty) {
-      work.push({ line: { ...common, qty: input.qty, maxQty: Math.max(0, stock), subtotal: 0, total: 0, available: false, issue: "out-of-stock", message: ISSUE_MESSAGE["out-of-stock"]() }, vendor, shipping: 0, taxRate: null });
+      work.push({ line: { ...common, qty: input.qty, maxQty: Math.max(0, stock), subtotal: 0, total: 0, available: false, issue: "out-of-stock", message: ISSUE_MESSAGE["out-of-stock"]() }, vendor, shipping: 0 });
       continue;
     }
 
@@ -132,7 +145,6 @@ export async function quoteCart(lines: CartLineInput[], opts: QuoteOptions = {})
       line: { ...common, qty, maxQty: stock, subtotal, total: subtotal, available: true, issue, message: issue === "qty-capped" ? ISSUE_MESSAGE["qty-capped"](stock!) : issue === "qty-min" ? ISSUE_MESSAGE["qty-min"](common.minQty) : null },
       vendor,
       shipping,
-      taxRate: p.taxRate,
     });
   }
 
@@ -142,7 +154,6 @@ export async function quoteCart(lines: CartLineInput[], opts: QuoteOptions = {})
 
   // Group by store, in cart order (marketplace rule): subtotal and shipping first.
   const stores = new Map<string, QuotedStore>();
-  const taxRateOf = new Map<QuotedLine, number | null>();
   /** per store: normal shipping (before the free threshold) and whether it ships anything physical */
   const baseOf = new Map<QuotedStore, { base: number; physical: boolean }>();
   for (const w of work) {
@@ -155,7 +166,6 @@ export async function quoteCart(lines: CartLineInput[], opts: QuoteOptions = {})
       b.physical ||= !w.line.digital;
       baseOf.set(s, b);
     }
-    taxRateOf.set(w.line, w.taxRate);
     s.lines.push(w.line);
     stores.set(key, s);
   }
@@ -202,7 +212,7 @@ export async function quoteCart(lines: CartLineInput[], opts: QuoteOptions = {})
       }
     }
     for (const l of buyable) {
-      l.tax = taxOf(l.subtotal - l.discount, taxRateOf.get(l) ?? null);
+      l.tax = taxOf(l.subtotal - l.discount, rate);
       l.total = l.subtotal - l.discount + l.tax;
       s.discount += l.discount;
       s.tax += l.tax;
@@ -227,6 +237,8 @@ export async function quoteCart(lines: CartLineInput[], opts: QuoteOptions = {})
     shippingMethod: method,
     shippingOptions: options,
     needsShipping: [...baseOf.values()].some((b) => b.physical),
+    taxRegion: dest,
+    taxPending: !opts.shipTo,
     issueCount: all.filter((l) => l.issue !== null).length,
     // Checkout needs something to buy and nothing unbuyable left in the cart.
     blocked: itemCount === 0 || all.some((l) => !l.available),

@@ -10,7 +10,7 @@ import { VendorApprovalTable } from "@/components/admin/vendors/VendorApprovalTa
 import { EmptyState } from "@/components/data/DashCard";
 import { SetBreadcrumbs } from "@/components/shell/Breadcrumbs";
 import { PreviewStateFrame } from "@/components/states/PreviewState";
-import { requireArea } from "@/lib/auth-guard";
+import { requirePermission } from "@/lib/access.server";
 import { vendorListSchema } from "@/lib/validations/admin-vendor";
 import { getVendors } from "../actions";
 import { firstParams } from "@/lib/list-params";
@@ -37,7 +37,7 @@ function ListCard({ children }: { children: ReactNode }) {
 }
 
 export default async function VendorApprovalPage({ searchParams }: PageProps<"/admin/vendors/approval">) {
-  await requireArea("ADMIN");
+  await requirePermission("vendors");
   const sp = await searchParams;
   const params = vendorListSchema.parse(firstParams(sp));
 

@@ -3,9 +3,11 @@
 import { Prisma, type BrandStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import type { z } from "zod";
-import { forbiddenResult, isAdmin } from "@/lib/admin-auth";
+import { can } from "@/lib/access.server";
+import { forbiddenResult } from "@/lib/admin-auth";
 import { prisma } from "@/lib/db";
 import { nextFreeSlug, slugify } from "@/lib/slug";
+import { VISIBLE } from "@/lib/storefront.server";
 import { deleteBrandImage, saveBrandImage, UploadError } from "@/lib/uploads";
 import {
   brandCreateSchema,
@@ -58,12 +60,18 @@ async function uniqueSlug(name: string, exceptId?: string) {
   return nextFreeSlug(base, taken.map((b) => b.slug));
 }
 
-/**
- * Products per brand. TODO(catalog): replace with `_count: { select: { products: true } }` once
- * the Product model (with brandId) exists. Until then every brand has 0 products.
- */
+/** Products per brand: all of them, and the active ones (what shoppers can see on the storefront). */
 async function productCounts(brandIds: string[]): Promise<Map<string, { total: number; active: number }>> {
-  return new Map(brandIds.map((id) => [id, { total: 0, active: 0 }]));
+  const counts = new Map(brandIds.map((id) => [id, { total: 0, active: 0 }]));
+  if (brandIds.length === 0) return counts;
+  const where = { brandId: { in: brandIds } };
+  const [all, active] = await Promise.all([
+    prisma.product.groupBy({ by: ["brandId"], where, _count: { _all: true } }),
+    prisma.product.groupBy({ by: ["brandId"], where: { ...VISIBLE, ...where }, _count: { _all: true } }),
+  ]);
+  for (const g of all) if (g.brandId) counts.get(g.brandId)!.total = g._count._all;
+  for (const g of active) if (g.brandId) counts.get(g.brandId)!.active = g._count._all;
+  return counts;
 }
 
 function toRow(b: { id: string; name: string; slug: string; image: string | null; status: BrandStatus; createdAt: Date }, productsCount: number): BrandRow {
@@ -75,7 +83,7 @@ function toRow(b: { id: string; name: string; slug: string; image: string | null
 export async function getBrands(
   params: unknown,
 ): Promise<ActionResult<{ items: BrandRow[]; total: number; page: number; pageSize: number; pageCount: number }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("brands", "read"))) return forbidden();
   const { q, status, brand, page, pageSize } = brandListSchema.parse(params ?? {});
 
   const where: Prisma.BrandWhereInput = {
@@ -113,7 +121,7 @@ export async function getBrands(
 }
 
 export async function getBrand(id: unknown): Promise<ActionResult<BrandDetail | null>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("brands", "read"))) return forbidden();
   const parsed = brandIdSchema.safeParse({ id });
   if (!parsed.success) return { success: true, data: null };
 
@@ -138,7 +146,7 @@ export type BrandOption = { id: string; name: string };
 
 /** Every brand, A→Z — for the "All brands" filter. */
 export async function getBrandOptions(): Promise<ActionResult<BrandOption[]>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("brands", "read"))) return forbidden();
   try {
     return { success: true, data: await prisma.brand.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }) };
   } catch (error) {
@@ -150,7 +158,7 @@ export async function getBrandOptions(): Promise<ActionResult<BrandOption[]>> {
 // ── Mutations ────────────────────────────────────────────────────────────────
 
 export async function createBrand(formData: FormData): Promise<ActionResult<{ id: string }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("brands", "create"))) return forbidden();
   const parsed = brandCreateSchema.safeParse({
     name: formData.get("name"),
     status: formData.get("status"),
@@ -182,7 +190,7 @@ export async function createBrand(formData: FormData): Promise<ActionResult<{ id
 }
 
 export async function updateBrand(formData: FormData): Promise<ActionResult<{ id: string }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("brands", "update"))) return forbidden();
   const parsed = brandUpdateSchema.safeParse({
     id: formData.get("id"),
     name: formData.get("name"),
@@ -224,7 +232,7 @@ export async function updateBrand(formData: FormData): Promise<ActionResult<{ id
 }
 
 export async function toggleBrandStatus(input: unknown): Promise<ActionResult<{ status: BrandStatus }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("brands", "update"))) return forbidden();
   const parsed = brandStatusSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Invalid status change." };
 
@@ -247,7 +255,7 @@ export async function toggleBrandStatus(input: unknown): Promise<ActionResult<{ 
 }
 
 export async function deleteBrand(input: unknown): Promise<ActionResult<{ productsCount?: number }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("brands", "delete"))) return forbidden();
   const parsed = brandIdSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Invalid brand." };
   const { id } = parsed.data;

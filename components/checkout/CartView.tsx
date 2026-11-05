@@ -22,9 +22,11 @@ const cols = "md:grid md:grid-cols-[2.4fr_1fr_1.2fr_1fr] md:items-center md:gap-
  * server quote (lib/checkout.server); the browser cart only holds ids and quantities.
  */
 export function CartView() {
-  const { draft, update } = useCheckoutDraft();
+  const { draft, update, ready: draftReady } = useCheckoutDraft();
   const coupons = draft.coupons ?? {};
-  const { cart, quote, status, error, retry, busy } = useCartQuote(coupons, draft.shippingMethod ?? "STANDARD");
+  // Tax depends on where it ships: only known here if the shopper already confirmed an address.
+  const shipTo = draft.addressesConfirmed && draft.shipping ? { country: draft.shipping.country, state: draft.shipping.state ?? "" } : null;
+  const { cart, quote, status, error, retry, busy } = useCartQuote(coupons, draft.shippingMethod ?? "STANDARD", shipTo, !draftReady);
 
   if (!cart.ready || (cart.items.length > 0 && !quote && status !== "error")) return <CartSkeleton />;
   if (cart.items.length === 0) return <EmptyCart />;
@@ -146,6 +148,7 @@ export function CartView() {
               quote={quote}
               lines={cart.items.map((i) => ({ id: i.id, productId: i.productId, variationId: i.variationId ?? null, qty: i.qty }))}
               coupons={coupons}
+              shipTo={shipTo}
               onChange={(next) => update({ coupons: next })}
             />
           }

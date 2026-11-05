@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowRight,
   ArrowUpRight,
   BadgePercent,
   ChartLine,
@@ -17,9 +18,12 @@ import {
   Wallet,
   type LucideIcon,
 } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { LineChart } from "@/components/data/Chart";
 import { DashCard, IconTile, Segmented } from "@/components/data/DashCard";
+import { RankList, RankRating, RankRow, RankSold } from "@/components/data/RankList";
+import { ProductThumb } from "@/components/products/ProductThumb";
 import { OrderStatusGrid } from "@/components/data/OrderStatusGrid";
 import type { VendorDashboardData, VendorRange } from "@/lib/data/vendor-dashboard";
 import { money } from "@/lib/money";
@@ -42,7 +46,17 @@ function EmptyList({ text }: { text: string }) {
   );
 }
 
+function ViewAll({ href }: { href: string }) {
+  return (
+    <Link href={href} className="inline-flex min-h-11 items-center gap-1 text-caption font-semibold whitespace-nowrap">
+      View all
+      <ArrowRight aria-hidden className="size-3.5" strokeWidth={2} />
+    </Link>
+  );
+}
+
 export function VendorDashboard({ data }: { data: VendorDashboardData }) {
+  const { rated, selling } = data.lists;
   const [period, setPeriod] = useState<"overall" | "today" | "month">("overall");
   const [range, setRange] = useState<VendorRange>("year");
   const e = data.earnings[range];
@@ -53,9 +67,8 @@ export function VendorDashboard({ data }: { data: VendorDashboardData }) {
     { label: "Already withdrawn", value: data.wallet.alreadyWithdrawn, tone: "success", icon: CircleCheck },
     { label: "Delivery charge earned", value: data.wallet.deliveryCharge, tone: "info", icon: Truck },
     { label: "Total tax", value: data.wallet.totalTax, tone: "neutral", icon: Receipt },
-    { label: "Total sales (Stripe)", value: data.wallet.totalSales, tone: "saffron", icon: CreditCard },
+    { label: "Total sales", value: data.wallet.totalSales, tone: "saffron", icon: CreditCard },
   ];
-  const canWithdraw = data.wallet.withdrawable > 0;
 
   return (
     <div className="flex flex-col gap-4 sm:gap-6">
@@ -99,12 +112,13 @@ export function VendorDashboard({ data }: { data: VendorDashboardData }) {
               <div className="font-display text-[clamp(1.75rem,4vw,2.25rem)] font-extrabold tracking-[-0.02em] tabular-nums">
                 {money(data.wallet.withdrawable)}
               </div>
-              <div className="mt-1 text-[0.7rem] text-iris-100">Paid out via Stripe Connect · 2–3 business days</div>
+              <div className="mt-1 text-[0.7rem] text-iris-100">Earned on delivered orders · payouts open with Stripe Connect</div>
             </div>
             <button
               type="button"
-              disabled={!canWithdraw}
-              title={canWithdraw ? undefined : "Nothing to withdraw yet"}
+              // TODO(stripe-connect): enable once payouts exist; until then the balance is shown, not withdrawable.
+              disabled
+              title="Payouts open with Stripe Connect"
               className="relative inline-flex h-11.5 items-center justify-center gap-2 rounded-md bg-accent text-[0.9rem] font-bold text-fg-strong transition-colors duration-(--dur-fast) hover:bg-saffron-50 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-accent"
             >
               <ArrowUpRight aria-hidden className="size-4.5" strokeWidth={2} />
@@ -161,11 +175,44 @@ export function VendorDashboard({ data }: { data: VendorDashboardData }) {
 
       {/* Lists: filled once the store has products, reviews and deliveries */}
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(360px,100%),1fr))] items-start gap-4 sm:gap-6">
-        <DashCard title="Most Rated Products" icon={Star} tone="saffron">
-          <EmptyList text="Your best-reviewed products appear here once shoppers leave ratings." />
+        <DashCard title="Most Rated Products" icon={Star} tone="saffron" actions={rated.length > 0 && <ViewAll href="/vendor/products" />}>
+          {rated.length === 0 ? (
+            <EmptyList text="Your best-reviewed products appear here once shoppers leave ratings." />
+          ) : (
+            <div className="mt-4.5">
+              <RankList>
+                {rated.map((p) => (
+                  <RankRow
+                    key={p.id}
+                    href={`/vendor/products/${p.id}`}
+                    media={<ProductThumb src={p.thumbnail} name={p.name} size={40} />}
+                    title={p.name}
+                    meta={<RankRating ratingAvg={p.ratingAvg} reviews={p.reviewCount} />}
+                    aside={<span className="text-sm font-bold text-fg-strong tabular-nums">{money(p.price)}</span>}
+                  />
+                ))}
+              </RankList>
+            </div>
+          )}
         </DashCard>
-        <DashCard title="Top Selling Products" icon={Trophy}>
-          <EmptyList text="Your best sellers and their revenue appear here once orders come in." />
+        <DashCard title="Top Selling Products" icon={Trophy} actions={selling.length > 0 && <ViewAll href="/vendor/reports/products" />}>
+          {selling.length === 0 ? (
+            <EmptyList text="Your best sellers and their revenue appear here once orders come in." />
+          ) : (
+            <div className="mt-4.5">
+              <RankList>
+                {selling.map((p) => (
+                  <RankRow
+                    key={p.id}
+                    href={`/vendor/products/${p.id}`}
+                    media={<ProductThumb src={p.thumbnail} name={p.name} size={40} />}
+                    title={p.name}
+                    aside={<RankSold revenue={money(p.revenue)} sold={p.sold} />}
+                  />
+                ))}
+              </RankList>
+            </div>
+          )}
         </DashCard>
       </div>
       <DashCard title="Top Delivery Partners" icon={Truck} tone="success">

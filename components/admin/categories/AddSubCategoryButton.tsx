@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import type { CategoryOption } from "@/app/admin/(panel)/categories/actions";
+import { useCan } from "@/components/admin/AdminPermissions";
 import { Button } from "@/components/ui/button";
 import { SubCategoryFormDialog } from "./SubCategoryFormDialog";
 
@@ -12,6 +13,7 @@ export function AddSubCategoryButton({ categories }: { categories: CategoryOptio
   const params = useSearchParams();
   const [open, setOpen] = useState(false);
   const [instance, setInstance] = useState(0);
+  if (!useCan("categories", "create")) return null; // needs Categories › Create
   const filtered = params.get("category");
 
   return (

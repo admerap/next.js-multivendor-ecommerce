@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { SHIPPING_METHOD_INFO, type ShippingMethod } from "@/lib/checkout";
 import { cn } from "@/lib/utils";
 import { ADDRESS_TYPE_LABEL, checkoutAddressesSchema, emptyAddress, ORDER_NOTE_MAX, type AddressInput } from "@/lib/validations/checkout";
+import { REGION } from "@/lib/regions";
 import { AddressFields } from "./AddressFields";
 import { CartSkeleton } from "./CartView";
 import { CheckoutStepper } from "./CheckoutStepper";
@@ -35,7 +36,11 @@ export function CheckoutView({ customer }: { customer: Customer }) {
   const step = useSearchParams().get("step") === "payment" ? "payment" : "shipping";
   const { draft, update, ready } = useCheckoutDraft();
   const coupons = draft.coupons ?? {};
-  const { cart, quote, status, error, retry, busy } = useCartQuote(coupons, draft.shippingMethod ?? "STANDARD");
+  // Sales tax follows the shipping address as it's typed: once the state is chosen (or for countries
+  // where the region is optional) the summary shows "Tax (CT 6.35%)".
+  const shipDraft = draft.shipping ?? emptyAddress(customer);
+  const shipTo = shipDraft.state || !REGION[shipDraft.country].required ? { country: shipDraft.country, state: shipDraft.state ?? "" } : null;
+  const { cart, quote, status, error, retry, busy } = useCartQuote(coupons, draft.shippingMethod ?? "STANDARD", shipTo, !ready);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, start] = useTransition();
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -242,6 +247,7 @@ export function CheckoutView({ customer }: { customer: Customer }) {
                 quote={quote}
                 lines={cart.items.map((i) => ({ id: i.id, productId: i.productId, variationId: i.variationId ?? null, qty: i.qty }))}
                 coupons={coupons}
+                shipTo={shipTo}
                 onChange={(next) => update({ coupons: next })}
               />
             }

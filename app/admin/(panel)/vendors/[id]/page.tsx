@@ -8,7 +8,7 @@ import { VendorStatusActions } from "@/components/admin/vendors/VendorStatusActi
 import { VendorStatusBadge } from "@/components/admin/vendors/VendorStatusBadge";
 import { DashCard, IconTile } from "@/components/data/DashCard";
 import { SetBreadcrumbs } from "@/components/shell/Breadcrumbs";
-import { requireArea } from "@/lib/auth-guard";
+import { requirePermission } from "@/lib/access.server";
 import { cn } from "@/lib/utils";
 import { getVendor } from "../actions";
 
@@ -43,7 +43,7 @@ function InfoList({ rows }: { rows: { icon: LucideIcon; label: string; value: Re
  * Extension point: the full vendor analytics (orders, revenue, ratings…) go below the stats row.
  */
 export default async function VendorDetailPage({ params }: PageProps<"/admin/vendors/[id]">) {
-  await requireArea("ADMIN");
+  await requirePermission("vendors");
   const { id } = await params;
   const res = await getVendor(id);
   if (!res.success) throw new Error(res.error ?? "Couldn't load this vendor"); // → error.tsx (Retry)
@@ -99,7 +99,7 @@ export default async function VendorDetailPage({ params }: PageProps<"/admin/ven
         </div>
       </section>
 
-      {/* Stats — TODO(catalog): products come from Product counts once that model exists (0 until then). */}
+      {/* Stats */}
       <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
         {[
           { label: "Total products", value: v.productsCount, icon: Package, tone: "iris" as const, place: "" },

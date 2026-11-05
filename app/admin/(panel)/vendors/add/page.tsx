@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { AddVendorForm } from "@/components/admin/vendors/AddVendorForm";
 import { SetBreadcrumbs } from "@/components/shell/Breadcrumbs";
-import { requireArea } from "@/lib/auth-guard";
+import { requirePermission } from "@/lib/access.server";
 
 export const metadata: Metadata = { title: "Add New Vendor" };
 
 /** Admin › Vendor Manage › Add New Vendor (adminaddvendor design). */
 export default async function AddVendorPage() {
-  await requireArea("ADMIN");
+  await requirePermission("vendors", "create");
   return (
     <>
       <SetBreadcrumbs items={[{ label: "Dashboard", href: "/admin/dashboard" }, { label: "Vendor Manage" }, { label: "Add New Vendor" }]} />

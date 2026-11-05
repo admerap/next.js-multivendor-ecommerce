@@ -5,13 +5,13 @@ import { auth } from "@/auth";
 import type { CartQuote } from "@/lib/checkout";
 import { quoteCart } from "@/lib/checkout.server";
 import { prisma } from "@/lib/db";
-import { cartCouponsSchema, cartLinesSchema, couponCodeSchema, shippingMethodSchema } from "@/lib/validations/checkout";
+import { cartCouponsSchema, cartLinesSchema, couponCodeSchema, shippingMethodSchema, shipToSchema } from "@/lib/validations/checkout";
 
 const linesSchema = cartLinesSchema;
 const codeSchema = couponCodeSchema;
 const couponsSchema = cartCouponsSchema;
 
-const quoteSchema = z.object({ lines: linesSchema, coupons: couponsSchema, shippingMethod: shippingMethodSchema });
+const quoteSchema = z.object({ lines: linesSchema, coupons: couponsSchema, shippingMethod: shippingMethodSchema, shipTo: shipToSchema });
 
 /** The signed-in shopper, for per-customer and first-order coupon rules (null = guest). */
 async function viewerId() {
@@ -30,7 +30,7 @@ export async function getCartQuote(input: unknown): Promise<{ success: true; dat
   const parsed = quoteSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Your cart couldn't be read. Refresh the page and try again." };
   try {
-    return { success: true, data: await quoteCart(parsed.data.lines, { coupons: parsed.data.coupons, userId: await viewerId(), shippingMethod: parsed.data.shippingMethod }) };
+    return { success: true, data: await quoteCart(parsed.data.lines, { coupons: parsed.data.coupons, userId: await viewerId(), shippingMethod: parsed.data.shippingMethod, shipTo: parsed.data.shipTo }) };
   } catch (error) {
     console.error("[cart quote] failed", error instanceof Error ? error.message : error);
     return { success: false, error: LOAD_ERROR };
@@ -48,9 +48,9 @@ export type CouponApplyResult =
  * the client keeps the code and sends it with each quote.
  */
 export async function applyCoupon(input: unknown): Promise<CouponApplyResult> {
-  const parsed = z.object({ code: codeSchema, lines: linesSchema.min(1), coupons: couponsSchema, shippingMethod: shippingMethodSchema }).safeParse(input);
+  const parsed = z.object({ code: codeSchema, lines: linesSchema.min(1), coupons: couponsSchema, shippingMethod: shippingMethodSchema, shipTo: shipToSchema }).safeParse(input);
   if (!parsed.success) return { success: false, error: "Enter a valid coupon code." };
-  const { code, lines, coupons, shippingMethod } = parsed.data;
+  const { code, lines, coupons, shippingMethod, shipTo } = parsed.data;
   try {
     const owners = await prisma.product.findMany({ where: { id: { in: [...new Set(lines.map((l) => l.productId))] } }, select: { vendorId: true } });
     const vendorIds = [...new Set(owners.map((o) => o.vendorId))];
@@ -58,7 +58,7 @@ export async function applyCoupon(input: unknown): Promise<CouponApplyResult> {
     if (matches.length === 0) return { success: false, error: "This coupon code isn't valid for the items in your cart." };
 
     const tried = Object.fromEntries(matches.map((m) => [m.vendorId, code]));
-    const quote = await quoteCart(lines, { coupons: { ...coupons, ...tried }, userId: await viewerId(), shippingMethod });
+    const quote = await quoteCart(lines, { coupons: { ...coupons, ...tried }, userId: await viewerId(), shippingMethod, shipTo });
     const stores = quote.stores.filter((s) => s.vendor.id in tried);
     const applied = stores.flatMap((s) => (s.coupon?.code === code ? [{ vendorId: s.vendor.id, store: s.vendor.name, code, discount: s.coupon.discount, freeShipping: s.coupon.freeShipping }] : []));
     if (applied.length === 0) return { success: false, error: stores.find((s) => s.couponError)?.couponError?.message ?? "This coupon can't be applied to your cart." };

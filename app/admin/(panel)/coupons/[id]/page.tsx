@@ -13,7 +13,7 @@ import { DeleteCouponButton } from "@/components/coupons/DeleteCouponButton";
 import { ApprovalBadge } from "@/components/products/ApprovalBadge";
 import { ProductThumb } from "@/components/products/ProductThumb";
 import { dateFmt, Detail, DetailCard, shortDate } from "@/components/products/detail/ProductDetailSections";
-import { requireArea } from "@/lib/auth-guard";
+import { requirePermission } from "@/lib/access.server";
 import { getAdminCouponDetail, type AdminCouponDetail } from "@/lib/coupon-detail.server";
 import { couponDate } from "@/lib/coupons";
 import { money } from "@/lib/money";
@@ -100,7 +100,7 @@ function Products({ c }: { c: AdminCouponDetail }) {
 
 /** Coupon Manage › Coupon Details: any store's coupon with Approve, Deny (reason for the store) and Delete. */
 export default async function AdminCouponDetailsPage({ params }: PageProps<"/admin/coupons/[id]">) {
-  await requireArea("ADMIN");
+  await requirePermission("coupons");
   const parsed = adminCouponIdSchema.safeParse(await params);
   if (!parsed.success) notFound();
   const c = await getAdminCouponDetail(parsed.data.id);

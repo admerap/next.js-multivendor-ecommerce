@@ -23,7 +23,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { CustomerAvatar } from "@/components/admin/customers/AdminCustomerTable";
 import { DashCard, IconTile, Segmented, SubCard } from "@/components/data/DashCard";
+import { RankList, RankPill, RankRating, RankRow, RankSold } from "@/components/data/RankList";
+import { ProductThumb } from "@/components/products/ProductThumb";
 import { DoughnutChart, LineChart } from "@/components/data/Chart";
 import { OrderStatusGrid } from "@/components/data/OrderStatusGrid";
 import type { AdminDashboardData, Range } from "@/lib/data/admin-dashboard";
@@ -76,8 +79,18 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
   const userTotal = sum(users.map((x) => x.value));
 
   const pending = data.totals.pendingProducts;
+  const lists = data.lists;
   const bigStats: { label: string; value: string; delta: string; up: boolean; warn?: boolean; tone: Tone; icon: LucideIcon; href?: string; hrefLabel?: string }[] = [
-    { label: "Total Orders", value: totalOrders.toLocaleString("en-US"), delta: "No orders yet", up: false, tone: "iris", icon: ShoppingCart },
+    {
+      label: "Total Orders",
+      value: totalOrders.toLocaleString("en-US"),
+      delta: data.totals.orders === 0 ? "No orders yet" : `+${data.totals.newOrdersThisMonth} new this month`,
+      up: data.totals.newOrdersThisMonth > 0,
+      tone: "iris",
+      icon: ShoppingCart,
+      href: "/admin/orders",
+      hrefLabel: `Total orders: ${totalOrders} — view all orders`,
+    },
     {
       label: "Total Stores",
       value: data.totals.stores.toLocaleString("en-US"),
@@ -304,15 +317,54 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
       {/* Lists: filled once orders, products and reviews exist */}
       <DashCard title="Users" icon={Users}>
         <div className={twoCol}>
-          <SubCard title="Top Customers" icon={UserRound} tone="iris" href="/admin/customers" empty="Customers with the most orders appear here." />
-          <SubCard title="Top Delivery Men" icon={Truck} tone="success" href="#" empty="Delivery men and their completed deliveries appear here." />
+          <SubCard
+            title="Top Customers"
+            icon={UserRound}
+            tone="iris"
+            href="/admin/customers?sort=orders"
+            empty={lists.customers.length ? undefined : "Customers with the most orders appear here."}
+          >
+            <RankList>
+              {lists.customers.map((c) => (
+                <RankRow
+                  key={c.id}
+                  href={`/admin/customers/${c.id}`}
+                  media={<CustomerAvatar name={c.name} image={c.image} size={40} />}
+                  title={c.name}
+                  meta={c.email}
+                  aside={<RankPill>Orders: {c.orders}</RankPill>}
+                />
+              ))}
+            </RankList>
+          </SubCard>
+          {/* No "View all": delivery men don't exist yet. */}
+          <SubCard title="Top Delivery Men" icon={Truck} tone="success" empty="Delivery men and their completed deliveries appear here." />
         </div>
       </DashCard>
 
       <DashCard title="Stores" icon={Store} tone="saffron">
         <div className={twoCol}>
           <SubCard title="Most Popular Stores" icon={Trophy} tone="error" href="/admin/vendors" empty="Stores with the most followers appear here." />
-          <SubCard title="Top Selling Stores" icon={ShoppingCart} tone="iris" href="/admin/vendors" empty="Stores ranked by revenue appear here once orders come in." />
+          <SubCard
+            title="Top Selling Stores"
+            icon={ShoppingCart}
+            tone="iris"
+            href="/admin/vendors"
+            empty={lists.stores.length ? undefined : "Stores ranked by revenue appear here once orders come in."}
+          >
+            <RankList>
+              {lists.stores.map((s) => (
+                <RankRow
+                  key={s.id}
+                  href={`/admin/vendors/${s.id}`}
+                  media={<ProductThumb src={s.logo} name={s.name} size={40} />}
+                  title={s.name}
+                  meta={`${s.orders} ${s.orders === 1 ? "order" : "orders"}`}
+                  aside={<span className="text-sm font-bold text-fg-strong tabular-nums">{money(s.revenue)}</span>}
+                />
+              ))}
+            </RankList>
+          </SubCard>
         </div>
       </DashCard>
 
@@ -335,8 +387,46 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
 
       <DashCard title="Vendor Products" icon={Package}>
         <div className={twoCol}>
-          <SubCard title="Most Rated Products" icon={Star} tone="saffron" href="/admin/products/approved" empty="Top-rated products from vendor stores appear here." />
-          <SubCard title="Top Selling Products" icon={ShoppingCart} tone="iris" href="/admin/products/approved" empty="Best-selling vendor products appear here." />
+          <SubCard
+            title="Most Rated Products"
+            icon={Star}
+            tone="saffron"
+            href="/admin/reviews"
+            empty={lists.rated.length ? undefined : "Top-rated products from vendor stores appear here."}
+          >
+            <RankList>
+              {lists.rated.map((p) => (
+                <RankRow
+                  key={p.id}
+                  href={`/admin/products/${p.id}`}
+                  media={<ProductThumb src={p.thumbnail} name={p.name} size={40} />}
+                  title={p.name}
+                  meta={p.store}
+                  aside={<RankRating ratingAvg={p.ratingAvg} reviews={p.reviewCount} />}
+                />
+              ))}
+            </RankList>
+          </SubCard>
+          <SubCard
+            title="Top Selling Products"
+            icon={ShoppingCart}
+            tone="iris"
+            href="/admin/products/approved"
+            empty={lists.selling.length ? undefined : "Best-selling vendor products appear here."}
+          >
+            <RankList>
+              {lists.selling.map((p) => (
+                <RankRow
+                  key={p.id}
+                  href={`/admin/products/${p.id}`}
+                  media={<ProductThumb src={p.thumbnail} name={p.name} size={40} />}
+                  title={p.name}
+                  meta={p.store}
+                  aside={<RankSold revenue={money(p.revenue)} sold={p.sold} />}
+                />
+              ))}
+            </RankList>
+          </SubCard>
         </div>
       </DashCard>
     </div>

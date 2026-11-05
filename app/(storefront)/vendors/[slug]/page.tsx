@@ -119,7 +119,7 @@ function StoreHeader({ store }: { store: StoreProfile }) {
       </div>
       {/* Sundry AI Support replaces chat with the vendor (CLAUDE.md §3). */}
       <Button asChild className="max-sm:w-full">
-        <Link href="/account/inbox">
+        <Link href="/dashboard/inbox">
           <Bot aria-hidden />
           Ask AI Support
         </Link>

@@ -89,6 +89,12 @@ export const couponCodeSchema = z.string().trim().toUpperCase().min(1).max(32);
 export const cartCouponsSchema = z.record(cartId, couponCodeSchema).refine((r) => Object.keys(r).length <= 50).default({});
 
 export const ORDER_NOTE_MAX = 500;
+/** Where the order ships, for the sales tax (cart step: none yet). The rate is looked up on the server. */
+export const shipToSchema = z
+  .object({ country: z.enum(COUNTRIES), state: z.string().trim().max(8).default("") })
+  .nullish()
+  .transform((v) => v ?? null);
+
 /** Delivery speed for the whole order (Standard unless the shopper picks Express). */
 export const shippingMethodSchema = z.enum(SHIPPING_METHODS, "Choose a delivery method.").default("STANDARD");
 

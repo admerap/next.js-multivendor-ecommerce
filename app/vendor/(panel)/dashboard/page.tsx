@@ -41,7 +41,7 @@ export default async function VendorDashboardPage() {
           title="No sales yet"
           description={`Once shoppers start ordering from ${data.store.name}, your analytics, wallet and top products will show up here.`}
         >
-          <Link href="/vendor/products/new" className={buttonClasses.primary}>
+          <Link href="/vendor/products/add" className={buttonClasses.primary}>
             <PackagePlus aria-hidden className="size-4" strokeWidth={2} />
             Add your first product
           </Link>

@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { adminDeleteCoupon } from "@/app/admin/(panel)/coupons/actions";
 import { deleteCoupon } from "@/app/vendor/(panel)/coupons/actions";
+import { useCan } from "@/components/admin/AdminPermissions";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
@@ -37,6 +38,8 @@ export function DeleteCouponButton({
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const used = usedCount > 0;
+  // In the admin panel the button needs Coupons › Delete (the vendor's own coupons need no permission).
+  const canAdminDelete = useCan("coupons", "delete");
 
   function remove() {
     startTransition(async () => {
@@ -55,6 +58,8 @@ export function DeleteCouponButton({
       }
     });
   }
+
+  if (scope === "admin" && !canAdminDelete) return null;
 
   return (
     <>

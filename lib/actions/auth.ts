@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import type { z } from "zod";
-import { auth, signIn, signOut } from "@/auth";
+import { auth, BlockedAccount, signIn, signOut } from "@/auth";
 import { LOGIN_PATH, safeCallbackUrl } from "@/lib/auth-routes";
 import { prisma } from "@/lib/db";
 import { nextFreeSlug, slugify } from "@/lib/slug";
@@ -59,6 +59,7 @@ export async function loginAction(input: unknown, callbackUrl?: string): Promise
   try {
     await signIn("credentials", { ...parsed.data, redirect: false });
   } catch (error) {
+    if (error instanceof BlockedAccount) return { ok: false, message: "This account has been blocked. Contact Sundry support if you think this is a mistake." };
     if (error instanceof AuthError) return { ok: false, message: "Incorrect email or password" };
     console.error("[auth] login failed", error);
     return { ok: false, message: "We couldn't sign you in right now. Please try again." };

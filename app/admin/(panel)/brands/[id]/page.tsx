@@ -6,7 +6,7 @@ import { BrandStatusBadge } from "@/components/admin/brands/BrandStatusBadge";
 import { BrandThumb } from "@/components/admin/brands/BrandThumb";
 import { DashCard, EmptyState, IconTile } from "@/components/data/DashCard";
 import { SetBreadcrumbs } from "@/components/shell/Breadcrumbs";
-import { requireArea } from "@/lib/auth-guard";
+import { requirePermission } from "@/lib/access.server";
 import type { Tone } from "@/lib/tones";
 import { getBrand } from "../actions";
 
@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: PageProps<"/admin/brands/[id]
 }
 
 export default async function BrandDetailPage({ params }: PageProps<"/admin/brands/[id]">) {
-  await requireArea("ADMIN");
+  await requirePermission("brands");
   const { id } = await params;
   const res = await getBrand(id);
   if (!res.success) throw new Error(res.error ?? "Couldn't load this brand");

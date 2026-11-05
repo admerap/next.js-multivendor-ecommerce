@@ -47,7 +47,7 @@ const FAQS = [
 
 const HELP: { title: string; sub: string; icon: LucideIcon; href: string }[] = [
   { title: "About Us", sub: "Know about our company more", icon: Building2, href: "#" },
-  { title: "Contact Us", sub: "We are here to help", icon: Mail, href: "/account/support" },
+  { title: "Contact Us", sub: "We are here to help", icon: Mail, href: "/dashboard/support" },
   { title: "FAQ", sub: "Get all answers", icon: CircleHelp, href: "#faq" },
   { title: "Blog", sub: "Check latest blogs", icon: BookOpen, href: "#" },
 ];

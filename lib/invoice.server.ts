@@ -1,10 +1,10 @@
 import "server-only";
 
 import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from "pdf-lib";
-import { SHIPPING_METHOD_INFO } from "@/lib/checkout";
+import { SHIPPING_METHOD_INFO, taxLabel } from "@/lib/checkout";
 import { money } from "@/lib/money";
 import type { OrderView } from "@/lib/orders.server";
-import { addressLines, orderAddress, orderDate, PAYMENT_METHOD_LABEL, PAYMENT_STATUS_LABEL } from "@/lib/orders";
+import { addressLines, canceledPartsTotal, orderAddress, orderDate, PAYMENT_METHOD_LABEL, PAYMENT_STATUS_LABEL } from "@/lib/orders";
 
 /**
  * Invoice PDF for one order, split by seller (marketplace rule): header, bill-to / ship-to, then one
@@ -12,9 +12,10 @@ import { addressLines, orderAddress, orderDate, PAYMENT_METHOD_LABEL, PAYMENT_ST
  * due. US Letter, built with pdf-lib's standard fonts (no files to ship).
  *
  * A PDF can't read the CSS design tokens, so its palette repeats the brand values here — the only place
- * outside globals.css that does (Iris primary, text and line neutrals from DESIGN_SYSTEM §11).
+ * outside globals.css that does (Iris primary, text and line neutrals from DESIGN_SYSTEM §11). The
+ * report PDFs (lib/report-pdf.server.ts) reuse it.
  */
-const C = {
+export const PDF_COLORS = {
   primary: rgb(106 / 255, 47 / 255, 214 / 255),
   strong: rgb(26 / 255, 26 / 255, 35 / 255),
   body: rgb(64 / 255, 64 / 255, 80 / 255),
@@ -23,9 +24,14 @@ const C = {
   sunken: rgb(246 / 255, 246 / 255, 250 / 255),
   success: rgb(21 / 255, 146 / 255, 90 / 255),
 };
+const C = PDF_COLORS;
 const PAGE = { w: 612, h: 792, m: 48 };
 
-export async function renderInvoice(order: OrderView): Promise<Uint8Array> {
+/**
+ * `sellerCopy`: a vendor's invoice for its own part — the caller passes the order already trimmed to
+ * that store (getVendorOrderView), and the wording says so.
+ */
+export async function renderInvoice(order: OrderView, { sellerCopy = false }: { sellerCopy?: boolean } = {}): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
   doc.setTitle(`Sundry invoice #${order.orderNumber}`);
   doc.setAuthor("Sundry Marketplace");
@@ -59,7 +65,7 @@ export async function renderInvoice(order: OrderView): Promise<Uint8Array> {
   text("Sundry", PAGE.m, 22, bold, C.primary);
   right("INVOICE", R, 20, bold, C.strong);
   y -= 16;
-  text("One marketplace. Every seller you love.", PAGE.m, 9, font, C.muted);
+  text(sellerCopy ? `Seller copy - ${order.storeOrders[0]?.vendor.storeName ?? ""}'s part of this order` : "One marketplace. Every seller you love.", PAGE.m, 9, font, C.muted);
   right(`Invoice #${order.orderNumber}`, R, 10, bold, C.strong);
   y -= 13;
   right(`Date: ${orderDate(order.createdAt)}`, R, 9);
@@ -97,7 +103,7 @@ export async function renderInvoice(order: OrderView): Promise<Uint8Array> {
   for (const s of order.storeOrders) {
     need(90);
     page.drawRectangle({ x: PAGE.m, y: y - 6, width: R - PAGE.m, height: 22, color: C.sunken });
-    text(`Sold by ${s.vendor.storeName}`, cols.item, 10.5, bold, C.strong);
+    text(`Sold by ${s.vendor.storeName}${s.status === "CANCELED" ? " - CANCELED" : ""}`, cols.item, 10.5, bold, C.strong);
     y -= 26;
     text("ITEM", cols.item, 7.5, bold, C.muted);
     right("QTY", cols.qty + 20, 7.5, bold, C.muted);
@@ -131,7 +137,7 @@ export async function renderInvoice(order: OrderView): Promise<Uint8Array> {
     if (s.discount > 0) sumRow(`Discount${s.couponCode ? ` (${s.couponCode})` : ""}`, `-${money(s.discount)}`);
     else if (s.couponCode) sumRow(`Coupon ${s.couponCode}`, "Free delivery");
     sumRow("Shipping", s.shipping === 0 ? "Free" : money(s.shipping));
-    sumRow("Tax", money(s.tax));
+    sumRow(taxLabel(order.taxRegion, order.taxRate), money(s.tax));
     sumRow(`${s.vendor.storeName} total`, money(s.total), true);
     y -= 12;
   }
@@ -148,23 +154,28 @@ export async function renderInvoice(order: OrderView): Promise<Uint8Array> {
   total("Subtotal", money(order.subtotal));
   total("Discount", `-${money(order.discount)}`);
   total(`Shipping (${SHIPPING_METHOD_INFO[order.shippingMethod].label})`, order.shipping === 0 ? "Free" : money(order.shipping));
-  total("Tax", money(order.tax));
+  total(taxLabel(order.taxRegion, order.taxRate), money(order.tax));
+  // Sellers canceled on their own come off what's due; the stored totals stay the placement snapshot.
+  const canceled = canceledPartsTotal(order.storeOrders);
+  if (canceled > 0) total("Canceled items", `-${money(canceled)}`);
+  const grand = order.total - canceled;
   y -= 4;
-  total("Order total", money(order.total), true);
+  total(sellerCopy ? "Seller total" : "Order total", money(grand), true);
   y -= 6;
   const due =
     order.paymentStatus === "PAID"
-      ? `Paid in full - ${money(order.total)}`
+      ? `Paid in full - ${money(grand)}`
       : order.paymentMethod === "COD"
-        ? `Amount due on delivery (cash): ${money(order.total)}`
-        : `Amount due: ${money(order.total)}`;
+        ? `Amount due on delivery (cash): ${money(grand)}`
+        : `Amount due: ${money(grand)}`;
   right(due, cols.total, 10, bold, order.paymentStatus === "PAID" ? C.success : C.strong);
 
   // ── Footer on every page
   const pages = doc.getPages();
   pages.forEach((p, i) => {
     p.drawLine({ start: { x: PAGE.m, y: PAGE.m + 6 }, end: { x: R, y: PAGE.m + 6 }, thickness: 0.6, color: C.line });
-    p.drawText(safe("Thank you for shopping on Sundry. Each seller ships their part of your order separately."), { x: PAGE.m, y: PAGE.m - 8, size: 8, font, color: C.muted });
+    const note = sellerCopy ? "Only this seller's items and totals. Other sellers in the same order invoice their own part." : "Thank you for shopping on Sundry. Each seller ships their part of your order separately.";
+    p.drawText(safe(note), { x: PAGE.m, y: PAGE.m - 8, size: 8, font, color: C.muted });
     const label = `Page ${i + 1} of ${pages.length}`;
     p.drawText(label, { x: R - font.widthOfTextAtSize(label, 8), y: PAGE.m - 8, size: 8, font, color: C.muted });
   });

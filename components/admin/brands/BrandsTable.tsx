@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { toggleBrandStatus, type BrandRow } from "@/app/admin/(panel)/brands/actions";
+import { useCan } from "@/components/admin/AdminPermissions";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,8 @@ export function BrandsTable({ items, offset }: { items: BrandRow[]; offset: numb
   const [deleting, setDeleting] = useState<BrandRow | null>(null);
   const [optimistic, setOptimistic] = useState<Record<string, BrandRow["status"]>>({});
   const [, startTransition] = useTransition();
+  const canUpdate = useCan("brands", "update");
+  const canDelete = useCan("brands", "delete");
 
   const statusOf = (b: BrandRow) => optimistic[b.id] ?? b.status;
 
@@ -57,19 +60,25 @@ export function BrandsTable({ items, offset }: { items: BrandRow[]; offset: numb
       <Link href={`/admin/brands/${b.id}`} aria-label={`View ${b.name}`} title="View" className={cn(actionBtn, size, tones.view)}>
         <Eye aria-hidden className="size-4" strokeWidth={2} />
       </Link>
-      <button type="button" onClick={() => setEditing(b)} aria-label={`Edit ${b.name}`} title="Edit" className={cn(actionBtn, size, tones.edit)}>
-        <Pencil aria-hidden className="size-4" strokeWidth={2} />
-      </button>
-      <button type="button" onClick={() => setDeleting(b)} aria-label={`Delete ${b.name}`} title="Delete" className={cn(actionBtn, size, tones.del)}>
-        <Trash2 aria-hidden className="size-4" strokeWidth={2} />
-      </button>
+      {canUpdate && (
+        <button type="button" onClick={() => setEditing(b)} aria-label={`Edit ${b.name}`} title="Edit" className={cn(actionBtn, size, tones.edit)}>
+          <Pencil aria-hidden className="size-4" strokeWidth={2} />
+        </button>
+      )}
+      {canDelete && (
+        <button type="button" onClick={() => setDeleting(b)} aria-label={`Delete ${b.name}`} title="Delete" className={cn(actionBtn, size, tones.del)}>
+          <Trash2 aria-hidden className="size-4" strokeWidth={2} />
+        </button>
+      )}
     </div>
   );
 
+  // Without Brands › Update the switch still shows the status, switched off.
   const toggleFor = (b: BrandRow) => (
     <Switch
       checked={statusOf(b) === "ACTIVE"}
       onCheckedChange={(on) => toggle(b, on)}
+      disabled={!canUpdate}
       aria-label={`${b.name} active status`}
     />
   );

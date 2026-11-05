@@ -2,7 +2,8 @@
 
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { forbiddenResult, isAdmin } from "@/lib/admin-auth";
+import { can } from "@/lib/access.server";
+import { forbiddenResult } from "@/lib/admin-auth";
 import { prisma } from "@/lib/db";
 import { deleteProductImage } from "@/lib/uploads";
 import {
@@ -43,7 +44,6 @@ export type AdminProductRow = {
   vendor: { id: string; name: string };
 };
 
-
 const forbidden = <T>(): ActionResult<T> => forbiddenResult("products");
 const NOT_FOUND = "This product no longer exists.";
 
@@ -67,7 +67,7 @@ export async function getAdminProducts(
   input: unknown,
   view: AdminProductView,
 ): Promise<ActionResult<{ items: AdminProductRow[]; total: number; page: number; pageSize: number; pageCount: number }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("products", "read"))) return forbidden();
   const { q, vendor, category, status, page, pageSize } = adminProductListSchema.parse(input ?? {});
 
   const where: Prisma.ProductWhereInput = {
@@ -125,7 +125,7 @@ export async function getAdminProducts(
 
 /** Vendor + category options for the list filters: only those that have products in this list. */
 export async function getAdminProductFilters(input: AdminProductView): Promise<ActionResult<{ vendors: FilterOption[]; categories: FilterOption[] }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("products", "read"))) return forbidden();
   const parsed = adminProductViewSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "We couldn't load the filters." };
   const view = parsed.data;
@@ -147,7 +147,7 @@ export async function getAdminProductFilters(input: AdminProductView): Promise<A
 
 /** Approve: the product can go live (when the vendor has it active). Clears any earlier deny reason. */
 export async function approveProduct(input: unknown): Promise<ActionResult<{ isActive: boolean }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("products", "update"))) return forbidden();
   const parsed = adminProductIdSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Invalid request." };
   const { id } = parsed.data;
@@ -165,7 +165,7 @@ export async function approveProduct(input: unknown): Promise<ActionResult<{ isA
 
 /** Deny with a reason the vendor sees. Featured / Popular flags are kept but have no effect until it is approved again. */
 export async function denyProduct(input: unknown): Promise<ActionResult & { fieldErrors?: { reason?: string } }> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("products", "update"))) return forbidden();
   const parsed = adminProductDenySchema.safeParse(input);
   if (!parsed.success) {
     const reason = parsed.error.issues.find((i) => i.path[0] === "reason")?.message;
@@ -189,7 +189,7 @@ export async function denyProduct(input: unknown): Promise<ActionResult & { fiel
  * (a flagged product that goes back to pending or is denied must not get stuck with the flag).
  */
 export async function setProductFlag(input: unknown): Promise<ActionResult<{ value: boolean }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("products", "update"))) return forbidden();
   const parsed = adminProductFlagSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Invalid request." };
   const { id, flag, value } = parsed.data;
@@ -211,7 +211,7 @@ export async function setProductFlag(input: unknown): Promise<ActionResult<{ val
 
 /** Permanently deletes a product (any store), its variations, gallery rows and image files. */
 export async function adminDeleteProduct(input: unknown): Promise<ActionResult> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("products", "delete"))) return forbidden();
   const parsed = adminProductIdSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Invalid request." };
   const { id } = parsed.data;

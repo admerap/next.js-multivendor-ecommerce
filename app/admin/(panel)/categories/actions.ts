@@ -1,12 +1,12 @@
 "use server";
 
 import type { CategoryStatus, Prisma } from "@prisma/client";
+import { can } from "@/lib/access.server";
 import { prisma } from "@/lib/db";
 import {
   duplicate,
   forbidden,
   invalid,
-  isAdmin,
   isNotFoundError,
   isForeignKeyError,
   isUniqueError,
@@ -69,7 +69,7 @@ const nameTaken = async (name: string, exceptId?: string) =>
 export async function getCategories(
   params: unknown,
 ): Promise<ActionResult<{ items: CategoryRow[]; total: number; page: number; pageSize: number; pageCount: number }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("categories", "read"))) return forbidden();
   const { q, status, category, page, pageSize } = categoryListSchema.parse(params ?? {});
   const where: Prisma.CategoryWhereInput = {
     ...(q && { name: { contains: q } }),
@@ -82,7 +82,7 @@ export async function getCategories(
     const pageCount = Math.max(1, Math.ceil(total / pageSize));
     const current = Math.min(page, pageCount);
     const rows = await prisma.category.findMany({ where, orderBy: { createdAt: "desc" }, skip: (current - 1) * pageSize, take: pageSize, select: ROW_SELECT });
-    const counts = await productCounts(rows.map((r) => r.id));
+    const counts = await productCounts(rows.map((r) => r.id), "categoryId");
     return { success: true, data: { items: rows.map((r) => toRow(r, counts.get(r.id) ?? 0)), total, page: current, pageSize, pageCount } };
   } catch (error) {
     console.error("[categories] list failed", error);
@@ -92,7 +92,7 @@ export async function getCategories(
 
 /** Every category, A→Z — for the parent dropdowns and the list filters. */
 export async function getCategoryOptions(): Promise<ActionResult<CategoryOption[]>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("categories", "read"))) return forbidden();
   try {
     return { success: true, data: await prisma.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, status: true } }) };
   } catch (error) {
@@ -104,7 +104,7 @@ export async function getCategoryOptions(): Promise<ActionResult<CategoryOption[
 // ── Mutations ────────────────────────────────────────────────────────────────
 
 export async function createCategory(formData: FormData): Promise<ActionResult<{ id: string }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("categories", "create"))) return forbidden();
   const parsed = categoryCreateSchema.safeParse({ name: formData.get("name"), status: formData.get("status"), image: formData.get("image") ?? undefined });
   if (!parsed.success) return invalid(parsed.error);
   const { name, status, image } = parsed.data;
@@ -126,7 +126,7 @@ export async function createCategory(formData: FormData): Promise<ActionResult<{
 }
 
 export async function updateCategory(formData: FormData): Promise<ActionResult<{ id: string }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("categories", "update"))) return forbidden();
   const parsed = categoryUpdateSchema.safeParse({
     id: formData.get("id"),
     name: formData.get("name"),
@@ -161,7 +161,7 @@ export async function updateCategory(formData: FormData): Promise<ActionResult<{
 }
 
 export async function toggleCategoryStatus(input: unknown): Promise<ActionResult<{ status: CategoryStatus }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("categories", "update"))) return forbidden();
   const parsed = categoryStatusSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Invalid status change." };
   try {
@@ -176,7 +176,7 @@ export async function toggleCategoryStatus(input: unknown): Promise<ActionResult
 }
 
 export async function deleteCategory(input: unknown): Promise<ActionResult<{ subCategoriesCount?: number; productsCount?: number }>> {
-  if (!(await isAdmin())) return forbidden();
+  if (!(await can("categories", "delete"))) return forbidden();
   const parsed = categoryIdSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Invalid category." };
   const { id } = parsed.data;
@@ -186,7 +186,7 @@ export async function deleteCategory(input: unknown): Promise<ActionResult<{ sub
 
   // Never cascade: block while anything still hangs off this category.
   const subCategoriesCount = found._count.subCategories;
-  const productsCount = (await productCounts([id])).get(id) ?? 0;
+  const productsCount = (await productCounts([id], "categoryId")).get(id) ?? 0;
   if (subCategoriesCount > 0 || productsCount > 0) {
     const parts = [
       subCategoriesCount > 0 && plural(subCategoriesCount, "sub-category", "sub-categories"),

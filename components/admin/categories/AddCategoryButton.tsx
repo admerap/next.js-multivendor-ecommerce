@@ -2,6 +2,7 @@
 
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { useCan } from "@/components/admin/AdminPermissions";
 import { Button } from "@/components/ui/button";
 import { CategoryFormDialog } from "./CategoryFormDialog";
 
@@ -9,6 +10,7 @@ import { CategoryFormDialog } from "./CategoryFormDialog";
 export function AddCategoryButton() {
   const [open, setOpen] = useState(false);
   const [instance, setInstance] = useState(0);
+  if (!useCan("categories", "create")) return null; // needs Categories › Create
 
   return (
     <>

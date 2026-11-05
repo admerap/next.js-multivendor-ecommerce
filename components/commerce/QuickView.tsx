@@ -215,8 +215,7 @@ function QuickViewBody({ p, onDone }: { p: QuickViewProduct; onDone: () => void 
           <button
             type="button"
             onClick={() => {
-              const on = wishlist.toggle(p.id);
-              toast.success(on ? "Saved to your wishlist" : "Removed from your wishlist");
+              wishlist.toggle(p.id); // saves / removes, or asks a guest to sign in (toasts included)
             }}
             aria-pressed={wished}
             aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}

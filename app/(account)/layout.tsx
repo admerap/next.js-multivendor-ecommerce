@@ -2,10 +2,12 @@ import { User } from "lucide-react";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { AccountNav } from "@/components/account/AccountNav";
+import { QuickViewProvider } from "@/components/commerce/QuickView";
 import { HelpCards } from "@/components/commerce/StorefrontBits";
 import { StorefrontFooter } from "@/components/shell/StorefrontFooter";
 import { StorefrontHeader } from "@/components/shell/StorefrontHeader";
 import { requireArea } from "@/lib/auth-guard";
+import { chatViewer, unreadTotal } from "@/lib/chat.server";
 import { prisma } from "@/lib/db";
 
 const memberSince = new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" });
@@ -14,10 +16,11 @@ const memberSince = new Intl.DateTimeFormat("en-US", { month: "short", year: "nu
 export default async function AccountLayout({ children }: { children: ReactNode }) {
   // Server-side role check; proxy.ts does the same optimistically.
   const sessionUser = await requireArea("CUSTOMER");
-  const user = await prisma.user.findUnique({
-    where: { id: sessionUser.id },
-    select: { name: true, email: true, createdAt: true, image: true },
-  });
+  const viewer = await chatViewer();
+  const [user, inboxUnread] = await Promise.all([
+    prisma.user.findUnique({ where: { id: sessionUser.id }, select: { name: true, email: true, createdAt: true, image: true } }),
+    viewer ? unreadTotal(viewer) : 0,
+  ]);
 
   return (
     <div className="flex min-h-dvh flex-col bg-page">
@@ -44,9 +47,12 @@ export default async function AccountLayout({ children }: { children: ReactNode 
               )}
             </div>
           </div>
-          <AccountNav />
+          <AccountNav inboxUnread={inboxUnread} />
         </aside>
-        <main className="min-w-0">{children}</main>
+        {/* Quick view here too, so "Choose options" on a saved product opens the modal (Wish List). */}
+        <main className="min-w-0">
+          <QuickViewProvider>{children}</QuickViewProvider>
+        </main>
       </div>
       <HelpCards className="pt-14" />
       <StorefrontFooter />

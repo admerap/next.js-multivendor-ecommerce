@@ -49,7 +49,7 @@ export default async function ProductPage({ params }: Props) {
         </div>
         <aside aria-label="Seller and delivery" className="flex min-w-0 flex-[1_1_280px] flex-col gap-5 lg:max-w-85">
           <ProductTrust />
-          {store && <ProductSeller store={store} />}
+          {store && <ProductSeller store={store} productId={p.id} />}
           <Suspense fallback={<MoreFromStoreSkeleton />}>
             <MoreFromStore product={p} />
           </Suspense>

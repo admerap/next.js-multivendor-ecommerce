@@ -12,7 +12,7 @@ import { EmptyState } from "@/components/data/DashCard";
 import { SetBreadcrumbs } from "@/components/shell/Breadcrumbs";
 import { PreviewStateFrame } from "@/components/states/PreviewState";
 import { Button } from "@/components/ui/button";
-import { requireArea } from "@/lib/auth-guard";
+import { can, requirePermission } from "@/lib/access.server";
 import { VENDOR_SORT_LABELS, VENDOR_SORTS, vendorListSchema } from "@/lib/validations/admin-vendor";
 import { getVendors } from "./actions";
 import { firstParams } from "@/lib/list-params";
@@ -35,9 +35,14 @@ const addVendor = (
   </Button>
 );
 
-const emptyState = (
-  <EmptyState bare icon={Store} title="No vendors yet" description="When sellers register or you add a store, they appear here with their status, products and orders.">
-    {addVendor}
+const emptyState = (canCreate: boolean) => (
+  <EmptyState
+    bare
+    icon={Store}
+    title="No vendors yet"
+    description="When sellers register or you add a store, they appear here with their status, products and orders."
+  >
+    {canCreate && addVendor}
   </EmptyState>
 );
 
@@ -53,7 +58,8 @@ function ListCard({ children }: { children: ReactNode }) {
 
 /** Admin › Vendor Manage › Vendor List: every vendor account, any status. Details → /admin/vendors/[id]. */
 export default async function VendorListPage({ searchParams }: PageProps<"/admin/vendors">) {
-  await requireArea("ADMIN");
+  await requirePermission("vendors");
+  const canCreate = await can("vendors", "create"); // "Add New Vendor" needs Vendors › Create
   const sp = await searchParams;
   const params = vendorListSchema.parse(firstParams(sp));
 
@@ -68,14 +74,14 @@ export default async function VendorListPage({ searchParams }: PageProps<"/admin
       <PreviewStateFrame
         className="flex flex-wrap items-center justify-between gap-4"
         heading={<ListPageHeading icon={Store} title="Vendor List" total={total} noun="vendors" />}
-        actions={addVendor}
+        actions={canCreate ? addVendor : undefined}
         loading={<ListSkeleton label="Loading vendors" withImage />}
-        empty={<ListCard>{emptyState}</ListCard>}
+        empty={<ListCard>{emptyState(canCreate)}</ListCard>}
         error={{ title: "Couldn't load vendors", description: "Something went wrong reaching the marketplace. Check your connection and try again." }}
       >
         <ListCard>
           {total === 0 && !filtered ? (
-            emptyState
+            emptyState(canCreate)
           ) : items.length > 0 ? (
             <>
               <VendorListTable items={items} offset={(page - 1) * pageSize} />

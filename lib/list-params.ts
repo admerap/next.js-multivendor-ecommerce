@@ -20,6 +20,12 @@ export function hrefWith(pathname: string, current: Record<string, string | numb
   return s ? `${pathname}?${s}` : pathname;
 }
 
+/** `path` + the defined params as a query string (`withQuery("/x", { a: "1", b: undefined })` → "/x?a=1"). */
+export function withQuery(path: string, params: Record<string, string | undefined>): string {
+  const s = new URLSearchParams(Object.entries(params).filter((e): e is [string, string] => !!e[1])).toString();
+  return s ? `${path}?${s}` : path;
+}
+
 /** Next.js searchParams → one string per key (a repeated key keeps its first value), ready for a Zod list schema. */
 export function firstParams(sp: Record<string, string | string[] | undefined>): Record<string, string | undefined> {
   return Object.fromEntries(Object.entries(sp).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]));

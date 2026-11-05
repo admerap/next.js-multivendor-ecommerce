@@ -1,11 +1,10 @@
-import { auth } from "@/auth";
+import { can } from "@/lib/access.server";
 import { prisma } from "@/lib/db";
 import { notFound, tinCertificateResponse } from "@/lib/tin-certificate-response";
 
-/** GET /admin/vendors/[id]/tin-certificate — admins only (re-checked here, not just in the proxy). */
+/** GET /admin/vendors/[id]/tin-certificate — admins whose role may read Vendors (re-checked here, not just in the proxy). */
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await auth();
-  if (session?.user.role !== "ADMIN") return notFound();
+  if (!(await can("vendors"))) return notFound();
 
   const { id } = await params;
   if (!id || id.length > 40) return notFound();

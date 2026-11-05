@@ -11,7 +11,7 @@ import { NoMatches } from "@/components/data/NoMatches";
 import { EmptyState } from "@/components/data/DashCard";
 import { SetBreadcrumbs } from "@/components/shell/Breadcrumbs";
 import { PreviewStateFrame } from "@/components/states/PreviewState";
-import { requireArea } from "@/lib/auth-guard";
+import { requirePermission } from "@/lib/access.server";
 import { categoryListSchema } from "@/lib/validations/category";
 import { getCategories, getCategoryOptions, type CategoryOption } from "./actions";
 import { firstParams } from "@/lib/list-params";
@@ -38,7 +38,7 @@ function ListCard({ categories, children }: { categories: CategoryOption[]; chil
 }
 
 export default async function CategoriesPage({ searchParams }: PageProps<"/admin/categories">) {
-  await requireArea("ADMIN");
+  await requirePermission("categories");
   const sp = await searchParams;
   const params = categoryListSchema.parse(firstParams(sp));
 

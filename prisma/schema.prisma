@@ -28,14 +28,29 @@ model User {
   phone         String?   @db.VarChar(32)
   passwordHash  String
   role          Role      @default(CUSTOMER)
+  /// Set by an admin (Customer List › Block): the account can't sign in, and an open session is ended on
+  /// its next request. null = active. Past orders and reviews are kept as they are.
+  blockedAt     DateTime?
+  /// Staff only (role ADMIN): which admin-panel role this person has (Super Admin, admin, Sales…). null for
+  /// customers and vendors.
+  adminRoleId   String?
+  adminRole     AdminRole? @relation(fields: [adminRoleId], references: [id])
+  /// Soft delete (Users › Delete, staff only): hidden from lists, can't sign in, restorable. The email stays
+  /// taken while the row exists.
+  deletedAt     DateTime?
+  /// Who deleted it (user id) — audit only.
+  deletedById   String?   @db.VarChar(40)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  vendor   Vendor?
-  accounts Account[]
-  sessions Session[]
-  orders   Order[]
-  reviews  Review[]
+  vendor        Vendor?
+  accounts      Account[]
+  sessions      Session[]
+  orders        Order[]
+  reviews       Review[]
+  wishlist      WishlistItem[]
+  /// Chat: this customer's conversations with stores.
+  conversations Conversation[]
 }
 
 /// A seller's store. Exactly one per VENDOR user.
@@ -59,10 +74,12 @@ model Vendor {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  products    Product[]
-  coupons     Coupon[]
-  storeOrders StoreOrder[]
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products      Product[]
+  coupons       Coupon[]
+  storeOrders   StoreOrder[]
+  /// Chat: customers talking to this store.
+  conversations Conversation[]
 }
 
 enum BrandStatus {
@@ -276,13 +293,16 @@ model Product {
   /// Number of APPROVED reviews.
   reviewCount Int @default(0)
 
-  images      ProductImage[]
-  variations  ProductVariation[]
-  couponLinks CouponProduct[]
-  orderItems  OrderItem[]
-  reviews     Review[]
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
+  images        ProductImage[]
+  variations    ProductVariation[]
+  couponLinks   CouponProduct[]
+  orderItems    OrderItem[]
+  reviews       Review[]
+  wishlistedBy  WishlistItem[]
+  /// Chat threads started from this product's page (context only).
+  conversations Conversation[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
 
   @@unique([vendorId, sku])
   @@index([vendorId, approvalStatus])
@@ -463,6 +483,11 @@ model Order {
 
   shippingMethod ShippingMethod @default(STANDARD)
 
+  /// Sales tax used for this order (snapshot): the ship-to region and its rate in thousandths of a
+  /// percent (6350 = 6.35%, 6875 = 6.875%). 0 / null when the destination has no configured rate.
+  taxRate   Int     @default(0)
+  taxRegion String? @db.VarChar(8)
+
   // Shipping address snapshot
   shipName        String      @db.VarChar(120)
   shipPhone       String      @db.VarChar(32)
@@ -510,6 +535,21 @@ model Order {
   @@index([customerId, createdAt])
 }
 
+/// One step in a StoreOrder's history: the status it moved to, when, and who moved it
+/// (actorRole null = the system). Append-only; StoreOrder.status stays the current value.
+model StoreOrderStatusEvent {
+  id           String      @id @default(cuid())
+  storeOrderId String
+  storeOrder   StoreOrder  @relation(fields: [storeOrderId], references: [id], onDelete: Cascade)
+  status       OrderStatus
+  actorRole    Role?
+  /// User id of whoever made the change (no FK: the record outlives the account).
+  actorId      String?     @db.VarChar(40)
+  createdAt    DateTime    @default(now())
+
+  @@index([storeOrderId, createdAt])
+}
+
 /// One seller's part of an Order: its items, totals, coupon and fulfilment status (vendor-scoped).
 model StoreOrder {
   id       String @id @default(cuid())
@@ -519,7 +559,13 @@ model StoreOrder {
   /// Restrict: a store with orders can't be deleted out from under them.
   vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Restrict)
 
-  status OrderStatus @default(PENDING)
+  status        OrderStatus             @default(PENDING)
+  /// This part's own payment: with COD each seller's part is delivered — and paid — separately.
+  /// Order.paymentStatus is the roll-up (PAID once every live part is paid).
+  paymentStatus PaymentStatus           @default(UNPAID)
+  paidAt        DateTime?
+  /// Every status this part went through, with when and who (tracking timeline + audit).
+  events        StoreOrderStatusEvent[]
 
   // Cents
   subtotal       Int
@@ -608,6 +654,9 @@ model Review {
   images  Json?
 
   status      ReviewStatus @default(PENDING)
+  /// Admin show/hide of an APPROVED review (active / inactive), separate from the moderation decision.
+  /// The storefront shows a review only when status = APPROVED AND isVisible.
+  isVisible   Boolean      @default(true)
   /// When an admin approved or rejected it.
   moderatedAt DateTime?
   createdAt   DateTime     @default(now())
@@ -616,4 +665,123 @@ model Review {
   @@index([productId, status, createdAt])
   @@index([customerId])
   @@index([status, createdAt])
+}
+
+// ── Sales tax ────────────────────────────────────────────────────────────────────────────────────
+
+/// Sales tax by ship-to region (US: state + DC), edited by admins. Checkout applies the destination's
+/// rate to the items (after coupons); shipping isn't taxed. A region with no active row pays no tax.
+model TaxRate {
+  id        String   @id @default(cuid())
+  /// Same value as the checkout address country ("United States").
+  country   String   @db.VarChar(60)
+  /// State / province code ("CT").
+  region    String   @db.VarChar(8)
+  /// Thousandths of a percent — an exact integer even for 3-decimal rates: 6350 = 6.35%, 6875 = 6.875%.
+  rate      Int
+  isActive  Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+
+  @@unique([country, region])
+}
+
+// ── Wishlist ─────────────────────────────────────────────────────────────────────────────────────
+
+/// A product a customer saved (account › Wish List). A guest's browser list is merged in on sign-in.
+model WishlistItem {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   User     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  /// The same product can't be saved twice by one customer.
+  @@unique([customerId, productId])
+  @@index([productId])
+}
+
+// ── Chat: customer ↔ store (FR-A10 / FR-V13) ──────────────────────────────────
+
+/// Who wrote a message: the customer, or the store (any of its staff — today, the vendor owner).
+enum ChatSide {
+  CUSTOMER
+  VENDOR
+}
+
+/// One conversation per customer and store: "Chat with Vendor" for the same pair reopens it.
+model Conversation {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   User     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  vendorId   String
+  vendor     Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  /// The product page it was started from (context only; the thread survives the product).
+  productId  String?
+  product    Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  /// Bumped on every message: both inboxes list newest activity first.
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  messages Message[]
+
+  @@unique([customerId, vendorId])
+  @@index([customerId, lastMessageAt])
+  @@index([vendorId, lastMessageAt])
+}
+
+/// A chat message: text and/or one image. readAt is set when the other side opens the thread (unread counts).
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderRole     ChatSide
+  /// The user who wrote it (customer, or the store's user) — audit only; senderRole decides the side.
+  senderId       String?      @db.VarChar(40)
+  text           String?      @db.Text
+  /// Public path under /uploads/chat/.
+  image          String?      @db.VarChar(255)
+  createdAt      DateTime     @default(now())
+  readAt         DateTime?
+
+  @@index([conversationId, createdAt])
+  @@index([conversationId, senderRole, readAt])
+}
+
+// ── Admin staff roles (Users › Roles) ─────────────────────────────────────────
+
+/// A role for the people who run the admin panel (Super Admin, Support, Accounting…). What each one can access
+/// comes next (permissions). System roles — the Super Admin — can't be deleted or switched off.
+model AdminRole {
+  id          String    @id @default(cuid())
+  name        String    @unique @db.VarChar(60)
+  description String    @db.VarChar(255)
+  isActive    Boolean   @default(true)
+  isSystem    Boolean   @default(false)
+  /// Soft delete: a deleted role is hidden everywhere (lists, selectors) but kept, and can be restored.
+  deletedAt   DateTime?
+  /// Who deleted it (user id) — audit only.
+  deletedById String?   @db.VarChar(40)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  users       User[]
+  permissions AdminRolePermission[]
+}
+
+/// What a role may do in one admin module (Roles › Permissions): Read · Create · Update · Delete. No row = no
+/// access. The Super Admin (system role) always has everything and keeps no rows. Modules: lib/permissions.ts.
+model AdminRolePermission {
+  id        String    @id @default(cuid())
+  roleId    String
+  module    String    @db.VarChar(40)
+  canRead   Boolean   @default(false)
+  canCreate Boolean   @default(false)
+  canUpdate Boolean   @default(false)
+  canDelete Boolean   @default(false)
+  updatedAt DateTime  @updatedAt
+  role      AdminRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, module])
 }

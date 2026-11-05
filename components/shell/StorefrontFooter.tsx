@@ -11,16 +11,16 @@ const QUICK_LINKS = [
   { label: "Best Selling Product", href: "/#best-selling" },
   { label: "Latest Products", href: "/#latest-products" },
   { label: "Top Rated Product", href: "/#top-rated" },
-  { label: "Track Order", href: "/account/track-order" },
+  { label: "Track Order", href: "/dashboard/track-order" },
 ];
 
 const OTHER_LINKS = [
   { label: "About Us", href: "#" },
   { label: "Terms & Conditions", href: "#" },
   { label: "Privacy Policy", href: "#" },
-  { label: "Refund Policy", href: "/account/support" },
-  { label: "Return Policy", href: "/account/support" },
-  { label: "Cancellation Policy", href: "/account/support" },
+  { label: "Refund Policy", href: "/dashboard/support" },
+  { label: "Return Policy", href: "/dashboard/support" },
+  { label: "Cancellation Policy", href: "/dashboard/support" },
 ];
 
 const link = "inline-flex items-center text-sm !text-fg-subtle transition-colors duration-(--dur-fast) hover:!text-on-primary max-lg:min-h-11";

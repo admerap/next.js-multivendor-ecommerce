@@ -1,15 +1,21 @@
-import { BadgeCheck, Bot, Store } from "lucide-react";
+import { BadgeCheck, Bot, MessageCircle, Store } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { sellerHref, type StoreSummary } from "@/lib/storefront";
+import { startChatHref } from "@/lib/validations/chat";
+import { ChatNotice } from "./ChatNotice";
 
 /**
  * Seller card on the product page (Product Detail Page design, PRD FR-S17): logo, name + verified badge,
- * reviews and visible-product counts, Visit Store and Ask AI Support (Sundry AI Support replaces chat with
- * the vendor — CLAUDE.md §3). The store is always APPROVED here (VISIBLE requires it) → "Verified".
+ * reviews and visible-product counts, Visit Store, Chat with Vendor (PRD FR-A10) and Ask AI Support. The store
+ * is always APPROVED here (VISIBLE requires it) → "Verified".
+ *
+ * Chat with Vendor is a plain <a> to /chat/start (a route handler that signs guests in first, then finds or
+ * creates the conversation) — never a prefetching <Link>, since that request opens the thread.
  */
-export function ProductSeller({ store }: { store: StoreSummary }) {
+export function ProductSeller({ store, productId }: { store: StoreSummary; productId: string }) {
   return (
     <section aria-label="Seller" className="rounded-lg bg-card p-5 shadow-sm">
       <div className="mb-4.5 flex items-center gap-3">
@@ -45,7 +51,16 @@ export function ProductSeller({ store }: { store: StoreSummary }) {
         </Link>
       </Button>
       <Button asChild variant="secondary" className="mt-2.5 w-full">
-        <Link href="/account/inbox">
+        <a href={startChatHref(store.id, productId)}>
+          <MessageCircle aria-hidden />
+          Chat with Vendor
+        </a>
+      </Button>
+      <Suspense fallback={null}>
+        <ChatNotice />
+      </Suspense>
+      <Button asChild variant="ghost" className="mt-1.5 w-full">
+        <Link href="/dashboard/inbox">
           <Bot aria-hidden />
           Ask AI Support
         </Link>

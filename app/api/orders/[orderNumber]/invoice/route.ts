@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { downloadResponse } from "@/lib/download";
 import { auth } from "@/auth";
 import { renderInvoice } from "@/lib/invoice.server";
 import { getCustomerOrder } from "@/lib/orders.server";
@@ -6,7 +7,8 @@ import { getCustomerOrder } from "@/lib/orders.server";
 /**
  * GET /api/orders/[orderNumber]/invoice — the order's invoice as a PDF download. Only the customer who
  * placed it may download it; any other order number answers 404 (same as unknown — nothing to probe).
- * TODO(vendor/admin invoices): vendors get their StoreOrder's part, admins the whole order.
+ * Vendors download their own part from /api/vendor/orders/[id]/invoice; admins any whole order from
+ * /api/admin/orders/[orderNumber]/invoice.
  */
 export async function GET(req: Request, ctx: { params: Promise<{ orderNumber: string }> }) {
   const session = await auth();
@@ -22,13 +24,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ orderNumber: st
 
   try {
     const pdf = await renderInvoice(order);
-    return new NextResponse(Buffer.from(pdf), {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="sundry-invoice-${order.orderNumber}.pdf"`,
-        "Cache-Control": "private, no-store",
-      },
-    });
+    return downloadResponse(pdf, `sundry-invoice-${order.orderNumber}.pdf`, "pdf");
   } catch (error) {
     console.error("[invoice] render failed", error instanceof Error ? error.message : error);
     return new NextResponse("We couldn't create the invoice right now. Please try again.", { status: 500 });
