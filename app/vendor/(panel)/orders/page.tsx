@@ -1,4 +1,4 @@
-import { FileDown, ListRestart, Package, ShoppingCart } from "lucide-react";
+import { ListRestart, Package, ShoppingCart } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { EmptyState } from "@/components/data/DashCard";
@@ -14,19 +14,11 @@ import { Button } from "@/components/ui/button";
 import { VendorOrderTable } from "@/components/vendor/orders/VendorOrderTable";
 import { requireArea } from "@/lib/auth-guard";
 import { firstParams } from "@/lib/list-params";
-import { orderFilterLabel, statusSlug, type OrderStatusKey } from "@/lib/orders";
+import { orderFilterLabel, statusSlug } from "@/lib/orders";
 import { vendorOrderListSchema } from "@/lib/validations/vendor-order";
 import { listVendorOrders } from "@/lib/vendor-orders.server";
 
 export const metadata: Metadata = { title: "Orders" };
-
-/** Export link for the list as currently filtered (status + search). */
-function exportHref({ q, status }: { q: string; status: OrderStatusKey | null }) {
-  const sp = new URLSearchParams();
-  if (status) sp.set("status", statusSlug(status));
-  if (q) sp.set("q", q);
-  return `/api/vendor/orders/export${sp.size ? `?${sp}` : ""}`;
-}
 
 const ERROR = { title: "Couldn't load this page", description: "Something went wrong reaching your store data. Check your connection and try again." };
 
@@ -88,15 +80,8 @@ export default async function VendorOrdersPage({ searchParams }: PageProps<"/ven
               <ListToolbar
                 searchLabel="Search by order ID or customer"
                 statuses={null}
-                actions={
-                  <Button asChild variant="secondary">
-                    {/* Every page of the current filter, as CSV (the route re-applies the store scope). */}
-                    <a href={exportHref(params)} download>
-                      <FileDown aria-hidden />
-                      Export
-                    </a>
-                  </Button>
-                }
+                // Every page of the current filter, as Excel / CSV / PDF (the route re-applies the store scope).
+                exportBase="/api/vendor/orders/export"
               />
               <div className="border-t border-line">
                 {data.rows.length > 0 ? (

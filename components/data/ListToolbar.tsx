@@ -3,6 +3,7 @@
 import { Search, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
+import { ExportMenu } from "@/components/data/ExportMenu";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,8 @@ export function ListToolbar({
   statuses = ACTIVE_INACTIVE,
   sorts,
   actions,
+  exportBase,
+  exportExtra,
 }: {
   searchLabel: string;
   filters?: ToolbarFilter[];
@@ -40,6 +43,10 @@ export function ListToolbar({
   sorts?: { value: string; label: string }[];
   /** Extra controls at the end of the bar, e.g. an "Add" button. */
   actions?: ReactNode;
+  /** Export route (e.g. /api/admin/brands/export): shows Export › Excel / CSV / PDF with the current filters. */
+  exportBase?: string;
+  /** Fixed params for the export (e.g. the list's view). */
+  exportExtra?: Record<string, string>;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -47,6 +54,13 @@ export function ListToolbar({
   const [pending, startTransition] = useTransition();
   const [q, setQ] = useState(params.get("q") ?? "");
   const first = useRef(true);
+  // Back / forward (or any outside change of ?q) puts the box back in step with the URL.
+  const urlQ = params.get("q") ?? "";
+  const [seenUrlQ, setSeenUrlQ] = useState(urlQ);
+  if (urlQ !== seenUrlQ) {
+    setSeenUrlQ(urlQ);
+    if (urlQ !== q.trim()) setQ(urlQ);
+  }
 
   const update = (patch: Record<string, string | null>) => {
     const next = new URLSearchParams(params);
@@ -84,7 +98,12 @@ export function ListToolbar({
           className="h-full min-w-0 flex-1 bg-transparent px-2.5 text-sm text-fg-strong outline-none placeholder:text-fg-subtle [&::-webkit-search-cancel-button]:hidden"
         />
         {q && (
-          <button type="button" onClick={() => setQ("")} aria-label="Clear search" className="mr-1 grid size-9 place-items-center rounded-md text-fg-muted hover:text-fg-strong max-lg:mr-0 max-lg:size-11">
+          <button
+            type="button"
+            onClick={() => setQ("")}
+            aria-label="Clear search"
+            className="mr-1 grid size-9 place-items-center rounded-md text-fg-muted hover:text-fg-strong max-lg:mr-0 max-lg:size-11"
+          >
             <X aria-hidden className="size-4" />
           </button>
         )}
@@ -146,6 +165,7 @@ export function ListToolbar({
             ))}
           </SelectContent>
         </Select>
+        {exportBase && <ExportMenu base={exportBase} extra={exportExtra} />}
         {actions && <div className="flex w-full sm:w-auto [&>*]:flex-1 sm:[&>*]:flex-none">{actions}</div>}
       </div>
     </div>

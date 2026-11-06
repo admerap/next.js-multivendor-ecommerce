@@ -6,27 +6,28 @@ import { downloadResponse } from "@/lib/download";
 import { money } from "@/lib/money";
 import { renderReportPdf } from "@/lib/report-pdf.server";
 import { adminCustomerListSchema, CUSTOMER_SORTS } from "@/lib/validations/admin-customer";
+import { exportFormat, tableDownload } from "@/lib/xlsx.server";
 
 /**
- * GET /api/admin/customers/export?format=csv|pdf&q=&ordered=&joined=&status=&sort= — Customer List ›
+ * GET /api/admin/customers/export?format=xlsx|csv|pdf&q=&ordered=&joined=&status=&sort= — Customer List ›
  * Export: every customer matching the list's current view (all pages). ADMIN only.
  */
 export async function GET(req: Request) {
   if (!(await can("customers"))) return NextResponse.redirect(new URL(`/login?callbackUrl=${encodeURIComponent("/admin/customers")}`, req.url));
 
   const sp = new URL(req.url).searchParams;
-  const format = sp.get("format") === "pdf" ? "pdf" : "csv";
+  const format = exportFormat(sp.get("format"));
   const params = adminCustomerListSchema.parse(Object.fromEntries(sp));
   try {
     const { rows, total, blocked } = await listAdminCustomers(params, { all: true });
     const name = `sundry-customers-${isoDate(new Date())}`;
 
-    if (format === "csv") {
+    if (format !== "pdf") {
       const csv = toCsv(
         ["Name", "Email", "Phone", "Joined", "Orders", "Spent (USD)", "Status"],
         rows.map((c) => [c.name, c.email, c.phone ?? "", isoDate(c.createdAt), c.orders, csvDollars(c.spent), c.blockedAt ? "Blocked" : "Active"]),
       );
-      return downloadResponse(csv, `${name}.csv`, "csv");
+      return tableDownload(csv, name, format);
     }
 
     const pdf = await renderReportPdf({

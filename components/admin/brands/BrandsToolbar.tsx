@@ -4,11 +4,12 @@ import { Search, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import type { BrandOption } from "@/app/admin/(panel)/brands/actions";
+import { ExportMenu } from "@/components/data/ExportMenu";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
-/** Search (debounced), brand + status filters and page size — all kept in the URL so the server paginates. */
+/** Search (debounced), brand + status filters, page size and Export — all kept in the URL so the server paginates. */
 export function BrandsToolbar({ brands }: { brands: BrandOption[] }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -16,6 +17,13 @@ export function BrandsToolbar({ brands }: { brands: BrandOption[] }) {
   const [pending, startTransition] = useTransition();
   const [q, setQ] = useState(params.get("q") ?? "");
   const first = useRef(true);
+  // Back / forward (or any outside change of ?q) puts the box back in step with the URL.
+  const urlQ = params.get("q") ?? "";
+  const [seenUrlQ, setSeenUrlQ] = useState(urlQ);
+  if (urlQ !== seenUrlQ) {
+    setSeenUrlQ(urlQ);
+    if (urlQ !== q.trim()) setQ(urlQ);
+  }
 
   const update = (patch: Record<string, string | null>) => {
     const next = new URLSearchParams(params);
@@ -53,7 +61,12 @@ export function BrandsToolbar({ brands }: { brands: BrandOption[] }) {
           className="h-full min-w-0 flex-1 bg-transparent px-2.5 text-sm text-fg-strong outline-none placeholder:text-fg-subtle [&::-webkit-search-cancel-button]:hidden"
         />
         {q && (
-          <button type="button" onClick={() => setQ("")} aria-label="Clear search" className="mr-1 grid size-9 place-items-center rounded-md text-fg-muted hover:text-fg-strong max-lg:mr-0 max-lg:size-11">
+          <button
+            type="button"
+            onClick={() => setQ("")}
+            aria-label="Clear search"
+            className="mr-1 grid size-9 place-items-center rounded-md text-fg-muted hover:text-fg-strong max-lg:mr-0 max-lg:size-11"
+          >
             <X aria-hidden className="size-4" />
           </button>
         )}
@@ -92,6 +105,7 @@ export function BrandsToolbar({ brands }: { brands: BrandOption[] }) {
             ))}
           </SelectContent>
         </Select>
+        <ExportMenu base="/api/admin/brands/export" />
       </div>
     </div>
   );

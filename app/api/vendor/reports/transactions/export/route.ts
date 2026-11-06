@@ -7,11 +7,12 @@ import { renderReportPdf } from "@/lib/report-pdf.server";
 import { EXPENSE_LABEL, REPORT_RANGE_LABEL, transactionReportSchema } from "@/lib/validations/vendor-report";
 import { currentVendorId } from "@/lib/vendor-auth";
 import { getTransactionReport } from "@/lib/vendor-reports.server";
+import { exportFormat, tableDownload } from "@/lib/xlsx.server";
 
 const PAYMENT_FILTER = { completed: "Completed", pending: "Pending", refunded: "Refunded" } as const;
 
 /**
- * GET /api/vendor/reports/transactions/export?format=csv|pdf&range=&tab=&payment=&customer=&q= —
+ * GET /api/vendor/reports/transactions/export?format=xlsx|csv|pdf&range=&tab=&payment=&customer=&q= —
  * Transactions Report › Export: the current tab's rows (all pages) for the signed-in store only.
  * Order rows are real COD orders; expense rows are commission / coupons of delivered orders. No payouts
  * are exported: they don't exist until Stripe Connect.
@@ -21,7 +22,7 @@ export async function GET(req: Request) {
   if (!vendorId) return NextResponse.redirect(new URL(`/vendor/login?callbackUrl=${encodeURIComponent("/vendor/reports/transactions")}`, req.url));
 
   const sp = new URL(req.url).searchParams;
-  const format = sp.get("format") === "pdf" ? "pdf" : "csv";
+  const format = exportFormat(sp.get("format"));
   const params = transactionReportSchema.parse(Object.fromEntries(sp));
   try {
     const r = await getTransactionReport(vendorId, params, { all: true });
@@ -29,14 +30,14 @@ export async function GET(req: Request) {
     const name = `sundry-${expenses ? "expense" : "order"}-transactions-${params.range}-${isoDate(new Date())}`;
     const customer = params.customer && r.customers.find((c) => c.id === params.customer)?.name;
 
-    if (format === "csv") {
+    if (format !== "pdf") {
       const csv = expenses
         ? toCsv(["XID", "Date", "Order ID", "Expense Type", "Expense Amount (USD)"], r.expenseRows!.rows.map((x) => [x.xid, isoDate(x.createdAt), `#${x.orderNumber}`, EXPENSE_LABEL[x.type], csvDollars(x.amount)]))
         : toCsv(
             ["Order ID", "Date", "Customer", "Items", "Product Amount (USD)", "Product Discount", "Coupon Discount (USD)", "Discounted Amount (USD)", "VAT/Tax (USD)", "Shipping (USD)", "Order Amount (USD)", "Payment"],
             r.orders!.rows.map((x) => [`#${x.orderNumber}`, isoDate(x.createdAt), x.customer, x.units, csvDollars(x.amount), "Not recorded", csvDollars(x.couponDiscount), csvDollars(x.discountedAmount), csvDollars(x.tax), csvDollars(x.shipping), csvDollars(x.orderAmount), PAYMENT_REPORT_LABEL[x.payment]]),
           );
-      return downloadResponse(csv, `${name}.csv`, "csv");
+      return tableDownload(csv, name, format);
     }
 
     const subtitle = [REPORT_RANGE_LABEL[params.range], !expenses && params.payment && `Payment: ${PAYMENT_FILTER[params.payment]}`, !expenses && customer && `Customer: ${customer}`, params.q && `Search: ${params.q}`].filter(Boolean).join(" · ");

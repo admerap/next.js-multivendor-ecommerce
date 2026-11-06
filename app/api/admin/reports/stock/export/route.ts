@@ -5,28 +5,29 @@ import { isoDate, toCsv } from "@/lib/csv";
 import { downloadResponse } from "@/lib/download";
 import { renderReportPdf } from "@/lib/report-pdf.server";
 import { adminStockReportSchema, STOCK_LEVEL_LABEL, STOCK_SORTS } from "@/lib/validations/admin-report";
+import { exportFormat, tableDownload } from "@/lib/xlsx.server";
 
 /**
- * GET /api/admin/reports/stock/export?format=csv|pdf&store=&category=&level=&sort=&q= — Product Stock Report ›
+ * GET /api/admin/reports/stock/export?format=xlsx|csv|pdf&store=&category=&level=&sort=&q= — Product Stock Report ›
  * Export: every product matching the current view (all pages), with its live stock. ADMIN only.
  */
 export async function GET(req: Request) {
   if (!(await can("reports"))) return NextResponse.redirect(new URL(`/login?callbackUrl=${encodeURIComponent("/admin/reports/stock")}`, req.url));
 
   const sp = new URL(req.url).searchParams;
-  const format = sp.get("format") === "pdf" ? "pdf" : "csv";
+  const format = exportFormat(sp.get("format"));
   const params = adminStockReportSchema.parse(Object.fromEntries(sp));
   try {
     const r = await getAdminStockReport(params, { all: true });
     const rows = r.table.rows;
     const name = `sundry-product-stock-${isoDate(new Date())}`;
 
-    if (format === "csv") {
+    if (format !== "pdf") {
       const csv = toCsv(
         ["Product", "Store", "Category", "Last updated", "Current stock", "Status", "Variations out", "Variations low"],
         rows.map((x) => [x.name, x.store, x.category, x.updatedAt.toISOString(), x.stock, STOCK_LEVEL_LABEL[x.level], x.variationsOut.join("; "), x.variationsLow.join("; ")]),
       );
-      return downloadResponse(csv, `${name}.csv`, "csv");
+      return tableDownload(csv, name, format);
     }
 
     const store = r.store ? r.stores.find((s) => s.id === r.store)?.name : undefined;

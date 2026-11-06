@@ -7,6 +7,7 @@ import { ListPageHeading } from "@/components/data/ListPageHeading";
 import { ListSkeleton } from "@/components/data/ListSkeleton";
 import { NoMatches } from "@/components/data/NoMatches";
 import { Pagination } from "@/components/data/Pagination";
+import { ExportMenu } from "@/components/data/ExportMenu";
 import { SearchForm } from "@/components/data/SearchForm";
 import { ReportTabs } from "@/components/reports/ReportKit";
 import { SetBreadcrumbs } from "@/components/shell/Breadcrumbs";
@@ -77,7 +78,8 @@ export default async function AdminRolesPage({ searchParams }: PageProps<"/admin
                   {deletedView ? "Deleted roles" : "Role list"}
                   <span className="rounded-full bg-iris-50 px-2.5 py-0.5 font-sans text-sm font-bold text-primary tabular-nums">{data.total}</span>
                 </h2>
-                {!nothing && <SearchForm action={PATH} q={params.q} placeholder="Search by name or description" keep={{ view: view.view }} />}
+                {!nothing && <SearchForm action={PATH} q={params.q} placeholder="Search by name or description" />}
+                {!nothing && <ExportMenu base="/api/admin/roles/export" />}
               </div>
               <div className="border-t border-line">
                 {nothing ? (

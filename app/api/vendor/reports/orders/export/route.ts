@@ -7,12 +7,13 @@ import { renderReportPdf } from "@/lib/report-pdf.server";
 import { orderReportSchema, REPORT_RANGE_LABEL } from "@/lib/validations/vendor-report";
 import { currentVendorId } from "@/lib/vendor-auth";
 import { getOrderReport } from "@/lib/vendor-reports.server";
+import { exportFormat, tableDownload } from "@/lib/xlsx.server";
 
 const GROUP_LABEL = { completed: "Delivered", ongoing: "Ongoing", canceled: "Canceled" } as const;
 const COMMISSION_NOTE = { charged: "Charged", estimated: "Estimated", "not-charged": "Not charged" } as const;
 
 /**
- * GET /api/vendor/reports/orders/export?format=csv|pdf&range=&status=&q= — Order Report › Export:
+ * GET /api/vendor/reports/orders/export?format=xlsx|csv|pdf&range=&status=&q= — Order Report › Export:
  * every row matching the report's current filters (all pages), for the signed-in store only.
  */
 export async function GET(req: Request) {
@@ -20,19 +21,19 @@ export async function GET(req: Request) {
   if (!vendorId) return NextResponse.redirect(new URL(`/vendor/login?callbackUrl=${encodeURIComponent("/vendor/reports/orders")}`, req.url));
 
   const sp = new URL(req.url).searchParams;
-  const format = sp.get("format") === "pdf" ? "pdf" : "csv";
+  const format = exportFormat(sp.get("format"));
   const params = orderReportSchema.parse(Object.fromEntries(sp));
   try {
     const r = await getOrderReport(vendorId, params, { all: true });
     const rows = r.table.rows;
     const name = `sundry-order-report-${params.range}-${isoDate(new Date())}`;
 
-    if (format === "csv") {
+    if (format !== "pdf") {
       const csv = toCsv(
         ["Order ID", "Order Date", "Total Amount (USD)", "Product Discount", "Coupon Discount (USD)", "Shipping (USD)", "VAT/Tax (USD)", "Commission (USD)", "Commission Status", "Status"],
         rows.map((x) => [`#${x.orderNumber}`, isoDate(x.createdAt), csvDollars(x.total), "Not recorded", csvDollars(x.couponDiscount), csvDollars(x.shipping), csvDollars(x.tax), x.commissionState === "not-charged" ? "Not charged" : csvDollars(x.commission), COMMISSION_NOTE[x.commissionState], ORDER_STATUS_LABEL[x.status]]),
       );
-      return downloadResponse(csv, `${name}.csv`, "csv");
+      return tableDownload(csv, name, format);
     }
 
     const pdf = await renderReportPdf({

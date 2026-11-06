@@ -6,11 +6,12 @@ import { renderReportPdf } from "@/lib/report-pdf.server";
 import { productReportSchema, REPORT_RANGE_LABEL, STOCK_LABEL } from "@/lib/validations/vendor-report";
 import { currentVendorId } from "@/lib/vendor-auth";
 import { getProductReport } from "@/lib/vendor-reports.server";
+import { exportFormat, tableDownload } from "@/lib/xlsx.server";
 
 const STOCK_FILTER_LABEL = { in: "In stock", low: "Low stock", out: "Out of stock" } as const;
 
 /**
- * GET /api/vendor/reports/products/export?format=csv|pdf&range=&tab=&stock=&q= — Product Report ›
+ * GET /api/vendor/reports/products/export?format=xlsx|csv|pdf&range=&tab=&stock=&q= — Product Report ›
  * Export: every product row of the current tab and filters (all pages), for the signed-in store only.
  */
 export async function GET(req: Request) {
@@ -18,7 +19,7 @@ export async function GET(req: Request) {
   if (!vendorId) return NextResponse.redirect(new URL(`/vendor/login?callbackUrl=${encodeURIComponent("/vendor/reports/products")}`, req.url));
 
   const sp = new URL(req.url).searchParams;
-  const format = sp.get("format") === "pdf" ? "pdf" : "csv";
+  const format = exportFormat(sp.get("format"));
   const params = productReportSchema.parse(Object.fromEntries(sp));
   try {
     const r = await getProductReport(vendorId, params, { all: true });
@@ -26,7 +27,7 @@ export async function GET(req: Request) {
     const name = `sundry-product-${params.tab === "stock" ? "stock" : "report"}-${params.range}-${isoDate(new Date())}`;
     const stock = (x: (typeof rows)[number]) => (x.stockStatus === "digital" ? "Digital" : String(x.stock));
 
-    if (format === "csv") {
+    if (format !== "pdf") {
       const csv =
         params.tab === "stock"
           ? toCsv(["Product", "SKU", "Last Updated", "Current Stock", "Stock Status"], rows.map((x) => [x.name, x.sku ?? "", isoDate(x.updatedAt), stock(x), STOCK_LABEL[x.stockStatus]]))
@@ -34,7 +35,7 @@ export async function GET(req: Request) {
               ["Product", "SKU", "Unit Price (USD)", "Total Amount Sold (USD)", "Qty Sold", "Avg Product Value (USD)", "Current Stock", "Avg Rating", "Reviews"],
               rows.map((x) => [x.name, x.sku ?? "", csvDollars(x.unitPrice), csvDollars(x.revenue), x.soldQty, x.soldQty ? csvDollars(x.avgValue) : "", stock(x), x.rating === null ? "" : x.rating.toFixed(2), x.reviewCount]),
             );
-      return downloadResponse(csv, `${name}.csv`, "csv");
+      return tableDownload(csv, name, format);
     }
 
     const subtitle = [REPORT_RANGE_LABEL[params.range], params.tab === "stock" && "Products stock", params.tab === "stock" && params.stock && STOCK_FILTER_LABEL[params.stock], params.q && `Search: ${params.q}`].filter(Boolean).join(" · ");

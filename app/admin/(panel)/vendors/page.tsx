@@ -50,7 +50,7 @@ const emptyState = (canCreate: boolean) => (
 function ListCard({ children }: { children: ReactNode }) {
   return (
     <section className="overflow-hidden rounded-lg bg-card shadow-sm">
-      <ListToolbar searchLabel="Search by shop or vendor name" statuses={STATUSES} sorts={SORTS} />
+      <ListToolbar searchLabel="Search by shop or vendor name" statuses={STATUSES} sorts={SORTS} exportBase="/api/admin/vendors/export" />
       <div className="border-t border-line">{children}</div>
     </section>
   );

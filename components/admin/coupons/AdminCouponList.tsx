@@ -60,6 +60,8 @@ export async function AdminCouponList({ view, searchParams }: { view: AdminCoupo
     <section className="overflow-hidden rounded-lg bg-card shadow-sm">
       <ListToolbar
         searchLabel="Search by title or code"
+        exportBase="/api/admin/coupons/export"
+        exportExtra={{ view }}
         filters={[{ param: "vendor", label: "Filter by vendor", allLabel: "All vendors", options: vendors }]}
         statuses={STATUSES}
       />

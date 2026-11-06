@@ -41,6 +41,7 @@ function adminNav(counts: AdminCounts): NavGroup[] {
           children: [
             { label: "Roles", href: "/admin/roles" },
             { label: "Users", href: "/admin/users" },
+            { label: "Activity Log", href: "/admin/activity" },
           ],
         },
       ],
@@ -159,6 +160,7 @@ export function AdminShell({
         ...(readable.includes("orders") ? [{ label: "New orders", href: "/admin/orders?status=pending", icon: ShoppingCart }] : []),
       ]}
       withSearch
+      searchAction="/admin/search"
       withTheme
       footer="© 2026 Sundry Marketplace · Admin Panel"
     >

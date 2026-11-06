@@ -1,8 +1,9 @@
 "use client";
 
-import { ArrowUpDown, Search } from "lucide-react";
+import { ArrowUpDown, Search, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { ORDER_STATUS_LABEL, statusSlug, type OrderStatusKey } from "@/lib/orders";
 import { cn } from "@/lib/utils";
 
@@ -10,7 +11,8 @@ import { cn } from "@/lib/utils";
 const PILLS: OrderStatusKey[] = ["PENDING", "CONFIRMED", "PACKAGING", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELED", "RETURNED", "FAILED"];
 
 /**
- * My Order controls (userOrder design): search, Sort by latest / oldest, and the status pills with
+ * My Order controls (userOrder design): search (filters as you type, 350ms after the last key), Sort by
+ * latest / oldest, and the status pills with
  * their counts. Everything lives in the URL (?q=&status=&sort=), so the server does the filtering and
  * links / back / refresh keep the view.
  */
@@ -21,6 +23,8 @@ export function OrdersToolbar({ counts, all }: { counts: Record<OrderStatusKey, 
   const status = sp.get("status") ?? "";
   const sort = sp.get("sort") === "oldest" ? "oldest" : "latest";
   const q = sp.get("q") ?? "";
+  const [typed, setTyped] = useState(q);
+  const first = useRef(true);
 
   const href = (patch: Record<string, string>) => {
     const next = new URLSearchParams(sp);
@@ -33,6 +37,19 @@ export function OrdersToolbar({ counts, all }: { counts: Record<OrderStatusKey, 
     return s ? `${pathname}?${s}` : pathname;
   };
 
+  // Filter as you type: update ?q 350ms after the last key (Enter: at once).
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    const t = setTimeout(() => {
+      if (typed.trim() !== q) router.replace(href({ q: typed.trim() }), { scroll: false });
+    }, 350);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-run when the typed query changes
+  }, [typed]);
+
   const pill = (active: boolean) =>
     cn(
       "inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-semibold whitespace-nowrap transition-colors duration-(--dur-fast)",
@@ -44,12 +61,34 @@ export function OrdersToolbar({ counts, all }: { counts: Record<OrderStatusKey, 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2.5">
-        <form action={pathname} role="search" className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-md border border-line bg-card px-3.5 focus-within:border-primary sm:max-w-80">
+        <form
+          action={pathname}
+          role="search"
+          onSubmit={(e) => {
+            e.preventDefault();
+            router.replace(href({ q: typed.trim() }), { scroll: false });
+          }}
+          className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-md border border-line bg-card px-3.5 focus-within:border-primary sm:max-w-80"
+        >
           <Search aria-hidden className="size-4 shrink-0 text-fg-subtle" strokeWidth={2} />
           <label htmlFor="orders-q" className="sr-only">
             Search orders
           </label>
-          <input id="orders-q" name="q" type="search" defaultValue={q} placeholder="Order # or product" className="h-full min-w-0 flex-1 bg-transparent text-sm text-fg-strong outline-none placeholder:text-fg-subtle" />
+          <input
+            id="orders-q"
+            name="q"
+            type="search"
+            value={typed}
+            onChange={(e) => setTyped(e.target.value)}
+            maxLength={100}
+            placeholder="Order # or product"
+            className="h-full min-w-0 flex-1 bg-transparent text-sm text-fg-strong outline-none placeholder:text-fg-subtle [&::-webkit-search-cancel-button]:hidden"
+          />
+          {typed && (
+            <button type="button" onClick={() => setTyped("")} aria-label="Clear search" className="-mr-2 grid size-9 shrink-0 place-items-center rounded-md text-fg-muted hover:text-primary">
+              <X aria-hidden className="size-4" />
+            </button>
+          )}
           {status && <input type="hidden" name="status" value={status} />}
           {sort === "oldest" && <input type="hidden" name="sort" value="oldest" />}
         </form>

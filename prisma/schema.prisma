@@ -770,6 +770,28 @@ model AdminRole {
   permissions AdminRolePermission[]
 }
 
+/// Activity Log (Users › Activity Log): who did what to staff users and roles, and when. Rows are never edited
+/// or deleted by the app. The actor and the item are snapshotted (name / label) so the log still reads right after
+/// either changes or is deleted. `details` holds what changed — never a password (only that it changed).
+model AuditLog {
+  id          String   @id @default(cuid())
+  /// user id of whoever did it (no FK: the log outlives the account)
+  actorId     String?  @db.VarChar(40)
+  actorName   String   @db.VarChar(120)
+  actorEmail  String   @db.VarChar(191)
+  /// e.g. "user.create", "user.update", "role.delete", "role.permissions"
+  action      String   @db.VarChar(40)
+  /// "user" | "role"
+  entityType  String   @db.VarChar(20)
+  entityId    String   @db.VarChar(40)
+  entityLabel String   @db.VarChar(191)
+  details     Json?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([entityType, entityId])
+}
+
 /// What a role may do in one admin module (Roles › Permissions): Read · Create · Update · Delete. No row = no
 /// access. The Super Admin (system role) always has everything and keeps no rows. Modules: lib/permissions.ts.
 model AdminRolePermission {

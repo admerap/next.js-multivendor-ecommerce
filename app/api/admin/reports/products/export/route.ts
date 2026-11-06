@@ -7,16 +7,17 @@ import { money } from "@/lib/money";
 import { renderReportPdf } from "@/lib/report-pdf.server";
 import { ADMIN_REPORT_RANGE_LABEL, adminProductReportSchema, STOCK_LEVEL_LABEL } from "@/lib/validations/admin-report";
 import { APPROVAL_LABELS } from "@/lib/validations/product";
+import { exportFormat, tableDownload } from "@/lib/xlsx.server";
 
 /**
- * GET /api/admin/reports/products/export?format=csv|pdf&range=&store=&status=&tab=all|wishlist&q= — Product
+ * GET /api/admin/reports/products/export?format=xlsx|csv|pdf&range=&store=&status=&tab=all|wishlist&q= — Product
  * Report › Export: every product matching the report's current view (all pages). ADMIN only.
  */
 export async function GET(req: Request) {
   if (!(await can("reports"))) return NextResponse.redirect(new URL(`/login?callbackUrl=${encodeURIComponent("/admin/reports/products")}`, req.url));
 
   const sp = new URL(req.url).searchParams;
-  const format = sp.get("format") === "pdf" ? "pdf" : "csv";
+  const format = exportFormat(sp.get("format"));
   const params = adminProductReportSchema.parse(Object.fromEntries(sp));
   try {
     const r = await getAdminProductReport(params, { all: true });
@@ -28,9 +29,9 @@ export async function GET(req: Request) {
     const subtitle = [ADMIN_REPORT_RANGE_LABEL[params.range], store ?? "All stores", params.status && `Status: ${params.status}`, params.q && `Search: ${params.q}`].filter(Boolean).join(" · ");
 
     if (wishlist) {
-      if (format === "csv") {
+      if (format !== "pdf") {
         const csv = toCsv(["Product", "Store", "Price (USD)", "Wishlisted by", "Availability"], rows.map((x) => [x.name, x.store, csvDollars(x.unitPrice), x.wishlisted, availability(x)]));
-        return downloadResponse(csv, `${name}.csv`, "csv");
+        return tableDownload(csv, name, format);
       }
       const pdf = await renderReportPdf({
         title: "Wish Listed Products",
@@ -49,12 +50,12 @@ export async function GET(req: Request) {
       return downloadResponse(pdf, `${name}.pdf`, "pdf");
     }
 
-    if (format === "csv") {
+    if (format !== "pdf") {
       const csv = toCsv(
         ["Product", "Store", "Category", "Unit price (USD)", "Amount sold (USD)", "Qty sold", "Avg. value (USD)", "In stock", "Status"],
         rows.map((x) => [x.name, x.store, x.category, csvDollars(x.unitPrice), csvDollars(x.revenue), x.soldQty, x.avgValue === null ? "" : csvDollars(x.avgValue), x.stock ?? "Digital", APPROVAL_LABELS[x.approvalStatus]]),
       );
-      return downloadResponse(csv, `${name}.csv`, "csv");
+      return tableDownload(csv, name, format);
     }
     const pdf = await renderReportPdf({
       title: "Product Report",

@@ -6,9 +6,10 @@ import { downloadResponse } from "@/lib/download";
 import { money } from "@/lib/money";
 import { renderReportPdf } from "@/lib/report-pdf.server";
 import { ADMIN_REPORT_RANGE_LABEL, adminEarningsSchema } from "@/lib/validations/admin-report";
+import { exportFormat, tableDownload } from "@/lib/xlsx.server";
 
 /**
- * GET /api/admin/reports/earnings/export?format=csv|pdf&range=&tab=admin|vendor&q= — Earning Reports ›
+ * GET /api/admin/reports/earnings/export?format=xlsx|csv|pdf&range=&tab=admin|vendor&q= — Earning Reports ›
  * Export: the Admin Earning periods, or every store's Vendor Earning row (all pages). ADMIN only.
  * Not-yet-built figures (in-house, incentives, refunds, withdrawn) export empty in CSV and "—" in PDF.
  */
@@ -16,7 +17,7 @@ export async function GET(req: Request) {
   if (!(await can("reports"))) return NextResponse.redirect(new URL(`/login?callbackUrl=${encodeURIComponent("/admin/reports/earnings")}`, req.url));
 
   const sp = new URL(req.url).searchParams;
-  const format = sp.get("format") === "pdf" ? "pdf" : "csv";
+  const format = exportFormat(sp.get("format"));
   const params = adminEarningsSchema.parse(Object.fromEntries(sp));
   try {
     const r = await getAdminEarnings(params, { all: true });
@@ -26,12 +27,12 @@ export async function GET(req: Request) {
 
     if (vendorTab) {
       const rows = r.vendor.rows.rows;
-      if (format === "csv") {
+      if (format !== "pdf") {
         const csv = toCsv(
           ["Store", "Delivered orders", "Gross sales (USD)", "Commission paid (USD)", "Shipping (USD)", "Net earning (USD)", "Withdrawn (USD)", "Balance (USD)"],
           rows.map((v) => [v.store, v.orders, csvDollars(v.gross), csvDollars(v.commission), csvDollars(v.shipping), csvDollars(v.net), "", csvDollars(v.balance)]),
         );
-        return downloadResponse(csv, `${name}.csv`, "csv");
+        return tableDownload(csv, name, format);
       }
       const pdf = await renderReportPdf({
         title: "Vendor Earnings",
@@ -59,12 +60,12 @@ export async function GET(req: Request) {
     }
 
     const rows = r.admin.rows;
-    if (format === "csv") {
+    if (format !== "pdf") {
       const csv = toCsv(
         ["Duration", "In-house (USD)", "Commission (USD)", "Shipping (USD)", "Deliveryman incentive (USD)", "Discount given (USD)", "VAT / Tax (USD)", "Refunds (USD)", "Total (USD)"],
         rows.map((x) => [x.label, "", csvDollars(x.commission), csvDollars(x.shipping), "", csvDollars(x.discount), csvDollars(x.tax), "", csvDollars(x.total)]),
       );
-      return downloadResponse(csv, `${name}.csv`, "csv");
+      return tableDownload(csv, name, format);
     }
     const pdf = await renderReportPdf({
       title: "Admin Earnings",

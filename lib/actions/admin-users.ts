@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import type { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { getAccess, noPermissionResult } from "@/lib/access.server";
+import { diff, logAudit } from "@/lib/audit.server";
 import { prisma } from "@/lib/db";
 import { covers, toPermissions } from "@/lib/permissions";
 import { deleteUserImage, saveUserImage, UploadError } from "@/lib/uploads";
@@ -78,6 +79,9 @@ async function emailTaken(email: string, exceptId?: string) {
 
 const refresh = () => revalidatePath("/admin/users");
 
+/** A role's name for the Activity Log ("—" if it's gone). */
+const roleName = async (id: string) => (await prisma.adminRole.findUnique({ where: { id }, select: { name: true } }))?.name ?? "—";
+
 /**
  * Users › New User: creates an admin-panel account (role ADMIN). Needs Users › Create; every field validated on the
  * server; the role must be one the signer may give (see `assignableRoles`); the email must be free; the password
@@ -102,7 +106,7 @@ export async function createStaffUserAction(form: FormData): Promise<StaffUserRe
     if (taken) return taken;
     if (photo?.success) saved = await saveUserImage(photo.data, STAFF_IMAGE_MAX_BYTES);
     const name = `${firstName} ${lastName}`;
-    await prisma.user.create({
+    const created = await prisma.user.create({
       data: {
         name,
         email,
@@ -113,6 +117,14 @@ export async function createStaffUserAction(form: FormData): Promise<StaffUserRe
         passwordHash: await bcrypt.hash(password, 12),
         blockedAt: status === "inactive" ? new Date() : null,
       },
+      select: { id: true },
+    });
+    await logAudit({
+      action: "user.create",
+      entityType: "user",
+      entityId: created.id,
+      entityLabel: `${name} (${email})`,
+      changes: { Role: ["—", await roleName(role)], Status: ["—", status === "active" ? "Active" : "Inactive"] },
     });
     refresh();
     return { success: true, name };
@@ -147,7 +159,15 @@ export async function updateStaffUserAction(form: FormData): Promise<StaffUserRe
   try {
     const user = await prisma.user.findFirst({
       where: { id, role: "ADMIN", deletedAt: null },
-      select: { image: true, blockedAt: true, adminRoleId: true, adminRole: { select: { isSystem: true, permissions: { select: PERM_FIELDS } } } },
+      select: {
+        name: true,
+        email: true,
+        phone: true,
+        image: true,
+        blockedAt: true,
+        adminRoleId: true,
+        adminRole: { select: { name: true, isSystem: true, permissions: { select: PERM_FIELDS } } },
+      },
     });
     if (!user) return GONE;
     const targetIsSuper = !!user.adminRole?.isSystem;
@@ -183,6 +203,36 @@ export async function updateStaffUserAction(form: FormData): Promise<StaffUserRe
       },
     });
     if (saved || removeImage) await deleteUserImage(user.image);
+    await logAudit({
+      action: "user.update",
+      entityType: "user",
+      entityId: id,
+      entityLabel: `${name} (${email})`,
+      changes: {
+        ...diff(
+          {
+            Name: user.name,
+            Email: user.email,
+            Phone: user.phone ?? "",
+            Role: user.adminRole?.name ?? "No role",
+            Status: user.blockedAt ? "Inactive" : "Active",
+          },
+          {
+            Name: name,
+            Email: email,
+            Phone: phone,
+            Role: role === user.adminRoleId ? (user.adminRole?.name ?? "No role") : await roleName(role),
+            Status: status === "active" ? "Active" : "Inactive",
+          },
+        ),
+        ...(password && { Password: ["•••", "changed"] as [string, string] }),
+        ...(saved
+          ? { Photo: [user.image ? "photo" : "—", "new photo"] as [string, string] }
+          : removeImage && user.image
+            ? { Photo: ["photo", "removed"] as [string, string] }
+            : {}),
+      },
+    });
     refresh();
     return { success: true, name };
   } catch (error) {
@@ -211,13 +261,14 @@ export async function deleteStaffUserAction(input: unknown): Promise<StaffUserRe
   try {
     const user = await prisma.user.findFirst({
       where: { id, role: "ADMIN", deletedAt: null },
-      select: { name: true, adminRole: { select: { isSystem: true, permissions: { select: PERM_FIELDS } } } },
+      select: { name: true, email: true, adminRole: { select: { isSystem: true, permissions: { select: PERM_FIELDS } } } },
     });
     if (!user) return GONE;
     if (user.adminRole?.isSystem) return { success: false, error: "A Super Admin can't be deleted." };
     if (outranks(user.adminRole, me)) return OUTRANKED;
     const r = await prisma.user.updateMany({ where: { id, role: "ADMIN", deletedAt: null }, data: { deletedAt: new Date(), deletedById: me.id } });
     if (r.count === 0) return GONE;
+    await logAudit({ action: "user.delete", entityType: "user", entityId: id, entityLabel: `${user.name} (${user.email})` });
     refresh();
     return { success: true, name: user.name };
   } catch (error) {
@@ -236,12 +287,19 @@ export async function restoreStaffUserAction(input: unknown): Promise<StaffUserR
   try {
     const user = await prisma.user.findFirst({
       where: { id: parsed.data.id, role: "ADMIN", deletedAt: { not: null } },
-      select: { name: true, adminRole: { select: { deletedAt: true } } },
+      select: { name: true, email: true, adminRole: { select: { name: true, deletedAt: true } } },
     });
     if (!user) return GONE;
     // A role deleted while they were away can't come back with them: they return with no role (no access).
     const roleCleared = !!user.adminRole?.deletedAt;
     await prisma.user.update({ where: { id: parsed.data.id }, data: { deletedAt: null, deletedById: null, ...(roleCleared && { adminRoleId: null }) } });
+    await logAudit({
+      action: "user.restore",
+      entityType: "user",
+      entityId: parsed.data.id,
+      entityLabel: `${user.name} (${user.email})`,
+      changes: roleCleared ? { Role: [user.adminRole?.name ?? "—", "No role (role was deleted)"] } : undefined,
+    });
     refresh();
     return { success: true, name: user.name, roleCleared };
   } catch (error) {

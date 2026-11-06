@@ -3,6 +3,7 @@
 import type { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { getAccess, noPermissionResult, type Access } from "@/lib/access.server";
+import { diff, logAudit, permissionDiff } from "@/lib/audit.server";
 import { prisma } from "@/lib/db";
 import { covers, normalize, PERMISSION_MODULES, toPermissions, type PermissionAction, type RolePermissions } from "@/lib/permissions";
 import { createRoleSchema, roleIdSchema, rolePermissionsSchema, updateRoleSchema } from "@/lib/validations/admin-role";
@@ -90,8 +91,16 @@ export async function createRoleAction(input: unknown): Promise<RoleResult> {
   try {
     const taken = await nameTaken(name);
     if (taken) return taken;
-    await prisma.adminRole.create({
+    const created = await prisma.adminRole.create({
       data: { name, description, isActive: status === "active" },
+      select: { id: true },
+    });
+    await logAudit({
+      action: "role.create",
+      entityType: "role",
+      entityId: created.id,
+      entityLabel: name,
+      changes: { Description: ["—", description], Status: ["—", status === "active" ? "Active" : "Inactive"] },
     });
     refresh();
     return { success: true, name };
@@ -119,7 +128,7 @@ export async function updateRoleAction(input: unknown): Promise<RoleResult> {
   try {
     const role = await prisma.adminRole.findFirst({
       where: { id, deletedAt: null },
-      select: { name: true, isSystem: true, permissions: { select: PERM_FIELDS } },
+      select: { name: true, description: true, isActive: true, isSystem: true, permissions: { select: PERM_FIELDS } },
     });
     if (!role) return GONE;
     const blocked = offLimits(me, { id, isSystem: role.isSystem, permissions: toPermissions(role.permissions) });
@@ -143,6 +152,16 @@ export async function updateRoleAction(input: unknown): Promise<RoleResult> {
     await prisma.adminRole.update({
       where: { id },
       data: { name, description, isActive: status === "active" },
+    });
+    await logAudit({
+      action: "role.update",
+      entityType: "role",
+      entityId: id,
+      entityLabel: name,
+      changes: diff(
+        { Name: role.name, Description: role.description, Status: role.isActive ? "Active" : "Inactive" },
+        { Name: name, Description: description, Status: status === "active" ? "Active" : "Inactive" },
+      ),
     });
     refresh();
     return { success: true, name };
@@ -196,6 +215,7 @@ export async function deleteRoleAction(input: unknown): Promise<RoleResult> {
       data: { deletedAt: new Date(), deletedById: me.userId },
     });
     if (r.count === 0) return GONE;
+    await logAudit({ action: "role.delete", entityType: "role", entityId: parsed.data.id, entityLabel: role.name });
     refresh();
     return { success: true, name: role.name };
   } catch (error) {
@@ -254,6 +274,13 @@ export async function saveRolePermissionsAction(input: unknown): Promise<RoleRes
         });
       }),
     );
+    await logAudit({
+      action: "role.permissions",
+      entityType: "role",
+      entityId: id,
+      entityLabel: role.name,
+      changes: permissionDiff(toPermissions(role.permissions), next),
+    });
     refresh();
     return { success: true, name: role.name };
   } catch (error) {
@@ -282,6 +309,7 @@ export async function restoreRoleAction(input: unknown): Promise<RoleResult> {
       where: { id: parsed.data.id },
       data: { deletedAt: null, deletedById: null },
     });
+    await logAudit({ action: "role.restore", entityType: "role", entityId: parsed.data.id, entityLabel: role.name });
     refresh();
     return { success: true, name: role.name };
   } catch (error) {

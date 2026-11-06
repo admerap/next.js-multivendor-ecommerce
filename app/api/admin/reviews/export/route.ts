@@ -5,29 +5,30 @@ import { isoDate, toCsv } from "@/lib/csv";
 import { downloadResponse } from "@/lib/download";
 import { renderReportPdf } from "@/lib/report-pdf.server";
 import { ADMIN_REVIEW_STATUS_LABEL, adminReviewListSchema, REVIEW_STATUS_SLUGS, reviewRef } from "@/lib/validations/admin-review";
+import { exportFormat, tableDownload } from "@/lib/xlsx.server";
 
 const visibility = (r: { status: string; isVisible: boolean }) => (r.status !== "APPROVED" ? "—" : r.isVisible ? "Published" : "Hidden");
 
 /**
- * GET /api/admin/reviews/export?format=csv|pdf&status=&q=&rating=&store=&visibility= — Customer Review ›
+ * GET /api/admin/reviews/export?format=xlsx|csv|pdf&status=&q=&rating=&store=&visibility= — Customer Review ›
  * Export: every review matching the list's current view (all pages). ADMIN only.
  */
 export async function GET(req: Request) {
   if (!(await can("reviews"))) return NextResponse.redirect(new URL(`/login?callbackUrl=${encodeURIComponent("/admin/reviews")}`, req.url));
 
   const sp = new URL(req.url).searchParams;
-  const format = sp.get("format") === "pdf" ? "pdf" : "csv";
+  const format = exportFormat(sp.get("format"));
   const params = adminReviewListSchema.parse(Object.fromEntries(sp));
   try {
     const { rows, total, counts } = await listAdminReviews(params, { all: true });
     const name = `sundry-reviews-${params.status ?? "all"}-${isoDate(new Date())}`;
 
-    if (format === "csv") {
+    if (format !== "pdf") {
       const csv = toCsv(
         ["Review ID", "Date", "Product", "Store", "Customer", "Order", "Rating", "Title", "Review", "Photos", "Status", "Visibility"],
         rows.map((r) => [`#${reviewRef(r.id)}`, isoDate(r.createdAt), r.product.name, r.store.name, r.customer.name, `#${r.orderNumber}`, r.rating, r.title ?? "", r.comment, r.photoCount, ADMIN_REVIEW_STATUS_LABEL[r.status], visibility(r)]),
       );
-      return downloadResponse(csv, `${name}.csv`, "csv");
+      return tableDownload(csv, name, format);
     }
 
     const pdf = await renderReportPdf({

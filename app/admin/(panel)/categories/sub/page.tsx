@@ -53,6 +53,8 @@ export default async function SubCategoriesPage({ searchParams }: PageProps<"/ad
     <section className="overflow-hidden rounded-lg bg-card shadow-sm">
       <ListToolbar
         searchLabel="Search sub-categories by name"
+        exportBase="/api/admin/categories/export"
+        exportExtra={{ level: "sub" }}
         filters={[{ param: "category", label: "Filter by category", allLabel: "All categories", options: categories.map((c) => ({ id: c.id, label: c.name })) }]}
       />
       <div className="border-t border-line">{children}</div>

@@ -76,7 +76,7 @@ export async function AdminProductList({ view, searchParams }: { view: AdminProd
   const emptyState = <EmptyState bare icon={cfg.icon} title={cfg.empty.title} description={cfg.empty.description} />;
   const card = (children: ReactNode) => (
     <section className="overflow-hidden rounded-lg bg-card shadow-sm">
-      <ListToolbar searchLabel="Search by product name or SKU" filters={filters} statuses={STATUSES} />
+      <ListToolbar searchLabel="Search by product name or SKU" filters={filters} statuses={STATUSES} exportBase="/api/admin/products/export" exportExtra={{ view }} />
       <div className="border-t border-line">{children}</div>
     </section>
   );

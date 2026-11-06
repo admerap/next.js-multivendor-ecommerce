@@ -3,7 +3,7 @@
 import { ChevronDown, ChevronRight, ChevronsLeft, Ellipsis, KeyRound, LogOut, Maximize, Menu, Search, UserCog, UserRound, type LucideIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { signOutAction } from "@/lib/actions/auth";
 import { useBodyScrollLock, useMediaQuery } from "@/lib/hooks";
@@ -123,6 +123,7 @@ function DashShellFrame({
   profileLinks,
   quickLinks,
   withSearch = false,
+  searchAction = "/admin/search",
   withTheme = false,
   footer,
   children,
@@ -141,12 +142,15 @@ function DashShellFrame({
   /** Header icon links (e.g. View storefront, New orders). */
   quickLinks: { label: string; href: string; icon: LucideIcon }[];
   withSearch?: boolean;
+  /** where Enter in the search box goes (`?q=…`) */
+  searchAction?: string;
   withTheme?: boolean;
   footer: string;
   children: ReactNode;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const accountLinks = [
     { label: "Profile", href: profileLinks.profile, icon: UserRound },
     { label: "Profile Settings", href: profileLinks.settings, icon: UserCog },
@@ -163,6 +167,15 @@ function DashShellFrame({
   const [overlay, setOverlay] = useState<Overlay>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const mobileSearchRef = useRef<HTMLInputElement>(null);
+  // Enter in either search box opens the results page; on it, the box shows what was searched.
+  const searchedFor = pathname === searchAction ? (searchParams.get("q") ?? "") : "";
+  const submitSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const q = String(new FormData(e.currentTarget).get("q") ?? "").trim();
+    if (!q) return;
+    setOverlay(null);
+    router.push(`${searchAction}?q=${encodeURIComponent(q)}`);
+  };
   const kbd = useSyncExternalStore(
     () => () => {},
     () => (/Mac|iPhone|iPad/.test(navigator.userAgent) ? "⌘ K" : "Ctrl K"),
@@ -373,11 +386,21 @@ function DashShellFrame({
           </nav>
 
           {withSearch && (
-            <label className="ml-auto hidden h-10.5 min-w-0 max-w-75 flex-1 basis-0 cursor-text items-center gap-2 rounded-md border border-line bg-sunken pr-2 pl-3 transition-[border-color,box-shadow] duration-(--dur-fast) focus-within:border-primary focus-within:shadow-[0_0_0_3px_var(--iris-100)] 2xl:flex">
+            <form
+              role="search"
+              action={searchAction}
+              onSubmit={submitSearch}
+              onClick={() => searchRef.current?.focus()}
+              className="ml-auto hidden h-10.5 min-w-0 max-w-75 flex-1 basis-0 cursor-text items-center gap-2 rounded-md border border-line bg-sunken pr-2 pl-3 transition-[border-color,box-shadow] duration-(--dur-fast) focus-within:border-primary focus-within:shadow-[0_0_0_3px_var(--iris-100)] 2xl:flex"
+            >
               <Search aria-hidden className="size-[18px] shrink-0 text-fg-muted" strokeWidth={1.9} />
               <input
                 ref={searchRef}
+                key={searchedFor}
+                name="q"
                 type="search"
+                defaultValue={searchedFor}
+                maxLength={100}
                 placeholder="Search orders, products, stores…"
                 aria-label="Search the admin panel"
                 className="h-full min-w-0 flex-1 bg-transparent text-sm text-fg-strong outline-none placeholder:text-fg-subtle"
@@ -385,7 +408,7 @@ function DashShellFrame({
               <kbd className="hidden rounded-sm border border-line-default bg-card px-1.5 py-0.5 font-sans text-[0.65rem] font-bold whitespace-nowrap text-fg-muted min-[1281px]:inline">
                 {kbd}
               </kbd>
-            </label>
+            </form>
           )}
 
           <div className={cn("ml-auto flex shrink-0 items-center gap-1.5", withSearch && "2xl:ml-0")}>
@@ -514,16 +537,25 @@ function DashShellFrame({
       {/* Search bar under the header (≤1440px; the inline pill shows from 2xl) */}
       {withSearch && overlay === "search" && (
         <div className="sticky top-17 z-39 flex items-center gap-2.5 border-b border-line bg-card px-4 py-2.5 shadow-sm 2xl:hidden">
-          <div className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-md border border-primary bg-sunken px-3 shadow-[0_0_0_3px_var(--iris-100)]">
+          <form
+            role="search"
+            action={searchAction}
+            onSubmit={submitSearch}
+            className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-md border border-primary bg-sunken px-3 shadow-[0_0_0_3px_var(--iris-100)]"
+          >
             <Search aria-hidden className="size-[18px] shrink-0 text-fg-muted" strokeWidth={1.9} />
             <input
               ref={mobileSearchRef}
+              name="q"
               type="search"
+              defaultValue={searchedFor}
+              maxLength={100}
+              enterKeyHint="search"
               placeholder="Search orders, products, stores…"
               aria-label="Search the admin panel"
               className="h-full min-w-0 flex-1 bg-transparent text-[0.9rem] text-fg-strong outline-none placeholder:text-fg-subtle"
             />
-          </div>
+          </form>
           <button type="button" onClick={() => setOverlay(null)} className="h-11 px-1.5 text-sm font-semibold text-primary">
             Cancel
           </button>

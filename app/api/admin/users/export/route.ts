@@ -5,13 +5,14 @@ import { isoDate, toCsv } from "@/lib/csv";
 import { downloadResponse } from "@/lib/download";
 import { renderReportPdf } from "@/lib/report-pdf.server";
 import { adminUserListSchema } from "@/lib/validations/admin-user";
+import { exportFormat, tableDownload } from "@/lib/xlsx.server";
 
-/** GET /api/admin/users/export?format=csv|pdf&q= — Users › Export: every staff account matching the search. ADMIN only. */
+/** GET /api/admin/users/export?format=xlsx|csv|pdf&q= — Users › Export: every staff account matching the search. ADMIN only. */
 export async function GET(req: Request) {
   if (!(await can("users"))) return NextResponse.redirect(new URL(`/admin/login?callbackUrl=${encodeURIComponent("/admin/users")}`, req.url));
 
   const sp = new URL(req.url).searchParams;
-  const format = sp.get("format") === "pdf" ? "pdf" : "csv";
+  const format = exportFormat(sp.get("format"));
   const params = adminUserListSchema.parse(Object.fromEntries(sp));
   try {
     // Same rows as the page: no deleted users, and no Super Admins for someone who isn't one.
@@ -19,8 +20,8 @@ export async function GET(req: Request) {
     const name = `sundry-users-${isoDate(new Date())}`;
     const table = rows.map((u, i) => [String(i + 1), u.firstName, u.lastName, u.email, u.phone ?? "", u.role, u.status === "active" ? "Active" : "Inactive"]);
 
-    if (format === "csv") {
-      return downloadResponse(toCsv(["ID", "Name", "Last Name", "Email", "Phone", "Role", "Status"], table), `${name}.csv`, "csv");
+    if (format !== "pdf") {
+      return tableDownload(toCsv(["ID", "Name", "Last Name", "Email", "Phone", "Role", "Status"], table), name, format);
     }
     const pdf = await renderReportPdf({
       title: "Users",
