@@ -2,7 +2,7 @@ import "server-only";
 
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { covers, toPermissions, type RolePermissions } from "@/lib/permissions";
+import { outranksRole, toPermissions, type RolePermissions } from "@/lib/permissions";
 import { splitName, type AdminUserListParams } from "@/lib/validations/admin-user";
 
 export type AdminUserRow = {
@@ -96,7 +96,7 @@ export async function listAdminUsers(
       role: u.adminRole?.name ?? NO_ROLE,
       roleId: u.adminRole?.id ?? null,
       isSuperAdmin: u.adminRole?.isSystem ?? false,
-      outranksViewer: !viewer.isSuper && !!u.adminRole && (u.adminRole.isSystem || !covers(viewer.permissions, toPermissions(u.adminRole.permissions))),
+      outranksViewer: !viewer.isSuper && !!u.adminRole && (u.adminRole.isSystem || !outranksRole(viewer.permissions, toPermissions(u.adminRole.permissions))),
       status: u.blockedAt ? "inactive" : "active",
       createdAt: u.createdAt,
       updatedAt: u.updatedAt,

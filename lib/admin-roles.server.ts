@@ -2,7 +2,7 @@ import "server-only";
 
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { allPermissions, covers, toPermissions, type RolePermissions } from "@/lib/permissions";
+import { allPermissions, outranksRole, toPermissions, type RolePermissions } from "@/lib/permissions";
 import type { AdminRoleListParams } from "@/lib/validations/admin-role";
 
 export type AdminRoleRow = {
@@ -35,7 +35,8 @@ export async function assignableRoles(viewer: { isSuper: boolean; permissions: R
     orderBy: [{ isSystem: "desc" }, { createdAt: "asc" }, { id: "asc" }],
     select: { id: true, name: true, permissions: { select: { module: true, canRead: true, canCreate: true, canUpdate: true, canDelete: true } } },
   });
-  return roles.filter((r) => viewer.isSuper || covers(viewer.permissions, toPermissions(r.permissions))).map(({ id, name }) => ({ id, name }));
+  // A non-Super Admin may only give out roles strictly weaker than their own (not their own role, nor stronger).
+  return roles.filter((r) => viewer.isSuper || outranksRole(viewer.permissions, toPermissions(r.permissions))).map(({ id, name }) => ({ id, name }));
 }
 
 /**

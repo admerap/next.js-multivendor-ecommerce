@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { getAccess, noPermissionResult } from "@/lib/access.server";
 import { diff, logAudit } from "@/lib/audit.server";
 import { prisma } from "@/lib/db";
-import { covers, toPermissions } from "@/lib/permissions";
+import { outranksRole, toPermissions } from "@/lib/permissions";
 import { deleteUserImage, saveUserImage, UploadError } from "@/lib/uploads";
 import { createStaffUserSchema, STAFF_IMAGE_MAX_BYTES, staffImageSchema, updateStaffUserSchema, userIdSchema } from "@/lib/validations/admin-user";
 
@@ -23,7 +23,7 @@ const fieldError = (field: string, message: string): StaffUserResult => ({ succe
 const EMAIL_TAKEN = fieldError("email", "An account with this email already exists");
 const EMAIL_TAKEN_BY_DELETED = fieldError("email", "A deleted user has this email. Restore it from Deleted users.");
 const BAD_ROLE = fieldError("role", "Select a role from the list");
-const ROLE_TOO_STRONG = fieldError("role", "You can't give a role with more access than your own");
+const ROLE_TOO_STRONG = fieldError("role", "Only a Super Admin can give a role with as much access as yours, or more");
 
 function invalid(error: z.ZodError): StaffUserResult {
   const fieldErrors: Record<string, string> = {};
@@ -60,15 +60,18 @@ async function roleCheck(roleId: string, me: Signer): Promise<StaffUserResult | 
     select: { isSystem: true, permissions: { select: PERM_FIELDS } },
   });
   if (!role || (role.isSystem && !me.isSuper)) return BAD_ROLE;
-  if (!me.isSuper && !covers(me.perms, toPermissions(role.permissions))) return ROLE_TOO_STRONG;
+  if (!me.isSuper && !outranksRole(me.perms, toPermissions(role.permissions))) return ROLE_TOO_STRONG;
   return null;
 }
 
-/** A non-Super Admin acting on an account whose role has access they lack (they could take it over). */
-const OUTRANKED: StaffUserResult = { success: false, error: "This account has more access than your role. Ask a Super Admin." };
+/**
+ * A non-Super Admin acting on an account whose role isn't strictly weaker than theirs — a peer (another admin)
+ * or a role with access they lack (they could take it over). Only a Super Admin manages those.
+ */
+const OUTRANKED: StaffUserResult = { success: false, error: "Only a Super Admin can manage this account — its role has as much access as yours, or more." };
 function outranks(role: { isSystem: boolean; permissions: Parameters<typeof toPermissions>[0] } | null, me: Signer) {
   if (me.isSuper || !role) return false;
-  return role.isSystem || !covers(me.perms, toPermissions(role.permissions));
+  return role.isSystem || !outranksRole(me.perms, toPermissions(role.permissions));
 }
 
 /** Emails stay unique across live and deleted users, so one held by a deleted user points to restoring it. */

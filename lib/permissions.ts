@@ -128,3 +128,11 @@ export const MODULE_HOME: Record<PermissionModule, string> = {
 /** Does `mine` include every switch that is on in `theirs`? (Nobody but a Super Admin hands out more than they have.) */
 export const covers = (mine: RolePermissions, theirs: RolePermissions) =>
   PERMISSION_MODULES.every((m) => PERMISSION_ACTIONS.every((a) => !theirs[m.key][a] || mine[m.key][a]));
+
+/**
+ * Staff users: may a (non-Super Admin) role with `mine` create / edit / delete accounts of a role with `theirs`,
+ * or give that role out? Only a STRICTLY weaker role — everything it can do is within mine and it can do less.
+ * So an admin manages the common staff (Sales, Warehouse…) but not other admins, nor anyone with more access;
+ * a Super Admin is checked separately (they manage everyone).
+ */
+export const outranksRole = (mine: RolePermissions, theirs: RolePermissions) => covers(mine, theirs) && !covers(theirs, mine);
