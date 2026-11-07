@@ -1,6 +1,6 @@
 "use client";
 
-import { ChartLine, FolderTree, LayoutDashboard, Package, Percent, ShoppingCart, Star, Store, Tag, TicketPercent, UserCog } from "lucide-react";
+import { ChartLine, FolderTree, LayoutDashboard, LifeBuoy, Package, Percent, ShoppingCart, Star, Store, Tag, TicketPercent, UserCog } from "lucide-react";
 import type { ReactNode } from "react";
 import { AdminPermissionsProvider } from "@/components/admin/AdminPermissions";
 import type { OrderStatusKey } from "@/lib/orders";
@@ -22,6 +22,8 @@ export type AdminCounts = {
   reviews: { pending: number };
   /** Customer accounts (role CUSTOMER). */
   customers: number;
+  /** Support tickets waiting on staff (status Open). */
+  openTickets: number;
 };
 
 /**
@@ -95,6 +97,7 @@ function adminNav(counts: AdminCounts): NavGroup[] {
             { label: "Customer List", href: "/admin/customers", count: counts.customers, tone: "iris" },
           ],
         },
+        { label: "Support Tickets", href: "/admin/support", icon: LifeBuoy, count: counts.openTickets, tone: "saffron" },
         {
           label: "Report Manage",
           icon: ChartLine,

@@ -15,7 +15,7 @@ import { PRODUCT_IMAGE_MAX_BYTES } from "@/lib/validations/product";
  */
 
 const PUBLIC_DIR = path.join(process.cwd(), "public");
-type Folder = "brands" | "categories" | "vendors" | "products" | "users" | "reviews" | "chat";
+type Folder = "brands" | "categories" | "vendors" | "products" | "users" | "reviews" | "chat" | "support";
 const dirOf = (folder: Folder) => path.join(PUBLIC_DIR, "uploads", folder);
 const prefixOf = (folder: Folder) => `/uploads/${folder}/`;
 const STORED_NAME = /^[0-9a-f-]{36}\.(jpg|png|webp)$/;
@@ -105,6 +105,8 @@ export const saveProductImage = (file: File) => saveImage(file, "products", PROD
 /** Chat photos (lib/chat CHAT_IMAGE_MAX_BYTES). Public by unguessable UUID URL — TODO(storage): private bucket + signed URLs. */
 export const saveChatImage = (file: File, maxBytes: number) => saveImage(file, "chat", maxBytes);
 export const deleteChatImage = (publicPath: string | null | undefined) => deleteImage(publicPath, "chat");
+export const saveSupportImage = (file: File, maxBytes: number) => saveImage(file, "support", maxBytes);
+export const deleteSupportImage = (publicPath: string | null | undefined) => deleteImage(publicPath, "support");
 export const deleteProductImage = (publicPath: string | null | undefined) => deleteImage(publicPath, "products");
 
 const ADMIN_DOC_KINDS: DocKind[] = ["pdf", "doc", "docx", "jpg"];

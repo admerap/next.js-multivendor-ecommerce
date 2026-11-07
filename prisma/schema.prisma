@@ -43,16 +43,55 @@ model User {
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
-  vendor        Vendor?
-  accounts      Account[]
-  sessions      Session[]
-  orders        Order[]
-  reviews       Review[]
-  wishlist      WishlistItem[]
+  vendor          Vendor?
+  accounts        Account[]
+  sessions        Session[]
+  orders          Order[]
+  reviews         Review[]
+  wishlist        WishlistItem[]
   /// Chat: this customer's conversations with stores.
-  conversations Conversation[]
+  conversations   Conversation[]
   /// My Address: the customer's saved delivery addresses.
-  addresses     Address[]
+  addresses       Address[]
+  /// Support Ticket: this customer's requests to Sundry support, and every message on them (customer or staff).
+  supportTickets  SupportTicket[]
+  supportMessages SupportTicketMessage[]
+}
+
+/// Support Ticket (supportticket design): a customer's request to Sundry support. `number` is the "#100241" the
+/// customer quotes. Replies (theirs and staff's) are SupportTicketMessage rows; `description` is the opening one.
+model SupportTicket {
+  id          String                 @id @default(cuid())
+  number      Int                    @unique
+  userId      String
+  subject     String                 @db.VarChar(150)
+  type        SupportTicketType
+  priority    SupportTicketPriority  @default(MEDIUM)
+  status      SupportTicketStatus    @default(OPEN)
+  description String                 @db.Text
+  /// optional screenshot (PNG / JPG, up to 5 MB)
+  attachment  String?                @db.VarChar(255)
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  user        User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages    SupportTicketMessage[]
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+/// A reply on a support ticket — from the customer, or from staff (`fromStaff`). The author may be removed later.
+model SupportTicketMessage {
+  id        String        @id @default(cuid())
+  ticketId  String
+  authorId  String?
+  fromStaff Boolean       @default(false)
+  body      String        @db.Text
+  createdAt DateTime      @default(now())
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author    User?         @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([ticketId, createdAt])
 }
 
 /// My Address (useraddress design): a customer's saved delivery address — the same fields and rules as a
@@ -493,6 +532,30 @@ enum AddressType {
   HOME
   OFFICE
   OTHER
+}
+
+enum SupportTicketType {
+  WEBSITE
+  ORDER
+  PAYMENT
+  SELLER
+  ACCOUNT
+}
+
+enum SupportTicketPriority {
+  URGENT
+  HIGH
+  MEDIUM
+  LOW
+}
+
+/// Open (new) · Pending (waiting on the customer) · Answered (staff replied) · Resolved · Closed
+enum SupportTicketStatus {
+  OPEN
+  PENDING
+  ANSWERED
+  RESOLVED
+  CLOSED
 }
 
 model Order {

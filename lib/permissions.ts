@@ -29,6 +29,7 @@ export const PERMISSION_MODULES = [
   { key: "customers", label: "Customers", actions: ["read", "update"] },
   { key: "coupons", label: "Coupons", actions: ["read", "update", "delete"] },
   { key: "reports", label: "Reports", actions: ["read"] },
+  { key: "support", label: "Support Tickets", actions: ["read", "update"] },
   { key: "taxRates", label: "Tax Rates", actions: ALL },
 ] as const satisfies readonly {
   key: string;
@@ -98,6 +99,7 @@ const PATH_MODULE: [string, PermissionModule][] = [
   ["/admin/customers", "customers"],
   ["/admin/coupons", "coupons"],
   ["/admin/reports", "reports"],
+  ["/admin/support", "support"],
 ];
 export function moduleForPath(href: string): PermissionModule | null {
   const path = href.split("?")[0];
@@ -119,6 +121,7 @@ export const MODULE_HOME: Record<PermissionModule, string> = {
   customers: "/admin/customers",
   coupons: "/admin/coupons/pending",
   reports: "/admin/reports/earnings",
+  support: "/admin/support",
   taxRates: "/admin/settings/tax-rates",
 };
 

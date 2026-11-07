@@ -17,18 +17,20 @@ export default async function AdminPanelLayout({ children }: { children: ReactNo
   const can = (m: PermissionModule) => !!access?.permissions[m].read;
   const zero = <T,>(v: T) => Promise.resolve(v);
   const noGroups: { approvalStatus: string; _count: { _all: number } }[] = [];
-  const [customers, pendingVendors, approvedStores, brands, productsByStatus, featured, popular, couponsByStatus, orders, pendingReviews] = await Promise.all([
-    can("customers") ? prisma.user.count({ where: { role: "CUSTOMER" } }) : zero(0),
-    can("vendors") ? prisma.vendor.count({ where: { status: "PENDING" } }) : zero(0),
-    access?.isSuper ? prisma.vendor.count({ where: { status: "APPROVED" } }) : zero(0),
-    access?.isSuper ? prisma.brand.count() : zero(0),
-    can("products") ? prisma.product.groupBy({ by: ["approvalStatus"], _count: { _all: true } }) : zero(noGroups),
-    can("products") ? prisma.product.count({ where: { isFeatured: true } }) : zero(0),
-    can("products") ? prisma.product.count({ where: { isPopular: true } }) : zero(0),
-    can("coupons") ? prisma.coupon.groupBy({ by: ["approvalStatus"], _count: { _all: true } }) : zero(noGroups),
-    can("orders") ? adminOrderStatusCounts() : zero(noOrders()), // Order Manage: orders per overall status
-    can("reviews") ? prisma.review.count({ where: { status: "PENDING" } }) : zero(0), // Review Manage: reviews waiting for moderation
-  ]);
+  const [customers, pendingVendors, approvedStores, brands, productsByStatus, featured, popular, couponsByStatus, orders, pendingReviews, openTickets] =
+    await Promise.all([
+      can("customers") ? prisma.user.count({ where: { role: "CUSTOMER" } }) : zero(0),
+      can("vendors") ? prisma.vendor.count({ where: { status: "PENDING" } }) : zero(0),
+      access?.isSuper ? prisma.vendor.count({ where: { status: "APPROVED" } }) : zero(0),
+      access?.isSuper ? prisma.brand.count() : zero(0),
+      can("products") ? prisma.product.groupBy({ by: ["approvalStatus"], _count: { _all: true } }) : zero(noGroups),
+      can("products") ? prisma.product.count({ where: { isFeatured: true } }) : zero(0),
+      can("products") ? prisma.product.count({ where: { isPopular: true } }) : zero(0),
+      can("coupons") ? prisma.coupon.groupBy({ by: ["approvalStatus"], _count: { _all: true } }) : zero(noGroups),
+      can("orders") ? adminOrderStatusCounts() : zero(noOrders()), // Order Manage: orders per overall status
+      can("reviews") ? prisma.review.count({ where: { status: "PENDING" } }) : zero(0), // Review Manage: reviews waiting for moderation
+      can("support") ? prisma.supportTicket.count({ where: { status: "OPEN" } }) : zero(0), // Support Tickets: waiting on staff
+    ]);
   // Sidebar list sizes — the same filters the Product / Coupon Manage pages use.
   const byStatus = (rows: { approvalStatus: string; _count: { _all: number } }[]) => {
     const n = (s: string) => rows.find((r) => r.approvalStatus === s)?._count._all ?? 0;
@@ -65,7 +67,7 @@ export default async function AdminPanelLayout({ children }: { children: ReactNo
       }}
       readable={readableModules(access)}
       permissions={access?.permissions}
-      counts={{ orders, pendingVendors, products, coupons, reviews: { pending: pendingReviews }, customers }}
+      counts={{ orders, pendingVendors, products, coupons, reviews: { pending: pendingReviews }, customers, openTickets }}
       // The launch checklist is the Super Admin's to-do list.
       setupSteps={access?.isSuper ? setupSteps : undefined}
       signedInAt={user.signedInAt}
