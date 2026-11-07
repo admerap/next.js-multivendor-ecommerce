@@ -20,14 +20,14 @@ enum VendorStatus {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String     @id @default(cuid())
   name          String
-  email         String    @unique
+  email         String     @unique
   emailVerified DateTime?
   image         String?
-  phone         String?   @db.VarChar(32)
+  phone         String?    @db.VarChar(32)
   passwordHash  String
-  role          Role      @default(CUSTOMER)
+  role          Role       @default(CUSTOMER)
   /// Set by an admin (Customer List › Block): the account can't sign in, and an open session is ended on
   /// its next request. null = active. Past orders and reviews are kept as they are.
   blockedAt     DateTime?
@@ -39,9 +39,9 @@ model User {
   /// taken while the row exists.
   deletedAt     DateTime?
   /// Who deleted it (user id) — audit only.
-  deletedById   String?   @db.VarChar(40)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  deletedById   String?    @db.VarChar(40)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
   vendor        Vendor?
   accounts      Account[]
@@ -51,6 +51,33 @@ model User {
   wishlist      WishlistItem[]
   /// Chat: this customer's conversations with stores.
   conversations Conversation[]
+  /// My Address: the customer's saved delivery addresses.
+  addresses     Address[]
+}
+
+/// My Address (useraddress design): a customer's saved delivery address — the same fields and rules as a
+/// checkout address (lib/validations/checkout), so any saved one can ship an order. One per customer is the
+/// default (the first saved becomes it; deleting it promotes the next).
+model Address {
+  id        String      @id @default(cuid())
+  userId    String
+  type      AddressType @default(HOME)
+  name      String      @db.VarChar(120)
+  phone     String      @db.VarChar(32)
+  country   String      @db.VarChar(60)
+  /// state / province code ("NY", "ON") or a UK county
+  state     String?     @db.VarChar(60)
+  city      String      @db.VarChar(120)
+  zip       String      @db.VarChar(16)
+  address   String      @db.VarChar(500)
+  /// apartment, suite, unit, floor… (optional)
+  address2  String?     @db.VarChar(100)
+  isDefault Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 /// A seller's store. Exactly one per VENDOR user.
@@ -755,17 +782,17 @@ model Message {
 /// A role for the people who run the admin panel (Super Admin, Support, Accounting…). What each one can access
 /// comes next (permissions). System roles — the Super Admin — can't be deleted or switched off.
 model AdminRole {
-  id          String    @id @default(cuid())
-  name        String    @unique @db.VarChar(60)
-  description String    @db.VarChar(255)
-  isActive    Boolean   @default(true)
-  isSystem    Boolean   @default(false)
+  id          String                @id @default(cuid())
+  name        String                @unique @db.VarChar(60)
+  description String                @db.VarChar(255)
+  isActive    Boolean               @default(true)
+  isSystem    Boolean               @default(false)
   /// Soft delete: a deleted role is hidden everywhere (lists, selectors) but kept, and can be restored.
   deletedAt   DateTime?
   /// Who deleted it (user id) — audit only.
-  deletedById String?   @db.VarChar(40)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  deletedById String?               @db.VarChar(40)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
   users       User[]
   permissions AdminRolePermission[]
 }

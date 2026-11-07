@@ -36,20 +36,31 @@ const ZIP: Record<(typeof COUNTRIES)[number], { re: RegExp; message: string; nor
   "United Kingdom": { re: /^[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$/, message: "Enter a postcode like SW1A 1AA.", normalize: (z) => z.replace(/^(.+?) ?(\d[A-Z]{2})$/, "$1 $2") },
 };
 
-export const addressSchema = addressBase
-  .superRefine((a, ctx) => {
-    const region = REGION[a.country];
-    if (region.options) {
-      if (!a.state) ctx.addIssue({ code: "custom", path: ["state"], message: `Choose a ${region.label.toLowerCase()}.` });
-      else if (!region.options.some(([code]) => code === a.state)) ctx.addIssue({ code: "custom", path: ["state"], message: `Choose a ${region.label.toLowerCase()} from the list.` });
-    }
-    const zip = ZIP[a.country];
-    if (!a.zip) ctx.addIssue({ code: "custom", path: ["zip"], message: "Enter the zip / postal code." });
-    else if (!zip.re.test(a.zip.toUpperCase())) ctx.addIssue({ code: "custom", path: ["zip"], message: zip.message });
-  })
-  .transform((a) => ({ ...a, zip: ZIP[a.country].normalize(a.zip.toUpperCase()) }));
+/** State / province and postal code per country — shared by the checkout and the saved addresses. */
+function checkRegion(a: { country: (typeof COUNTRIES)[number]; state: string; zip: string }, ctx: z.RefinementCtx) {
+  const region = REGION[a.country];
+  if (region.options) {
+    if (!a.state) ctx.addIssue({ code: "custom", path: ["state"], message: `Choose a ${region.label.toLowerCase()}.` });
+    else if (!region.options.some(([code]) => code === a.state)) ctx.addIssue({ code: "custom", path: ["state"], message: `Choose a ${region.label.toLowerCase()} from the list.` });
+  }
+  const zip = ZIP[a.country];
+  if (!a.zip) ctx.addIssue({ code: "custom", path: ["zip"], message: "Enter the zip / postal code." });
+  else if (!zip.re.test(a.zip.toUpperCase())) ctx.addIssue({ code: "custom", path: ["zip"], message: zip.message });
+}
+const normalizeZip = <T extends { country: (typeof COUNTRIES)[number]; zip: string }>(a: T) => ({ ...a, zip: ZIP[a.country].normalize(a.zip.toUpperCase()) });
+
+export const addressSchema = addressBase.superRefine(checkRegion).transform(normalizeZip);
 export type AddressInput = z.input<typeof addressSchema>;
 export type Address = z.output<typeof addressSchema>;
+
+/**
+ * My Address (useraddress design): a saved delivery address — the checkout address without the email (that's the
+ * account's), so a saved address always passes the checkout's rules.
+ */
+export const MAX_SAVED_ADDRESSES = 10;
+export const savedAddressSchema = addressBase.omit({ email: true }).superRefine(checkRegion).transform(normalizeZip);
+export type SavedAddressInput = z.input<typeof savedAddressSchema>;
+export const addressIdSchema = z.object({ id: z.string().trim().regex(/^[a-z0-9]{1,40}$/i, "Unknown address") });
 
 /** Shipping & Billing step: billing is either "same as shipping" or its own full address. */
 export const checkoutAddressesSchema = z
