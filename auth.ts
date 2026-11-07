@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { createHash } from "node:crypto";
+import { ATTEMPT_LIMIT, clearFailures, lockedFor, recordFailure } from "@/lib/attempts.server";
 import { prisma } from "@/lib/db";
 import { staffSessionExpired } from "@/lib/session-policy";
 import { loginSchema } from "@/lib/validations/auth";
@@ -20,6 +21,23 @@ const passwordStamp = (passwordHash: string) => createHash("sha256").update(pass
 export class BlockedAccount extends CredentialsSignin {
   code = "blocked";
 }
+
+/** Too many failed sign-ins for this email or from this IP (lib/attempts.server) — refused before any check. */
+export class TooManyAttempts extends CredentialsSignin {
+  code = "rate_limited";
+}
+
+/** The caller's IP as the proxy in front reports it (first hop of X-Forwarded-For), or null when there's none. */
+function clientIp(request: Request | undefined): string | null {
+  const forwarded = request?.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return forwarded || request?.headers.get("x-real-ip")?.trim() || null;
+}
+
+/** Sign-in brake keys: the email (5 failures / 15 min) and, when known, the IP (20 — many emails from one place). */
+export const signInKeys = (email: string, ip: string | null) => [
+  { key: `login:email:${email}`, max: ATTEMPT_LIMIT.account },
+  ...(ip ? [{ key: `login:ip:${ip}`, max: ATTEMPT_LIMIT.ip }] : []),
+];
 
 export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -39,11 +57,16 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(raw) {
+      async authorize(raw, request) {
         const parsed = loginSchema.safeParse(raw);
         if (!parsed.success) return null;
 
         const { email, password } = parsed.data;
+        // Every sign-in path (login form, /api/auth/callback/credentials) passes here, so the brake can't be skipped.
+        // Locked keys are refused before the password is checked — and whether the email exists never shows.
+        const keys = signInKeys(email, clientIp(request));
+        for (const k of keys) if (await lockedFor(k.key, k.max)) throw new TooManyAttempts();
+
         const user = await prisma.user.findUnique({
           where: { email },
           select: { id: true, name: true, email: true, role: true, passwordHash: true, blockedAt: true, deletedAt: true },
@@ -51,9 +74,13 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
 
         const valid = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH);
         // A deleted (staff) account signs in like an unknown email.
-        if (!user || !valid || user.deletedAt) return null;
+        if (!user || !valid || user.deletedAt) {
+          await Promise.all(keys.map((k) => recordFailure(k.key)));
+          return null;
+        }
         // Checked after the password so a blocked status never tells a stranger the account exists.
         if (user.blockedAt) throw new BlockedAccount();
+        await clearFailures(keys[0]!.key); // the right password clears this email's count (not the IP's)
 
         return { id: user.id, name: user.name, email: user.email, role: user.role, pwv: passwordStamp(user.passwordHash) };
       },

@@ -5,7 +5,8 @@ import bcrypt from "bcryptjs";
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import type { z } from "zod";
-import { auth, BlockedAccount, signIn, signOut } from "@/auth";
+import { auth, BlockedAccount, signIn, signInKeys, signOut, TooManyAttempts } from "@/auth";
+import { lockedFor, signInLockedMessage } from "@/lib/attempts.server";
 import { LOGIN_PATH, safeCallbackUrl } from "@/lib/auth-routes";
 import { prisma } from "@/lib/db";
 import { nextFreeSlug, slugify } from "@/lib/slug";
@@ -60,6 +61,11 @@ export async function loginAction(input: unknown, callbackUrl?: string): Promise
     await signIn("credentials", { ...parsed.data, redirect: false });
   } catch (error) {
     if (error instanceof BlockedAccount) return { ok: false, message: "This account has been blocked. Contact Sundry support if you think this is a mistake." };
+    if (error instanceof TooManyAttempts) {
+      // The email's lock tells how long; an IP lock (many emails) reports the full window.
+      const minutes = (await lockedFor(signInKeys(parsed.data.email, null)[0]!.key)) || 15;
+      return { ok: false, message: signInLockedMessage(minutes) };
+    }
     if (error instanceof AuthError) return { ok: false, message: "Incorrect email or password" };
     console.error("[auth] login failed", error);
     return { ok: false, message: "We couldn't sign you in right now. Please try again." };

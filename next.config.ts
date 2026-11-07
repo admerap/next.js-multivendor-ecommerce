@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Dev-only "N" badge: keep it off the bottom-left, where the admin sidebar's Setup Guide sits.
   devIndicators: { position: "bottom-right" },
+  // Don't print Server Action arguments in the terminal: they include passwords (sign in, change password) and
+  // other form data.
+  logging: { serverFunctions: false },
   // The customer area moved from /account/* to /dashboard/* — old links (bookmarks, emails) keep working.
   async redirects() {
     return [

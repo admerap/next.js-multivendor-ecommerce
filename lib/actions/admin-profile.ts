@@ -53,15 +53,15 @@ export async function updateMyProfileAction(form: FormData): Promise<ProfileResu
     // hand the account to someone else. Wrong guesses count toward the same lock as Change Password.
     if (email !== current.email) {
       const key = `pw:${me.userId}`;
-      const wait = lockedFor(key);
+      const wait = await lockedFor(key);
       if (wait) return { success: false, error: lockedMessage(wait), fieldErrors: { currentPassword: lockedMessage(wait) } };
       const typed = String(form.get("currentPassword") ?? "");
       if (!typed) return { success: false, error: CHECK, fieldErrors: { currentPassword: "Enter your current password to change your email" } };
       if (!(await bcrypt.compare(typed, current.passwordHash))) {
-        recordFailure(key);
+        await recordFailure(key);
         return { success: false, error: CHECK, fieldErrors: { currentPassword: "Current password is incorrect" } };
       }
-      clearFailures(key);
+      await clearFailures(key);
     }
     if (photo?.success) saved = await saveUserImage(photo.data, STAFF_IMAGE_MAX_BYTES);
     await prisma.user.update({

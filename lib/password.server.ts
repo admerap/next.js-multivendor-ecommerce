@@ -37,7 +37,7 @@ export async function changeOwnPassword(userId: string, input: unknown, logTag: 
   const { oldPassword, newPassword } = parsed.data;
   // Five wrong current passwords in 15 minutes lock this form for a while (lib/attempts.server).
   const key = `pw:${userId}`;
-  const wait = lockedFor(key);
+  const wait = await lockedFor(key);
   if (wait) return { success: false, error: lockedMessage(wait), fieldErrors: { oldPassword: lockedMessage(wait) } };
 
   try {
@@ -45,10 +45,10 @@ export async function changeOwnPassword(userId: string, input: unknown, logTag: 
     if (!user) return { success: false, error: SESSION_EXPIRED };
 
     if (!(await bcrypt.compare(oldPassword, user.passwordHash))) {
-      recordFailure(key);
+      await recordFailure(key);
       return { success: false, error: WRONG_OLD, fieldErrors: { oldPassword: WRONG_OLD } };
     }
-    clearFailures(key);
+    await clearFailures(key);
 
     await prisma.user.update({ where: { id: userId }, data: { passwordHash: await bcrypt.hash(newPassword, 12) } });
   } catch (error) {

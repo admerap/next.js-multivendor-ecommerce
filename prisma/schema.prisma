@@ -882,6 +882,18 @@ model AuditLog {
   @@index([entityType, entityId])
 }
 
+/// A failed sign-in or password check, for rate limiting (lib/attempts.server). `key` is a SHA-256 of e.g.
+/// "login:email:<email>", "login:ip:<ip>" or "pw:<userId>" — no email or IP is stored in clear. Cleared on success;
+/// rows older than a day are pruned.
+model AuthAttempt {
+  id        String   @id @default(cuid())
+  key       String   @db.VarChar(64)
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+  @@index([createdAt])
+}
+
 /// What a role may do in one admin module (Roles › Permissions): Read · Create · Update · Delete. No row = no
 /// access. The Super Admin (system role) always has everything and keeps no rows. Modules: lib/permissions.ts.
 model AdminRolePermission {
