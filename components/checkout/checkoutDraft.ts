@@ -21,6 +21,8 @@ export type CheckoutDraft = {
   shippingMethod?: ShippingMethod;
   /** set when the server accepted the addresses (Proceed to Payment); any edit clears it */
   addressesConfirmed?: boolean;
+  /** an unpaid card order placed from this checkout (declined card…): the next attempt replaces it (`retryOf`) */
+  pendingCardOrder?: number;
 };
 
 const KEY = "sundry-checkout";

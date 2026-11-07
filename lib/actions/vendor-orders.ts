@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { accountOrderHref, ORDER_STATUS_LABEL, vendorOrderHref } from "@/lib/orders";
+import { settleCanceledCardOrder } from "@/lib/payments.server";
 import { vendorStatusUpdateSchema } from "@/lib/validations/vendor-order";
 import { currentVendor } from "@/lib/vendor-auth";
 import { updateVendorOrderStatus } from "@/lib/vendor-orders.server";
@@ -20,6 +21,8 @@ export async function updateSubOrderStatus(input: unknown): Promise<VendorOrderA
 
   const res = await updateVendorOrderStatus(parsed.data.id, me.vendorId, parsed.data.status, me.userId);
   if (!res.ok) return { ok: false, message: res.error };
+  // A paid card part the seller cancels is refunded to the customer's card.
+  if (res.card && parsed.data.status === "CANCELED") await settleCanceledCardOrder(res.orderId);
 
   // Seller views (list, details, sidebar counts in the panel layout) and the customer's views of this order.
   revalidatePath("/vendor", "layout");

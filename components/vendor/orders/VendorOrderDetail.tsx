@@ -1,4 +1,4 @@
-import { CreditCard, Download, History, MapPin, ReceiptText, Store, Truck } from "lucide-react";
+import { Clock, CreditCard, Download, History, MapPin, ReceiptText, Store, Truck } from "lucide-react";
 import type { ReactNode } from "react";
 import { cardLabelClass } from "@/components/data/list-classes";
 import { Facts, SideCard } from "@/components/orders/DetailCards";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SHIPPING_METHOD_INFO, taxLabel } from "@/lib/checkout";
 import { money } from "@/lib/money";
-import { addressLines, ORDER_STATUS_LABEL, orderAddress, PAYMENT_METHOD_LABEL, PAYMENT_STATUS_LABEL, vendorInvoiceHref } from "@/lib/orders";
+import { addressLines, awaitingCardPayment, ORDER_STATUS_LABEL, orderAddress, PAYMENT_METHOD_LABEL, paymentLabel, vendorInvoiceHref } from "@/lib/orders";
 import type { OrderView } from "@/lib/orders.server";
 import { cn } from "@/lib/utils";
 import { OrderStatusControl } from "./OrderStatusControl";
@@ -41,6 +41,9 @@ function AddressCard({ title, a }: { title: string; a: ReturnType<typeof orderAd
 export function VendorOrderDetail({ order }: { order: OrderView }) {
   const part = order.storeOrders[0]!;
   const itemsPrice = part.items.reduce((n, i) => n + i.unitPrice * i.qty, 0);
+  // Card order Stripe hasn't confirmed yet: the seller can't move it (the server refuses too).
+  const canceled = part.status === "CANCELED";
+  const awaiting = awaitingCardPayment(order.paymentMethod, part.paymentStatus, canceled);
   const sameBilling = order.billingSameAsShipping || !order.billName;
 
   return (
@@ -151,7 +154,7 @@ export function VendorOrderDetail({ order }: { order: OrderView }) {
 
       {/* ── Side column */}
       <div className="flex min-w-0 flex-col gap-5">
-        <SideCard icon={CreditCard} title="Payment" aside={<PayBadge status={order.paymentStatus} />}>
+        <SideCard icon={CreditCard} title="Payment" aside={<PayBadge method={order.paymentMethod} status={part.paymentStatus} canceled={canceled} />}>
           <Facts
             rows={[
               ["Payment method", PAYMENT_METHOD_LABEL[order.paymentMethod]],
@@ -162,14 +165,26 @@ export function VendorOrderDetail({ order }: { order: OrderView }) {
           {order.paymentMethod === "COD" && part.paymentStatus === "UNPAID" && (
             <p className="mt-3 text-caption text-fg-muted">Cash is collected when this part is delivered — it&apos;s marked paid automatically then.</p>
           )}
+          {order.paymentMethod === "STRIPE" && part.paymentStatus === "PAID" && <p className="mt-3 text-caption text-fg-muted">Paid by card through Stripe.</p>}
+          {part.paymentStatus === "REFUNDED" && <p className="mt-3 text-caption text-fg-muted">Canceled — the customer&apos;s card was refunded for this part.</p>}
         </SideCard>
 
         <SideCard icon={Truck} title="Order & Shipping Info">
-          <OrderStatusControl key={part.status} id={part.id} orderNumber={order.orderNumber} status={part.status} />
+          {awaiting ? (
+            <p role="status" className="flex items-start gap-2.5 rounded-md bg-warning-50 p-3.5 text-sm text-warning-600">
+              <Clock aria-hidden className="mt-0.5 size-4.5 shrink-0" strokeWidth={2} />
+              <span>
+                <b className="font-semibold">Awaiting the customer&apos;s card payment.</b> Don&apos;t prepare this order yet — you can change its status once Stripe
+                confirms the payment. If it isn&apos;t paid within 30 minutes it&apos;s canceled automatically.
+              </span>
+            </p>
+          ) : (
+            <OrderStatusControl key={part.status} id={part.id} orderNumber={order.orderNumber} status={part.status} />
+          )}
           <div className="mt-4 border-t border-line pt-4">
             <Facts
               rows={[
-                ["Payment status", PAYMENT_STATUS_LABEL[order.paymentStatus]],
+                ["Payment status", paymentLabel(order.paymentMethod, part.paymentStatus, canceled)],
                 ["Shipping method", SHIPPING_METHOD_INFO[order.shippingMethod].label],
               ]}
             />
@@ -215,6 +230,7 @@ function StatusHistory({ events }: { events: OrderView["storeOrders"][number]["e
             <p className="font-semibold text-fg-strong">
               {ORDER_STATUS_LABEL[e.status]}
               {e.actorRole && <span className="font-normal text-fg-muted"> {BY[e.actorRole]}</span>}
+              {!e.actorRole && e.status === "CANCELED" && <span className="font-normal text-fg-muted"> automatically (not paid)</span>}
             </p>
             <time dateTime={e.createdAt.toISOString()} className="text-caption text-fg-muted tabular-nums">
               {placed.format(e.createdAt)} · {at.format(e.createdAt)}
@@ -226,10 +242,15 @@ function StatusHistory({ events }: { events: OrderView["storeOrders"][number]["e
   );
 }
 
-function PayBadge({ status }: { status: OrderView["paymentStatus"] }) {
+function PayBadge({ method, status, canceled }: { method: OrderView["paymentMethod"]; status: OrderView["paymentStatus"]; canceled: boolean }) {
   return (
-    <span className={cn("rounded-full px-2.5 py-0.5 text-caption font-bold", status === "PAID" ? "bg-success-50 text-success-600" : "bg-sunken text-fg-muted")}>
-      {PAYMENT_STATUS_LABEL[status]}
+    <span
+      className={cn(
+        "rounded-full px-2.5 py-0.5 text-caption font-bold",
+        status === "PAID" ? "bg-success-50 text-success-600" : awaitingCardPayment(method, status, canceled) ? "bg-warning-50 text-warning-600" : "bg-sunken text-fg-muted",
+      )}
+    >
+      {paymentLabel(method, status, canceled)}
     </span>
   );
 }

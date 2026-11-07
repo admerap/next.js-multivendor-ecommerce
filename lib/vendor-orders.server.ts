@@ -153,7 +153,7 @@ export async function getVendorOrderView(storeOrderId: string, vendorId: string)
   };
 }
 
-export type VendorStatusResult = { ok: true; orderNumber: number; from: OrderStatusKey } | { ok: false; error: string };
+export type VendorStatusResult = { ok: true; orderNumber: number; from: OrderStatusKey; orderId: string; card: boolean } | { ok: false; error: string };
 
 /**
  * Seller moves its own StoreOrder to `to` — writes StoreOrder.status (the one status field every view
@@ -166,9 +166,14 @@ export type VendorStatusResult = { ok: true; orderNumber: number; from: OrderSta
 export async function updateVendorOrderStatus(storeOrderId: string, vendorId: string, to: OrderStatusKey, actorId: string): Promise<VendorStatusResult> {
   const part = await prisma.storeOrder.findFirst({
     where: { id: storeOrderId, vendorId },
-    select: { id: true, status: true, orderId: true, order: { select: { orderNumber: true, paymentMethod: true } }, ...CANCEL_GIVE_BACK },
+    select: { id: true, status: true, paymentStatus: true, orderId: true, order: { select: { orderNumber: true, paymentMethod: true } }, ...CANCEL_GIVE_BACK },
   });
   if (!part) return { ok: false, error: "We couldn't find that order." };
+  // Card orders are worked on only once Stripe has confirmed the payment (the webhook marks them paid); an
+  // unpaid one is released automatically if the customer doesn't pay.
+  if (part.order.paymentMethod === "STRIPE" && part.paymentStatus === "UNPAID") {
+    return { ok: false, error: "This order is awaiting the customer's card payment. You can process it once it's paid." };
+  }
   if (part.status === to) return { ok: false, error: `This order is already ${ORDER_STATUS_LABEL[to].toLowerCase()}.` };
   if (!canVendorMove(part.status, to)) {
     return { ok: false, error: `An order that is ${ORDER_STATUS_LABEL[part.status].toLowerCase()} can't be moved to ${ORDER_STATUS_LABEL[to].toLowerCase()}.` };
@@ -193,5 +198,5 @@ export async function updateVendorOrderStatus(storeOrderId: string, vendorId: st
     console.error("[vendor-orders] status update failed:", error instanceof Prisma.PrismaClientKnownRequestError ? error.code : error instanceof Error ? error.name : "unknown");
     return { ok: false, error: "We couldn't update this order. Please try again." };
   }
-  return { ok: true, orderNumber: part.order.orderNumber, from: part.status };
+  return { ok: true, orderNumber: part.order.orderNumber, from: part.status, orderId: part.orderId, card: part.order.paymentMethod === "STRIPE" };
 }

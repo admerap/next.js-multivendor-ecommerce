@@ -265,7 +265,7 @@ export default async function TransactionReportPage({ searchParams }: PageProps<
               </>
             )}
 
-            {/* Scope honesty: payouts don't exist yet (COD only; Stripe Connect later). No rows are made up. */}
+            {/* Scope honesty: payouts don't exist yet (Stripe Connect later). No rows are made up. */}
             <section aria-labelledby="payouts" className="rounded-lg border border-dashed border-line-strong bg-card p-4 sm:p-6">
               <div className="flex flex-wrap items-start gap-4">
                 <IconTile icon={HandCoins} tone="neutral" size="lg" />
@@ -275,7 +275,7 @@ export default async function TransactionReportPage({ searchParams }: PageProps<
                     <span className="rounded-full bg-sunken px-2.5 py-0.5 font-sans text-caption font-bold tracking-[0.04em] text-fg-muted uppercase">Coming with Stripe</span>
                   </h2>
                   <p className="mt-1 max-w-2xl text-sm text-fg-muted">
-                    Orders are paid cash on delivery today, collected by Sundry&apos;s couriers. Transfers to your bank — payouts, withdrawals and their status — will be listed here once Stripe Connect payouts are set up. Nothing is shown until then.
+                    Customers pay Sundry — by card through Stripe, or in cash to Sundry&apos;s couriers on delivery. Transfers to your bank — payouts, withdrawals and their status — will be listed here once Stripe Connect payouts are set up. Nothing is shown until then.
                   </p>
                 </div>
                 <ArrowDownToLine aria-hidden className="size-5 text-fg-subtle" />

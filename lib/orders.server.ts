@@ -47,7 +47,7 @@ export type PlaceOrderInput = {
 };
 
 export type PlaceOrderError = { code: "CART_CHANGED" | "OUT_OF_STOCK" | "COUPON" | "EMPTY"; message: string };
-export type PlaceOrderResult = { ok: true; orderNumber: number; total: number } | ({ ok: false } & PlaceOrderError);
+export type PlaceOrderResult = { ok: true; orderId: string; orderNumber: number; total: number } | ({ ok: false } & PlaceOrderError);
 
 class Abort extends Error {
   constructor(readonly detail: PlaceOrderError) {
@@ -83,8 +83,9 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   const { shipping, billingSame, billing } = input.addresses;
   const stores = quote.stores.filter((s) => s.lines.some((l) => l.available));
 
-  // Payment seam: COD now — the order starts UNPAID and is paid on delivery.
-  // TODO(stripe): for STRIPE, create the PaymentIntent here and let the webhook mark the order PAID.
+  // Payment seam: every order starts UNPAID with its stock and coupons reserved. COD is paid on delivery;
+  // STRIPE gets its PaymentIntent from lib/payments.server once this order exists, and only Stripe's
+  // verified webhook marks it PAID.
   const paymentStatus = "UNPAID" as const;
 
   for (let attempt = 0; ; attempt++) {
@@ -191,10 +192,10 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
               })),
             },
           },
-          select: { orderNumber: true, total: true },
+          select: { id: true, orderNumber: true, total: true },
         });
       });
-      return { ok: true, orderNumber: order.orderNumber, total: order.total };
+      return { ok: true, orderId: order.id, orderNumber: order.orderNumber, total: order.total };
     } catch (error) {
       if (error instanceof Abort) return { ok: false, ...error.detail };
       // Two orders took the same number at once → the unique index refused one; take the next number.
@@ -323,7 +324,7 @@ export async function listCustomerOrders(customerId: string, params: CustomerOrd
   };
 }
 
-export type CancelOrderResult = { ok: true; storeName?: string } | { ok: false; error: string };
+export type CancelOrderResult = { ok: true; storeName?: string; orderId: string } | { ok: false; error: string };
 
 /**
  * Order.paymentStatus as the roll-up of its sellers' parts (each COD part is paid on its own delivery):
@@ -417,7 +418,7 @@ export async function cancelCustomerOrder(orderNumber: number, customerId: strin
     console.error("[orders] cancel failed:", error instanceof Prisma.PrismaClientKnownRequestError ? error.code : error instanceof Error ? error.name : "unknown");
     return { ok: false, error: "We couldn't cancel this order. Please try again." };
   }
-  return { ok: true, storeName: storeOrderId ? parts[0]!.vendor.storeName : undefined };
+  return { ok: true, storeName: storeOrderId ? parts[0]!.vendor.storeName : undefined, orderId: order.id };
 }
 
 /** "Hide from my orders" / undo — only the customer's own list changes; the order stays for everyone else. */

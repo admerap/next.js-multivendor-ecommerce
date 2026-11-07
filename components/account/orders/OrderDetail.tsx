@@ -11,8 +11,9 @@ import {
   canceledPartsTotal,
   canCustomerCancelPart,
   orderAddress,
+  awaitingCardPayment,
   PAYMENT_METHOD_LABEL,
-  PAYMENT_STATUS_LABEL,
+  paymentLabel,
   type OrderStatusKey,
 } from "@/lib/orders";
 import type { OrderView } from "@/lib/orders.server";
@@ -107,6 +108,7 @@ export function SummaryTab({ order, canCancel }: { order: OrderView; canCancel: 
   const itemDiscount = 0; // product discounts are already in the unit price
   const method = SHIPPING_METHOD_INFO[order.shippingMethod];
   const statuses = order.storeOrders.map((s) => s.status);
+  const allCanceled = statuses.every((s) => s === "CANCELED");
   const canceledAmount = canceledPartsTotal(order.storeOrders);
 
   return (
@@ -119,7 +121,9 @@ export function SummaryTab({ order, canCancel }: { order: OrderView; canCancel: 
           <dl className="flex flex-col gap-1.5">
             <Row label="Payment Method">{PAYMENT_METHOD_LABEL[order.paymentMethod]}</Row>
             <Row label="Payment Status">
-              <span className={order.paymentStatus === "PAID" ? "text-success-600" : "text-error-600"}>{PAYMENT_STATUS_LABEL[order.paymentStatus]}</span>
+              <span className={order.paymentStatus === "PAID" ? "text-success-600" : awaitingCardPayment(order.paymentMethod, order.paymentStatus, allCanceled) ? "text-warning-600" : "text-error-600"}>
+                {paymentLabel(order.paymentMethod, order.paymentStatus, allCanceled)}
+              </span>
             </Row>
             <Row label="Sellers">{order.storeOrders.length}</Row>
           </dl>
@@ -238,10 +242,10 @@ export function SummaryTab({ order, canCancel }: { order: OrderView; canCancel: 
               <dt className="inline">Tax: </dt>
               <dd className="inline font-semibold text-fg-strong">{money(s.tax)}</dd>
             </div>
-            {s.status !== "CANCELED" && (
+            {(s.status !== "CANCELED" || s.paymentStatus === "REFUNDED") && (
               <div>
                 <dt className="inline">Payment: </dt>
-                <dd className={cn("inline font-semibold", s.paymentStatus === "PAID" ? "text-success-600" : "text-fg-strong")}>{PAYMENT_STATUS_LABEL[s.paymentStatus]}</dd>
+                <dd className={cn("inline font-semibold", s.paymentStatus === "PAID" ? "text-success-600" : "text-fg-strong")}>{paymentLabel(order.paymentMethod, s.paymentStatus)}</dd>
               </div>
             )}
             <div>

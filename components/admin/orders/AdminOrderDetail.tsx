@@ -18,7 +18,7 @@ import {
   orderAddress,
   orderProgressNote,
   PAYMENT_METHOD_LABEL,
-  PAYMENT_STATUS_LABEL,
+  paymentLabel,
   PAYMENT_STATUS_TONE,
 } from "@/lib/orders";
 import { cn } from "@/lib/utils";
@@ -57,7 +57,7 @@ function Commission({ p }: { p: Part }) {
 }
 
 /** One store's part: header (store, status, payment), its items, its totals. */
-function StoreBlock({ p, index, of }: { p: Part; index: number; of: number }) {
+function StoreBlock({ p, index, of, method }: { p: Part; index: number; of: number; method: keyof typeof PAYMENT_METHOD_LABEL }) {
   const canceled = p.status === "CANCELED";
   return (
     <section aria-label={`Part from ${p.vendor.storeName}`} className="min-w-0 overflow-hidden rounded-lg bg-card shadow-sm">
@@ -71,7 +71,7 @@ function StoreBlock({ p, index, of }: { p: Part; index: number; of: number }) {
         </Link>
         <span className="ml-auto flex flex-wrap items-center gap-2">
           <OrderStatusBadge status={p.status} />
-          {!canceled && <Badge tone={PAYMENT_STATUS_TONE[p.paymentStatus]}>{PAYMENT_STATUS_LABEL[p.paymentStatus]}</Badge>}
+          {(!canceled || p.paymentStatus === "REFUNDED") && <Badge tone={PAYMENT_STATUS_TONE[p.paymentStatus]}>{paymentLabel(method, p.paymentStatus)}</Badge>}
         </span>
       </header>
 
@@ -184,7 +184,7 @@ export function AdminOrderDetail({ order }: { order: Order }) {
     <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
       <div className="flex min-w-0 flex-col gap-5">
         {order.storeOrders.map((p, i) => (
-          <StoreBlock key={p.id} p={p} index={i} of={order.storeOrders.length} />
+          <StoreBlock key={p.id} p={p} index={i} of={order.storeOrders.length} method={order.paymentMethod} />
         ))}
 
         <section aria-label="Order totals" className="w-full rounded-lg bg-card p-5 shadow-sm md:ml-auto md:max-w-md">
@@ -234,7 +234,8 @@ export function AdminOrderDetail({ order }: { order: Order }) {
           <Facts
             rows={[
               ["Method", PAYMENT_METHOD_LABEL[order.paymentMethod]],
-              ["Status", <Badge key="p" tone={PAYMENT_STATUS_TONE[order.paymentStatus]}>{PAYMENT_STATUS_LABEL[order.paymentStatus]}</Badge>],
+              ["Status", <Badge key="p" tone={PAYMENT_STATUS_TONE[order.paymentStatus]}>{paymentLabel(order.paymentMethod, order.paymentStatus, order.storeOrders.every((s) => s.status === "CANCELED"))}</Badge>],
+              ...(order.stripePaymentIntentId ? [["Stripe payment", <span key="pi" className="font-mono text-caption break-all">{order.stripePaymentIntentId}</span>] as [string, ReactNode]] : []),
               ["Grand total", <span key="t" className="tabular-nums">{money(order.total - canceled)}</span>],
             ]}
           />

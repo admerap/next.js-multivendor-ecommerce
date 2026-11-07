@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireArea } from "@/lib/auth-guard";
 import { accountOrderHref } from "@/lib/orders";
 import { cancelCustomerOrder, setOrderHidden } from "@/lib/orders.server";
+import { settleCanceledCardOrder } from "@/lib/payments.server";
 import { cancelOrderSchema, orderNumberSchema } from "@/lib/validations/customer-orders";
 
 export type OrderActionResult = { ok: true; message: string } | { ok: false; message: string };
@@ -21,11 +22,14 @@ export async function cancelOrderAction(input: unknown): Promise<OrderActionResu
   const { orderNumber, storeOrderId } = parsed.data;
   const res = await cancelCustomerOrder(orderNumber, user.id, storeOrderId);
   if (!res.ok) return { ok: false, message: res.error };
+  // Card orders: what was paid for the canceled items goes back to the card (an unpaid one just closes).
+  const { refunded } = await settleCanceledCardOrder(res.orderId);
   revalidatePath("/dashboard/orders");
   revalidatePath(accountOrderHref(orderNumber));
   revalidatePath("/dashboard/track-order");
   revalidatePath("/vendor", "layout"); // the sellers' order lists and sidebar counts
-  return { ok: true, message: res.storeName ? `Items from ${res.storeName} canceled` : `Order #${orderNumber} canceled` };
+  const refundNote = refunded > 0 ? " — the amount is being refunded to your card" : "";
+  return { ok: true, message: `${res.storeName ? `Items from ${res.storeName} canceled` : `Order #${orderNumber} canceled`}${refundNote}` };
 }
 
 /** My Order › Hide from my orders (or undo). The order itself is kept for sellers, admins and reports. */

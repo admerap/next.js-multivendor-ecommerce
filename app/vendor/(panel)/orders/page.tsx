@@ -1,6 +1,7 @@
 import { ListRestart, Package, ShoppingCart } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { after } from "next/server";
 import { EmptyState } from "@/components/data/DashCard";
 import { ListPageHeading } from "@/components/data/ListPageHeading";
 import { ListSkeleton } from "@/components/data/ListSkeleton";
@@ -15,6 +16,7 @@ import { VendorOrderTable } from "@/components/vendor/orders/VendorOrderTable";
 import { requireArea } from "@/lib/auth-guard";
 import { firstParams } from "@/lib/list-params";
 import { orderFilterLabel, statusSlug } from "@/lib/orders";
+import { sweepExpiredCardOrders } from "@/lib/payments.server";
 import { vendorOrderListSchema } from "@/lib/validations/vendor-order";
 import { listVendorOrders } from "@/lib/vendor-orders.server";
 
@@ -41,6 +43,7 @@ const emptyState = (storeName: string) => (
  */
 export default async function VendorOrdersPage({ searchParams }: PageProps<"/vendor/orders">) {
   const user = await requireArea("VENDOR");
+  after(() => sweepExpiredCardOrders()); // release card orders left unpaid (background, throttled)
   const params = vendorOrderListSchema.parse(firstParams(await searchParams));
   const data = await listVendorOrders(user.vendorId!, params); // throws → error.tsx (Retry)
   const title = params.status ? `${orderFilterLabel(params.status)} Orders` : "All Orders";

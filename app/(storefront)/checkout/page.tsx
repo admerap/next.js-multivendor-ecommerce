@@ -10,6 +10,7 @@ import { CheckoutView } from "@/components/checkout/CheckoutView";
 import { pageContainer } from "@/components/commerce/StorefrontBits";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
+import { stripeEnabled } from "@/lib/stripe.server";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Checkout", robots: { index: false } };
@@ -67,7 +68,11 @@ export default async function CheckoutPage({ searchParams }: Props) {
     <main className={cn(pageContainer, "pt-7 pb-4")}>
       <h1 className="sr-only">Checkout</h1>
       <Suspense fallback={<CartSkeleton />}>
-        <CheckoutView customer={{ name: user?.name ?? session.user.name ?? "", email: user?.email ?? session.user.email ?? "", phone: user?.phone ?? null }} />
+        <CheckoutView
+          customer={{ name: user?.name ?? session.user.name ?? "", email: user?.email ?? session.user.email ?? "", phone: user?.phone ?? null }}
+          // Card (Stripe) is offered only when the server has valid Stripe keys; COD always is.
+          cardEnabled={stripeEnabled()}
+        />
       </Suspense>
     </main>
   );

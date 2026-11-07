@@ -1,23 +1,25 @@
-import { Banknote, Check, FileDown, MapPin, Package, PackageCheck, ShoppingBag, Store, Truck } from "lucide-react";
+import { AlertTriangle, Banknote, Check, CreditCard, FileDown, MapPin, Package, PackageCheck, RotateCcw, ShoppingBag, Store, Truck } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { CopyOrderId } from "@/components/checkout/CopyOrderId";
+import { ClearCartOnArrival, PaymentPending } from "@/components/checkout/PaymentPending";
 import { pageContainer } from "@/components/commerce/StorefrontBits";
 import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SHIPPING_METHOD_INFO, taxLabel } from "@/lib/checkout";
 import { money } from "@/lib/money";
-import { addressLines, invoiceHref, orderAddress, orderDate, PAYMENT_METHOD_LABEL, trackOrderHref } from "@/lib/orders";
+import { addressLines, invoiceHref, orderAddress, orderDate, PAYMENT_METHOD_LABEL, PAYMENT_STATUS_LABEL, PAYMENT_STATUS_TONE, trackOrderHref } from "@/lib/orders";
 import { getCustomerOrder } from "@/lib/orders.server";
 import { productHref, sellerHref } from "@/lib/storefront";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Order confirmed", robots: { index: false } };
 
-type Props = { searchParams: Promise<{ order?: string | string[] }> };
+type Props = { searchParams: Promise<{ order?: string | string[]; redirect_status?: string | string[] }> };
 
 /**
  * Order confirmation (Order Complete design) — a real URL (/checkout/complete?order=100001), so a refresh
@@ -25,7 +27,10 @@ type Props = { searchParams: Promise<{ order?: string | string[] }> };
  * 404. Under the design's card: the order split by seller, delivery address, payment, and what's next.
  */
 export default async function OrderCompletePage({ searchParams }: Props) {
-  const raw = (await searchParams).order;
+  const sp = await searchParams;
+  const raw = sp.order;
+  // Set by Stripe when a payment method had to redirect the shopper and sent them back here.
+  const redirectStatus = typeof sp.redirect_status === "string" ? sp.redirect_status : null;
   const number = typeof raw === "string" && /^\d{1,10}$/.test(raw) ? Number(raw) : NaN;
   const session = await auth();
   if (!session?.user) redirect(`/login?callbackUrl=${encodeURIComponent(`/checkout/complete?order=${typeof raw === "string" ? raw : ""}`)}`);
@@ -35,19 +40,50 @@ export default async function OrderCompletePage({ searchParams }: Props) {
   const ship = orderAddress(order, "ship");
   const cod = order.paymentMethod === "COD" && order.paymentStatus === "UNPAID";
   const items = order.storeOrders.reduce((n, s) => n + s.items.reduce((m, i) => m + i.qty, 0), 0);
+  // Card orders: PAID only once Stripe's webhook confirmed it. Until then this page waits (PaymentPending).
+  const card = order.paymentMethod === "STRIPE";
+  const cardLive = order.storeOrders.some((s) => s.status !== "CANCELED");
+  const cardWaiting = card && order.paymentStatus === "UNPAID" && cardLive && redirectStatus !== "failed";
+  const cardFailed = card && order.paymentStatus === "UNPAID" && (redirectStatus === "failed" || !cardLive);
+  const head = cardFailed
+    ? {
+        icon: AlertTriangle,
+        tone: "bg-warning-500",
+        title: "Your payment didn't go through",
+        text: cardLive
+          ? "Nothing was charged. Your items are held for a short while — go back to checkout to try another card or pay with Cash on Delivery."
+          : "Nothing was charged and this order was canceled because the payment wasn't completed. Your items are back in stock — you can place the order again.",
+      }
+    : cardWaiting
+      ? { icon: CreditCard, tone: "bg-primary", title: "Confirming your payment…", text: "Your order is placed. We're waiting for your bank to confirm the card payment — this page updates by itself." }
+      : {
+          icon: Check,
+          tone: "bg-success-500",
+          title: "Thank You for Your Purchase!",
+          text: "We have received your order and each seller will process their part shortly. You can track your order at any time using your order details.",
+        };
 
   return (
     <main className="pb-4">
+      {/* Arrived back from a payment redirect: the cart and checkout draft are spent. */}
+      {card && redirectStatus && redirectStatus !== "failed" && <ClearCartOnArrival />}
       {/* Design card */}
       <section className={cn(pageContainer, "max-w-160 pt-[clamp(32px,6vw,56px)]")}>
         <div className="flex flex-col items-center rounded-xl bg-card px-[clamp(20px,5vw,40px)] py-12 text-center shadow-lg">
-          <span className="grid size-22 place-items-center rounded-full bg-success-500 shadow-lg">
-            <Check aria-hidden className="size-11 text-on-primary" strokeWidth={2.6} />
+          <span className={cn("grid size-22 place-items-center rounded-full shadow-lg", head.tone)}>
+            <head.icon aria-hidden className="size-11 text-on-primary" strokeWidth={2.6} />
           </span>
-          <h1 className="mt-6 mb-3 font-display text-[clamp(1.6rem,4vw,1.9rem)] font-extrabold tracking-[-0.02em] text-balance text-fg-strong">Thank You for Your Purchase!</h1>
-          <p className="max-w-115 text-[0.94rem] leading-relaxed text-pretty text-fg-muted">
-            We have received your order and each seller will process their part shortly. You can track your order at any time using your order details.
-          </p>
+          <h1 className="mt-6 mb-3 font-display text-[clamp(1.6rem,4vw,1.9rem)] font-extrabold tracking-[-0.02em] text-balance text-fg-strong">{head.title}</h1>
+          <p className="max-w-115 text-[0.94rem] leading-relaxed text-pretty text-fg-muted">{head.text}</p>
+          {cardWaiting && <PaymentPending />}
+          {cardFailed && (
+            <Button asChild className="mt-5">
+              <Link href={cardLive ? "/checkout?step=payment" : "/checkout"}>
+                <RotateCcw aria-hidden />
+                {cardLive ? "Back to checkout" : "Go to cart"}
+              </Link>
+            </Button>
+          )}
           <div className="mt-7 flex w-full max-w-105 items-center gap-3 rounded-full border-[1.5px] border-line py-2 pr-2 pl-5">
             <span className="flex-1 text-left text-[0.94rem] font-semibold text-fg-strong">
               Order ID <span className="tabular-nums">#{order.orderNumber}</span>
@@ -103,12 +139,29 @@ export default async function OrderCompletePage({ searchParams }: Props) {
             </div>
           </div>
           <div className="flex gap-3 rounded-lg bg-card p-5 shadow-sm">
-            <Banknote aria-hidden className="mt-0.5 size-5 shrink-0 text-primary" strokeWidth={1.9} />
+            {card ? (
+              <CreditCard aria-hidden className="mt-0.5 size-5 shrink-0 text-primary" strokeWidth={1.9} />
+            ) : (
+              <Banknote aria-hidden className="mt-0.5 size-5 shrink-0 text-primary" strokeWidth={1.9} />
+            )}
             <div className="min-w-0 text-sm">
-              <p className="mb-1 font-bold text-fg-strong">{PAYMENT_METHOD_LABEL[order.paymentMethod]}</p>
+              <p className="mb-1 flex flex-wrap items-center gap-2 font-bold text-fg-strong">
+                {PAYMENT_METHOD_LABEL[order.paymentMethod]}
+                <Badge tone={PAYMENT_STATUS_TONE[order.paymentStatus]}>{PAYMENT_STATUS_LABEL[order.paymentStatus]}</Badge>
+              </p>
               {cod ? (
                 <p className="text-fg-muted">
                   Pay <b className="text-fg-strong tabular-nums">{money(order.total)}</b> in cash when your order arrives. Have the exact amount ready.
+                </p>
+              ) : card && order.paymentStatus === "PAID" ? (
+                <p className="text-fg-muted">
+                  <b className="text-fg-strong tabular-nums">{money(order.total)}</b> charged to your card. A receipt was emailed to {order.shipEmail}.
+                </p>
+              ) : card && order.paymentStatus === "REFUNDED" ? (
+                <p className="text-fg-muted">The payment was refunded to your card.</p>
+              ) : card ? (
+                <p className="text-fg-muted">
+                  {cardFailed ? "Not paid — nothing was charged." : "Waiting for your bank to confirm the payment."}
                 </p>
               ) : (
                 <p className="text-fg-muted">Payment status: {order.paymentStatus.toLowerCase()}</p>

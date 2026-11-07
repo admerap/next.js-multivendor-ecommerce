@@ -52,6 +52,16 @@ export const PAYMENT_METHOD_LABEL = { COD: "Cash on Delivery", STRIPE: "Card (St
 export const PAYMENT_STATUS_LABEL = { UNPAID: "Unpaid", PAID: "Paid", REFUNDED: "Refunded" } as const;
 /** Payment status → Badge tone. */
 export const PAYMENT_STATUS_TONE = { PAID: "success", UNPAID: "warning", REFUNDED: "error" } as const;
+/**
+ * The payment status as people read it. An unpaid CARD order is "Awaiting payment" — Stripe hasn't confirmed the
+ * card yet, so sellers must not process it — or "Not paid" once it's canceled (it was never paid and won't be);
+ * an unpaid COD order is just "Unpaid" (cash on delivery). `canceled`: the order / part is canceled.
+ */
+export const paymentLabel = (method: keyof typeof PAYMENT_METHOD_LABEL, status: keyof typeof PAYMENT_STATUS_LABEL, canceled = false) =>
+  method === "STRIPE" && status === "UNPAID" ? (canceled ? "Not paid" : "Awaiting payment") : PAYMENT_STATUS_LABEL[status];
+/** Waiting for Stripe to confirm a card payment (the seller can't move the order yet). Never true once canceled. */
+export const awaitingCardPayment = (method: keyof typeof PAYMENT_METHOD_LABEL, status: keyof typeof PAYMENT_STATUS_LABEL, canceled = false) =>
+  !canceled && method === "STRIPE" && status === "UNPAID";
 /** The reports' payment wording (vendortransactionreport design): Completed / Pending / Refunded. */
 export const PAYMENT_REPORT_LABEL = { PAID: "Completed", UNPAID: "Pending", REFUNDED: "Refunded" } as const;
 export const ORDER_STATUS_LABEL: Record<OrderStatusKey, string> = {

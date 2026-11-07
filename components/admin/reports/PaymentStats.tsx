@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 
 /**
  * Admin reports' Payment Statistics card (adminearningreports / adminorderreport designs): what customers
- * paid, by method. The designs are Stripe-only; Sundry is cash on delivery today, so COD leads and
- * Card (Stripe) stays at $0 until the Stripe integration ships. Refunded = payments marked REFUNDED.
+ * paid, by method: Cash on Delivery (collected on delivery) and Card (Stripe, paid at checkout).
+ * Refunded = payments marked REFUNDED.
  */
 export function PaymentStats({ payments, subtitle }: { payments: { cod: number; stripe: number; refunded: number }; subtitle: string }) {
   const pay = [

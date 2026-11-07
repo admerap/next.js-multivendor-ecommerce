@@ -5,7 +5,7 @@ import { cardLabelClass, iconActionClass } from "@/components/data/list-classes"
 import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { money } from "@/lib/money";
-import { orderDate, PAYMENT_STATUS_LABEL, vendorInvoiceHref, vendorOrderHref } from "@/lib/orders";
+import { awaitingCardPayment, orderDate, paymentLabel, vendorInvoiceHref, vendorOrderHref } from "@/lib/orders";
 import { cn } from "@/lib/utils";
 import type { VendorOrderRow } from "@/lib/vendor-orders.server";
 
@@ -73,7 +73,9 @@ const Customer = ({ o }: { o: VendorOrderRow }) => (
 const Amount = ({ o }: { o: VendorOrderRow }) => (
   <div>
     <p className="text-sm font-bold text-fg-strong tabular-nums">{money(o.total)}</p>
-    <p className={cn("text-caption font-semibold", o.paymentStatus === "PAID" ? "text-success-600" : "text-fg-muted")}>{PAYMENT_STATUS_LABEL[o.paymentStatus]}</p>
+    <p className={cn("text-caption font-semibold", o.paymentStatus === "PAID" ? "text-success-600" : awaitingCardPayment(o.paymentMethod, o.paymentStatus, o.status === "CANCELED") ? "text-warning-600" : "text-fg-muted")}>
+      {paymentLabel(o.paymentMethod, o.paymentStatus, o.status === "CANCELED")}
+    </p>
   </div>
 );
 

@@ -1,7 +1,10 @@
 "use server";
 
+import { after } from "next/server";
 import { auth } from "@/auth";
 import { placeOrder, type PlaceOrderError } from "@/lib/orders.server";
+import { abandonCardOrder, createOrderPayment, MAX_OPEN_CARD_ORDERS, openCardOrders, releaseUnpaidCardOrder, sweepExpiredCardOrders } from "@/lib/payments.server";
+import { stripeConfigProblem, stripeEnabled } from "@/lib/stripe.server";
 import { checkoutAddressesSchema, placeOrderSchema, type CheckoutAddresses } from "@/lib/validations/checkout";
 
 export type AddressesResult = { success: true; data: CheckoutAddresses } | { success: false; error: string; fieldErrors?: Record<string, string> };
@@ -27,8 +30,9 @@ export async function confirmAddresses(input: unknown): Promise<AddressesResult>
 }
 
 export type PlaceOrderActionResult =
-  | { success: true; orderNumber: number }
-  | { success: false; error: string; code: PlaceOrderError["code"] | "AUTH" | "INVALID" | "SERVER" };
+  /** `clientSecret` only for a card order: the browser confirms that PaymentIntent with Stripe.js. */
+  | { success: true; orderNumber: number; clientSecret?: string }
+  | { success: false; error: string; code: PlaceOrderError["code"] | "AUTH" | "INVALID" | "SERVER" | "PAYMENT" };
 
 /**
  * Place Order (Payment step). Signed-in customers only; every input re-validated with Zod (addresses,
@@ -53,10 +57,42 @@ export async function placeOrderAction(input: unknown): Promise<PlaceOrderAction
     return { success: false, code: "INVALID", error };
   }
 
+  const card = parsed.data.paymentMethod === "STRIPE";
+  if (card && !stripeEnabled()) {
+    console.error("[place order] card payment refused:", stripeConfigProblem());
+    return { success: false, code: "PAYMENT", error: "Card payments aren't available right now. Choose Cash on Delivery or try again later." };
+  }
+
+  // Background housekeeping after the response: release card orders left unpaid past their window.
+  after(() => sweepExpiredCardOrders());
+
+  const { retryOf, ...order } = parsed.data;
   try {
-    const res = await placeOrder({ customerId: session.user.id, ...parsed.data });
+    // A card retry with a changed cart: close the shopper's own earlier unpaid card order first (its stock is
+    // free again). If it turns out it was paid meanwhile, that order stands — don't place a second one.
+    if (retryOf && (await abandonCardOrder(retryOf, session.user.id)) === "paid") return { success: true, orderNumber: retryOf };
+    if (card && (await openCardOrders(session.user.id)) >= MAX_OPEN_CARD_ORDERS) {
+      return {
+        success: false,
+        code: "PAYMENT",
+        error: `You have ${MAX_OPEN_CARD_ORDERS} card orders waiting for payment. Cancel one in My Orders, pay with Cash on Delivery, or try again in 30 minutes.`,
+      };
+    }
+
+    const res = await placeOrder({ customerId: session.user.id, ...order });
     if (!res.ok) return { success: false, code: res.code, error: res.message };
-    return { success: true, orderNumber: res.orderNumber };
+    if (!card) return { success: true, orderNumber: res.orderNumber };
+
+    // Card: the order exists (UNPAID, stock reserved). Open its PaymentIntent for the SAVED total; if Stripe
+    // can't, release the order (stock and coupon back) so nothing is left half-placed.
+    try {
+      const payment = await createOrderPayment(res.orderId);
+      return { success: true, orderNumber: res.orderNumber, clientSecret: payment.clientSecret };
+    } catch (error) {
+      console.error("[place order] PaymentIntent failed", error instanceof Error ? error.message.replace(/(sk|rk|pi|seti)_\w+/g, "$1_***") : error);
+      await releaseUnpaidCardOrder(res.orderId);
+      return { success: false, code: "PAYMENT", error: "We couldn't start the card payment. Nothing was charged — try again or choose Cash on Delivery." };
+    }
   } catch (error) {
     console.error("[place order] failed", error instanceof Error ? error.message : error);
     return { success: false, code: "SERVER", error: "We couldn't place your order. Nothing was charged — please try again." };

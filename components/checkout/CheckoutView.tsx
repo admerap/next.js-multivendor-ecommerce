@@ -1,16 +1,18 @@
 "use client";
 
-import { AlertTriangle, ArrowLeft, ArrowRight, Banknote, Check, CircleCheck, LoaderCircle, Lock, MapPin, Pencil, RotateCcw, ShoppingBag, ShoppingCart } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Banknote, Check, CircleCheck, CreditCard, LoaderCircle, Lock, MapPin, Pencil, RotateCcw, ShieldCheck, ShoppingBag, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, useTransition, type FormEvent } from "react";
+import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 import { confirmAddresses, placeOrderAction } from "@/app/(storefront)/checkout/actions";
 import { Button } from "@/components/ui/button";
 import { SHIPPING_METHOD_INFO, type ShippingMethod } from "@/lib/checkout";
 import { cn } from "@/lib/utils";
 import { ADDRESS_TYPE_LABEL, checkoutAddressesSchema, emptyAddress, ORDER_NOTE_MAX, type AddressInput } from "@/lib/validations/checkout";
 import { REGION } from "@/lib/regions";
+import { STRIPE_MIN_CENTS } from "@/lib/stripe.client";
 import { AddressFields } from "./AddressFields";
+import { CardBridge, CardFields, StripeCheckout, type CardApi } from "./CardPayment";
 import { CartSkeleton } from "./CartView";
 import { CheckoutStepper } from "./CheckoutStepper";
 import { clearCheckoutDraft, useCheckoutDraft } from "./checkoutDraft";
@@ -21,6 +23,7 @@ import { useCartQuote } from "./useCartQuote";
 
 const FORM_ID = "checkout-shipping";
 type Customer = { name: string; email: string; phone: string | null };
+type PayMethod = "COD" | "STRIPE";
 
 /** Errors keyed "shipping.city" / "billing.zip" → the `{ city: … }` map one AddressFields needs. */
 const errorsFor = (all: Record<string, string>, prefix: "shipping" | "billing") =>
@@ -30,8 +33,9 @@ const errorsFor = (all: Record<string, string>, prefix: "shipping" | "billing") 
  * Checkout steps 2–3 (Checkout Page design): Shipping & Billing (?step=shipping) → Payment (?step=payment),
  * with the live order summary on the right. Payment only opens after the server accepted the addresses.
  * Everything typed is kept in the checkout draft (this browser) and re-validated when the order is placed.
+ * Payment: Cash on Delivery, or Card (Stripe) when the server has Stripe keys (`cardEnabled`).
  */
-export function CheckoutView({ customer }: { customer: Customer }) {
+export function CheckoutView({ customer, cardEnabled = false }: { customer: Customer; cardEnabled?: boolean }) {
   const router = useRouter();
   const step = useSearchParams().get("step") === "payment" ? "payment" : "shipping";
   const { draft, update, ready } = useCheckoutDraft();
@@ -47,6 +51,11 @@ export function CheckoutView({ customer }: { customer: Customer }) {
   const [placing, startPlacing] = useTransition();
   const [placeError, setPlaceError] = useState<string | null>(null);
   const [placed, setPlaced] = useState<number | null>(null);
+  const [payMethod, setPayMethod] = useState<PayMethod>("COD");
+  const [cardComplete, setCardComplete] = useState(false);
+  const cardApi = useRef<CardApi>({ stripe: null, elements: null });
+  // The card order already placed in this visit (kept so a declined card retries the same order).
+  const cardOrder = useRef<{ orderNumber: number; clientSecret: string; total: number } | null>(null);
 
   const shipping = draft.shipping ?? emptyAddress(customer);
   const billingSame = draft.billingSame ?? true;
@@ -129,33 +138,94 @@ export function CheckoutView({ customer }: { customer: Customer }) {
     });
   }
 
+  // Card needs Stripe keys on the server and a total Stripe can charge; otherwise only COD is offered.
+  const cardAvailable = cardEnabled && quote.total >= STRIPE_MIN_CENTS;
+  const method: PayMethod = payMethod === "STRIPE" && cardAvailable ? "STRIPE" : "COD";
+  const cardIncomplete = method === "STRIPE" && !cardComplete;
+
+  const orderInput = (paymentMethod: PayMethod) => ({
+    lines: cart.items.map((i) => ({ id: i.id, productId: i.productId, variationId: i.variationId ?? null, qty: i.qty })),
+    coupons,
+    addresses: { shipping, billingSame, billing: billingSame ? undefined : billing },
+    note: draft.note ?? null,
+    shippingMethod: draft.shippingMethod ?? "STANDARD",
+    paymentMethod,
+    acceptTerms,
+    expectedTotal: quote.total,
+  });
+  const failed = (res: { code: string; error: string }) => {
+    setPlaceError(res.error);
+    if (res.code === "AUTH") router.push("/login?callbackUrl=/checkout?step=payment");
+    else if (res.code === "INVALID" && res.error.startsWith("Your shipping details")) update({ addressesConfirmed: false });
+    else if (res.code !== "PAYMENT") retry(); // show the shopper the current prices / stock / coupons
+  };
+  // Done: the cart and the draft are spent; the confirmation page is reachable by its own URL.
+  const finish = (orderNumber: number) => {
+    setPlaced(orderNumber);
+    cart.clear();
+    clearCheckoutDraft();
+    router.replace(`/checkout/complete?order=${orderNumber}`);
+  };
+  const unreachable = { success: false as const, code: "SERVER" as const, error: "We couldn't reach the store. Check your connection — nothing was charged — and try again." };
+
   function place() {
-    if (!quote || !acceptTerms) return;
+    if (!quote || !acceptTerms || cardIncomplete) return;
     setPlaceError(null);
-    const lines = cart.items.map((i) => ({ id: i.id, productId: i.productId, variationId: i.variationId ?? null, qty: i.qty }));
+    if (method === "STRIPE") return placeCard();
     startPlacing(async () => {
-      const res = await placeOrderAction({
-        lines,
-        coupons,
-        addresses: { shipping, billingSame, billing: billingSame ? undefined : billing },
-        note: draft.note ?? null,
-        shippingMethod: draft.shippingMethod ?? "STANDARD",
-        paymentMethod: "COD",
-        acceptTerms,
-        expectedTotal: quote.total,
-      }).catch(() => ({ success: false as const, code: "SERVER" as const, error: "We couldn't reach the store. Check your connection — nothing was charged — and try again." }));
-      if (!res.success) {
-        setPlaceError(res.error);
-        if (res.code === "AUTH") router.push("/login?callbackUrl=/checkout?step=payment");
-        else if (res.code === "INVALID" && res.error.startsWith("Your shipping details")) update({ addressesConfirmed: false });
-        else retry(); // show the shopper the current prices / stock / coupons
+      // Switching to COD after a declined card: the unpaid card order is closed first (its stock is freed).
+      const retryOf = cardOrder.current?.orderNumber ?? draft.pendingCardOrder ?? null;
+      const res = await placeOrderAction({ ...orderInput("COD"), retryOf }).catch(() => unreachable);
+      if (!res.success) return failed(res);
+      finish(res.orderNumber);
+    });
+  }
+
+  /**
+   * Card: check the card form → place the order (UNPAID, stock reserved; the server opens a PaymentIntent for its
+   * own total) → confirm the card with Stripe.js (3-D Secure opens here if the bank asks). Success only navigates:
+   * the order is marked PAID by Stripe's webhook, and the confirmation page waits for it. A declined card keeps the
+   * same order and PaymentIntent, so the shopper can try another card; if the cart changed meanwhile a new order
+   * replaces it (`retryOf`).
+   */
+  function placeCard() {
+    const { stripe, elements } = cardApi.current;
+    if (!stripe || !elements || !quote) return setPlaceError("The card form is still loading. Try again in a moment.");
+    const total = quote.total;
+    startPlacing(async () => {
+      // Validates the card form (and opens a wallet sheet) — must come first, straight from the click.
+      const { error: formError } = await elements.submit();
+      if (formError) return setPlaceError(formError.message ?? "Check your card details.");
+
+      let target = cardOrder.current;
+      if (!target || target.total !== total) {
+        // The earlier unpaid attempt — this visit's, or one remembered in the draft (shopper left and came back).
+        const retryOf = target?.orderNumber ?? draft.pendingCardOrder ?? null;
+        const res = await placeOrderAction({ ...orderInput("STRIPE"), retryOf }).catch(() => unreachable);
+        if (!res.success) return failed(res);
+        if (!res.clientSecret) return finish(res.orderNumber); // the earlier attempt turned out to be paid
+        target = cardOrder.current = { orderNumber: res.orderNumber, clientSecret: res.clientSecret, total };
+        update({ pendingCardOrder: res.orderNumber });
+      }
+
+      const { error } = await stripe
+        .confirmPayment({
+          elements,
+          clientSecret: target.clientSecret,
+          // Only used when a payment method needs a redirect; cards and 3-D Secure finish here.
+          confirmParams: { return_url: `${window.location.origin}/checkout/complete?order=${target.orderNumber}` },
+          redirect: "if_required",
+        })
+        .catch(() => ({ error: { type: "api_connection_error" as const, message: undefined } }));
+      if (error) {
+        setPlaceError(
+          error.type === "card_error" || error.type === "validation_error"
+            ? `${error.message ?? "Your card was declined."} Nothing was charged — try again or use another card.`
+            : "We couldn't confirm your payment. Nothing was charged — please try again.",
+        );
         return;
       }
-      // Done: the cart and the draft are spent; the confirmation page is reachable by its own URL.
-      setPlaced(res.orderNumber);
-      cart.clear();
-      clearCheckoutDraft();
-      router.replace(`/checkout/complete?order=${res.orderNumber}`);
+      finish(target.orderNumber); // succeeded or processing — the webhook records the payment
     });
   }
 
@@ -164,6 +234,8 @@ export function CheckoutView({ customer }: { customer: Customer }) {
       <div className="mb-7">
         <CheckoutStepper current={step === "payment" ? 2 : 1} />
       </div>
+      <StripeCheckout active={cardEnabled && step === "payment" && method === "STRIPE"} amount={Math.max(quote.total, STRIPE_MIN_CENTS)}>
+      {cardEnabled && <CardBridge apiRef={cardApi} />}
       <div className="flex flex-wrap items-start gap-6">
         <div className="flex min-w-0 flex-[3_1_420px] flex-col gap-5">
           {step === "shipping" ? (
@@ -234,7 +306,19 @@ export function CheckoutView({ customer }: { customer: Customer }) {
               </div>
             </form>
           ) : (
-            <PaymentStep shipping={shipping} method={quote.needsShipping ? quote.shippingMethod : null} onBack={() => router.push("/checkout?step=shipping")} />
+            <PaymentStep
+              shipping={shipping}
+              method={quote.needsShipping ? quote.shippingMethod : null}
+              onBack={() => router.push("/checkout?step=shipping")}
+              payMethod={method}
+              onPayMethod={(m) => {
+                setPayMethod(m);
+                setPlaceError(null);
+              }}
+              cardEnabled={cardEnabled}
+              cardAvailable={cardAvailable}
+              onCardChange={setCardComplete}
+            />
           )}
         </div>
 
@@ -270,14 +354,27 @@ export function CheckoutView({ customer }: { customer: Customer }) {
                         {placeError}
                       </p>
                     )}
-                    <Button type="button" size="lg" onClick={place} disabled={!acceptTerms || placing || busy} aria-describedby={acceptTerms ? undefined : "terms-hint"} className="w-full">
+                    <Button
+                      type="button"
+                      size="lg"
+                      onClick={place}
+                      disabled={!acceptTerms || placing || busy || cardIncomplete}
+                      aria-describedby={!acceptTerms ? "terms-hint" : cardIncomplete ? "card-hint" : undefined}
+                      className="w-full"
+                    >
                       {placing ? <LoaderCircle aria-hidden className="animate-spin" /> : <Lock aria-hidden />}
-                      {placing ? "Placing order…" : "Place Order"}
+                      {placing ? (method === "STRIPE" ? "Processing payment…" : "Placing order…") : "Place Order"}
                     </Button>
-                    {!acceptTerms && (
+                    {!acceptTerms ? (
                       <p id="terms-hint" className="text-center text-caption text-fg-muted">
                         Accept the terms above to place your order.
                       </p>
+                    ) : (
+                      cardIncomplete && (
+                        <p id="card-hint" className="text-center text-caption text-fg-muted">
+                          Enter your card details to continue.
+                        </p>
+                      )
                     )}
                   </>
                 )}
@@ -292,12 +389,34 @@ export function CheckoutView({ customer }: { customer: Customer }) {
           />
         </div>
       </div>
+      </StripeCheckout>
     </>
   );
 }
 
-/** Payment step (Checkout Page design). v1 offers Cash on Delivery only; Place Order arrives with the order flow. */
-function PaymentStep({ shipping, method, onBack }: { shipping: AddressInput; method: ShippingMethod | null; onBack: () => void }) {
+/**
+ * Payment step (Checkout Page design): Cash on Delivery, and Card (Stripe) when it's set up. Picking Card shows
+ * Stripe's card form (and the wallets enabled in the Stripe dashboard, e.g. Link / Google Pay).
+ */
+function PaymentStep({
+  shipping,
+  method,
+  onBack,
+  payMethod,
+  onPayMethod,
+  cardEnabled,
+  cardAvailable,
+  onCardChange,
+}: {
+  shipping: AddressInput;
+  method: ShippingMethod | null;
+  onBack: () => void;
+  payMethod: PayMethod;
+  onPayMethod: (m: PayMethod) => void;
+  cardEnabled: boolean;
+  cardAvailable: boolean;
+  onCardChange: (complete: boolean) => void;
+}) {
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -337,24 +456,86 @@ function PaymentStep({ shipping, method, onBack }: { shipping: AddressInput; met
         <h3 id="pay-title" className="font-display text-[1.06rem] font-extrabold text-fg-strong">
           Select a payment method
         </h3>
-        <p className="mt-1 mb-4 text-sm text-fg-muted">Cash on Delivery is available for all orders. Card and wallet payments are coming soon.</p>
-        <div role="radiogroup" aria-label="Payment method">
-          <label className="flex min-h-15 cursor-pointer items-center gap-3.5 rounded-md border-[1.5px] border-primary bg-iris-50 px-4 py-3">
-            <input type="radio" name="payment" value="COD" checked readOnly className="peer sr-only" />
-            <span aria-hidden className="grid size-5 place-items-center rounded-full border-2 border-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary">
-              <span className="size-2.5 rounded-full bg-primary" />
-            </span>
-            <Banknote aria-hidden className="size-5 text-primary" strokeWidth={1.9} />
-            <span className="flex-1 font-semibold text-fg-strong">Cash on Delivery</span>
-            <span className="text-caption text-fg-muted">Pay when it arrives</span>
-          </label>
-        </div>
-        <p className="mt-4 flex items-start gap-2.5 rounded-md bg-sunken px-4 py-3.5 text-sm text-fg">
-          <Banknote aria-hidden className="mt-0.5 size-4.5 shrink-0 text-primary" strokeWidth={1.9} />
-          Pay with cash to the courier when your order is delivered. Have the exact amount ready.
+        <p className="mt-1 mb-4 text-sm text-fg-muted">
+          {cardEnabled ? "Pay by card now, or with cash when your order arrives." : "Cash on Delivery is available for all orders. Card and wallet payments are coming soon."}
         </p>
+        <div role="radiogroup" aria-label="Payment method" className="flex flex-col gap-3">
+          <PayOption value="COD" checked={payMethod === "COD"} onSelect={onPayMethod} icon={Banknote} label="Cash on Delivery" hint="Pay when it arrives" />
+          {cardEnabled && (
+            <PayOption
+              value="STRIPE"
+              checked={payMethod === "STRIPE"}
+              onSelect={onPayMethod}
+              icon={CreditCard}
+              label="Card (Stripe)"
+              hint={cardAvailable ? "Card, Apple Pay or Google Pay" : "Not available for this total"}
+              disabled={!cardAvailable}
+            />
+          )}
+        </div>
+        {payMethod === "COD" ? (
+          <p className="mt-4 flex items-start gap-2.5 rounded-md bg-sunken px-4 py-3.5 text-sm text-fg">
+            <Banknote aria-hidden className="mt-0.5 size-4.5 shrink-0 text-primary" strokeWidth={1.9} />
+            Pay with cash to the courier when your order is delivered. Have the exact amount ready.
+          </p>
+        ) : (
+          <div className="mt-4 flex flex-col gap-3">
+            <CardFields billing={{ name: shipping.name, email: shipping.email, phone: shipping.phone }} onChange={onCardChange} />
+            <p className="flex items-start gap-2 text-caption text-fg-muted">
+              <ShieldCheck aria-hidden className="mt-px size-4 shrink-0 text-success-600" strokeWidth={2} />
+              Payments are processed securely by Stripe. Your card details never reach Sundry&apos;s servers.
+            </p>
+          </div>
+        )}
       </section>
     </>
+  );
+}
+
+/** One payment option: a real radio (keyboard: Tab to the group, arrows to switch) styled as a selectable row. */
+function PayOption({
+  value,
+  checked,
+  onSelect,
+  icon: Icon,
+  label,
+  hint,
+  disabled = false,
+}: {
+  value: PayMethod;
+  checked: boolean;
+  onSelect: (m: PayMethod) => void;
+  icon: typeof Banknote;
+  label: string;
+  hint: string;
+  disabled?: boolean;
+}) {
+  return (
+    <label
+      className={cn(
+        "flex min-h-15 items-center gap-3.5 rounded-md border-[1.5px] px-4 py-3 transition-colors duration-(--dur-fast)",
+        checked ? "border-primary bg-iris-50" : "border-line bg-card",
+        disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
+        !checked && !disabled && "hover:border-iris-200",
+      )}
+    >
+      <input type="radio" name="payment" value={value} checked={checked} disabled={disabled} onChange={() => onSelect(value)} className="peer sr-only" />
+      <span
+        aria-hidden
+        className={cn(
+          "grid size-5 shrink-0 place-items-center rounded-full border-2 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary",
+          checked ? "border-primary" : "border-line-default",
+        )}
+      >
+        {checked && <span className="size-2.5 rounded-full bg-primary" />}
+      </span>
+      <Icon aria-hidden className={cn("size-5 shrink-0", checked ? "text-primary" : "text-fg-muted")} strokeWidth={1.9} />
+      {/* Phones: the hint goes under the name so neither wraps word by word. */}
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+        <span className="font-semibold text-fg-strong">{label}</span>
+        <span className="text-caption text-fg-muted sm:text-right">{hint}</span>
+      </span>
+    </label>
   );
 }
 

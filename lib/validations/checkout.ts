@@ -109,7 +109,7 @@ export const shipToSchema = z
 /** Delivery speed for the whole order (Standard unless the shopper picks Express). */
 export const shippingMethodSchema = z.enum(SHIPPING_METHODS, "Choose a delivery method.").default("STANDARD");
 
-/** Place Order (Payment step). Terms must be accepted; v1 only takes Cash on Delivery. */
+/** Place Order (Payment step). Terms must be accepted; Cash on Delivery or Card (Stripe). */
 export const placeOrderSchema = z.object({
   lines: cartLinesSchema.min(1, "Your cart is empty."),
   coupons: cartCouponsSchema,
@@ -121,8 +121,10 @@ export const placeOrderSchema = z.object({
     .nullish()
     .transform((v) => v || null),
   shippingMethod: shippingMethodSchema,
-  paymentMethod: z.literal("COD", "Choose a payment method."),
+  paymentMethod: z.enum(["COD", "STRIPE"], "Choose a payment method."),
   acceptTerms: z.literal(true, "Accept the terms to place your order."),
   /** grand total (cents) shown when the button was pressed — the server refuses if it changed */
   expectedTotal: z.number().int().min(0),
+  /** card retry with a changed cart: this earlier unpaid card order (the shopper's own) is closed first */
+  retryOf: z.number().int().positive().nullish(),
 });

@@ -1,6 +1,7 @@
 import { ShoppingBag } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { after } from "next/server";
 import { OrderCard } from "@/components/account/orders/OrderCard";
 import { OrdersSkeleton } from "@/components/account/orders/OrdersSkeleton";
 import { OrdersToolbar } from "@/components/account/orders/OrdersToolbar";
@@ -11,6 +12,7 @@ import { PreviewStateFrame } from "@/components/states/PreviewState";
 import { buttonClasses } from "@/components/ui/button-classes";
 import { requireArea } from "@/lib/auth-guard";
 import { listCustomerOrders } from "@/lib/orders.server";
+import { sweepExpiredCardOrders } from "@/lib/payments.server";
 import { CUSTOMER_ORDERS_PAGE_SIZE, customerOrderListSchema } from "@/lib/validations/customer-orders";
 
 export const metadata: Metadata = { title: "My Orders" };
@@ -32,6 +34,7 @@ const noOrders = (
  */
 export default async function OrdersPage({ searchParams }: Props) {
   const user = await requireArea("CUSTOMER");
+  after(() => sweepExpiredCardOrders()); // release card orders left unpaid (background, throttled)
   const sp = await searchParams;
   const params = customerOrderListSchema.parse(Object.fromEntries(Object.entries(sp).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v])));
   const list = await listCustomerOrders(user.id, params);

@@ -4,7 +4,7 @@ import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from "pdf-lib";
 import { SHIPPING_METHOD_INFO, taxLabel } from "@/lib/checkout";
 import { money } from "@/lib/money";
 import type { OrderView } from "@/lib/orders.server";
-import { addressLines, canceledPartsTotal, orderAddress, orderDate, PAYMENT_METHOD_LABEL, PAYMENT_STATUS_LABEL } from "@/lib/orders";
+import { addressLines, canceledPartsTotal, orderAddress, orderDate, PAYMENT_METHOD_LABEL, paymentLabel } from "@/lib/orders";
 
 /**
  * Invoice PDF for one order, split by seller (marketplace rule): header, bill-to / ship-to, then one
@@ -70,7 +70,8 @@ export async function renderInvoice(order: OrderView, { sellerCopy = false }: { 
   y -= 13;
   right(`Date: ${orderDate(order.createdAt)}`, R, 9);
   y -= 12;
-  right(`Payment: ${PAYMENT_METHOD_LABEL[order.paymentMethod]} (${PAYMENT_STATUS_LABEL[order.paymentStatus]})`, R, 9);
+  const allCanceled = order.storeOrders.every((s) => s.status === "CANCELED");
+  right(`Payment: ${PAYMENT_METHOD_LABEL[order.paymentMethod]} (${paymentLabel(order.paymentMethod, order.paymentStatus, allCanceled)})`, R, 9);
   y -= 18;
   rule();
   y -= 20;
@@ -165,9 +166,13 @@ export async function renderInvoice(order: OrderView, { sellerCopy = false }: { 
   const due =
     order.paymentStatus === "PAID"
       ? `Paid in full - ${money(grand)}`
-      : order.paymentMethod === "COD"
-        ? `Amount due on delivery (cash): ${money(grand)}`
-        : `Amount due: ${money(grand)}`;
+      : order.paymentStatus === "REFUNDED"
+        ? `Refunded to the card - ${money(order.total)}`
+        : order.paymentMethod === "COD"
+          ? `Amount due on delivery (cash): ${money(grand)}`
+          : allCanceled
+            ? "Not paid - order canceled, nothing was charged"
+            : `Awaiting card payment: ${money(grand)}`;
   right(due, cols.total, 10, bold, order.paymentStatus === "PAID" ? C.success : C.strong);
 
   // ── Footer on every page

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { OrderProgressNote, OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 import { Button } from "@/components/ui/button";
 import { money } from "@/lib/money";
-import { accountOrderHref, PAYMENT_METHOD_LABEL, PAYMENT_STATUS_LABEL, trackOrderHref } from "@/lib/orders";
+import { accountOrderHref, PAYMENT_METHOD_LABEL, paymentLabel, trackOrderHref } from "@/lib/orders";
 import type { CustomerOrderRow } from "@/lib/orders.server";
 import { OrderActionsMenu } from "./OrderActionsMenu";
 
@@ -27,7 +27,7 @@ export function OrderCard({ order: o }: { order: CustomerOrderRow }) {
           <p className="mt-1 text-sm text-fg-muted">
             <b className="font-semibold text-fg-strong tabular-nums">{o.itemCount}</b> {o.itemCount === 1 ? "Product" : "Products"}
             <span aria-hidden> · </span>
-            {PAYMENT_METHOD_LABEL[o.paymentMethod]} · {PAYMENT_STATUS_LABEL[o.paymentStatus]}
+            {PAYMENT_METHOD_LABEL[o.paymentMethod]} · {paymentLabel(o.paymentMethod, o.paymentStatus, o.status === "CANCELED")}
           </p>
           <p className="mt-0.5 flex items-center gap-1.5 truncate text-caption text-fg-muted">
             <Store aria-hidden className="size-3.5 shrink-0 text-primary" strokeWidth={2} />
