@@ -68,6 +68,15 @@ export default async function AdminReviewPage({ params }: PageProps<"/admin/revi
           </div>
           {r.title && <h2 className="mt-3 font-display text-xl font-bold text-fg-strong">{r.title}</h2>}
           <p className="mt-2 text-[0.95rem] leading-relaxed whitespace-pre-line text-fg">{r.comment}</p>
+          {r.reply && (
+            <div className="mt-4 rounded-md border-l-2 border-primary bg-iris-50 px-4 py-3">
+              <p className="text-caption font-bold text-primary">
+                Response from {r.product.vendor.storeName}
+                {r.repliedAt && <span className="font-normal text-fg-muted"> · {orderDate(r.repliedAt)}</span>}
+              </p>
+              <p className="mt-1 text-sm whitespace-pre-line text-fg">{r.reply}</p>
+            </div>
+          )}
           {r.photos.length > 0 && (
             <ul aria-label="Review photos" className="mt-5 flex flex-wrap gap-3">
               {r.photos.map((src, i) => (

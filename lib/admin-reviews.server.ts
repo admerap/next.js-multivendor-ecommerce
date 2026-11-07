@@ -88,6 +88,8 @@ export async function getAdminReview(id: string) {
       isVisible: true,
       createdAt: true,
       moderatedAt: true,
+      reply: true,
+      repliedAt: true,
       product: {
         select: {
           id: true,

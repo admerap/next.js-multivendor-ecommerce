@@ -448,6 +448,8 @@ export type ItemReview = {
   images: string[];
   status: "PENDING" | "APPROVED" | "REJECTED";
   createdAt: Date;
+  /** the store's answer (Vendor › Product Reviews) */
+  reply: string | null;
 };
 
 const reviewedOn = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -523,6 +525,12 @@ export function ReviewsTab({ order, reviews }: { order: OrderView; reviews: Reco
                         </div>
                       )}
                       {r.status === "PENDING" && <p className="mt-3 text-caption text-fg-muted">Thanks! Our team checks every review before it appears on the product page.</p>}
+                      {r.reply && (
+                        <div className="mt-3 rounded-md border-l-2 border-primary bg-card px-3.5 py-2.5">
+                          <p className="text-caption font-bold text-primary">Response from {s.vendor.storeName}</p>
+                          <p className="mt-0.5 text-sm whitespace-pre-line text-fg">{r.reply}</p>
+                        </div>
+                      )}
                     </div>
                   ) : s.status !== "DELIVERED" ? (
                     <p className="flex items-center gap-2 rounded-md bg-sunken px-4 py-3 text-sm text-fg-muted">

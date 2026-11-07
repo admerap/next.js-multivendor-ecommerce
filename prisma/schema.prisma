@@ -749,6 +749,10 @@ model Review {
   isVisible   Boolean      @default(true)
   /// When an admin approved or rejected it.
   moderatedAt DateTime?
+  /// The store's public answer (Vendor › Product Reviews): shown under the review on the product page, to the
+  /// customer and to admins. Null = no reply yet.
+  reply       String?      @db.Text
+  repliedAt   DateTime?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 

@@ -28,6 +28,7 @@ const vendorNav = (orders: VendorOrderCounts, chatUnread: number): NavGroup[] =>
         children: [
           { label: "Product List", href: "/vendor/products" },
           { label: "Add Product", href: "/vendor/products/add" },
+          { label: "Product Reviews", href: "/vendor/reviews" },
         ],
       },
       {

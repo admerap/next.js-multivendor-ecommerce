@@ -355,7 +355,17 @@ export const getProductReviews = cache(async (productId: string): Promise<Review
       where,
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: 20,
-      select: { id: true, rating: true, title: true, comment: true, images: true, createdAt: true, customer: { select: { name: true, image: true } } },
+      select: {
+        id: true,
+        rating: true,
+        title: true,
+        comment: true,
+        images: true,
+        createdAt: true,
+        reply: true,
+        customer: { select: { name: true, image: true } },
+        product: { select: { vendor: { select: { storeName: true } } } },
+      },
     }),
   ]);
   const count = byStars.reduce((n, r) => n + r._count._all, 0);
@@ -373,6 +383,8 @@ export const getProductReviews = cache(async (productId: string): Promise<Review
       createdAt: r.createdAt.toISOString(),
       body: r.comment,
       photos: Array.isArray(r.images) ? r.images.filter((x): x is string => typeof x === "string") : [],
+      // The store's public answer (Vendor › Product Reviews), if any.
+      reply: r.reply ? { text: r.reply, store: r.product.vendor.storeName } : null,
     })),
   };
 });

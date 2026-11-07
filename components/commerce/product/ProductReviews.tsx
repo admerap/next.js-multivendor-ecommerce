@@ -100,6 +100,12 @@ export function ProductReviews({ summary }: { summary: ReviewSummary }) {
                   ))}
                 </ul>
               )}
+              {r.reply && (
+                <div className="mt-3 rounded-md border-l-2 border-primary bg-iris-50 px-3.5 py-2.5">
+                  <p className="text-caption font-bold text-primary">Response from {r.reply.store}</p>
+                  <p className="mt-0.5 text-sm whitespace-pre-line text-fg">{r.reply.text}</p>
+                </div>
+              )}
             </div>
           </li>
         ))}

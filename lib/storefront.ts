@@ -113,7 +113,18 @@ export type FacetOption = { slug: string; name: string; image?: string | null; c
 /** One page of a server-paginated list. */
 export type Paged<T> = { items: T[]; total: number; page: number; pageCount: number; pageSize: number };
 
-export type ProductReview = { id: string; author: string; avatar: string | null; rating: number; title: string | null; createdAt: string; body: string; photos: string[] };
+export type ProductReview = {
+  id: string;
+  author: string;
+  avatar: string | null;
+  rating: number;
+  title: string | null;
+  createdAt: string;
+  body: string;
+  photos: string[];
+  /** the store's answer, shown under the review */
+  reply: { text: string; store: string } | null;
+};
 /** Reviews tab: average (0–5), total, count per star (5 → 1) and the reviews themselves. */
 export type ReviewSummary = { average: number; count: number; distribution: { stars: number; count: number }[]; reviews: ProductReview[] };
 

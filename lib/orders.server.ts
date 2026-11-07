@@ -439,7 +439,7 @@ export async function reviewsForItems(orderItemIds: string[], customerId: string
   if (orderItemIds.length === 0) return {};
   const rows = await prisma.review.findMany({
     where: { customerId, orderItemId: { in: orderItemIds } },
-    select: { orderItemId: true, rating: true, title: true, comment: true, images: true, status: true, createdAt: true },
+    select: { orderItemId: true, rating: true, title: true, comment: true, images: true, status: true, createdAt: true, reply: true },
   });
   return Object.fromEntries(
     rows.map((r) => [r.orderItemId, { ...r, images: Array.isArray(r.images) ? r.images.filter((x): x is string => typeof x === "string") : [] }]),
